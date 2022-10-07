@@ -13,7 +13,7 @@ Use at your own risks.
 ### Vision:
 I am working towards a "one click migration" for all oneangents and and of their tenant's configuration to another tenant.
 
-### Functionalities:
+### Functionalities (Animated Gifs):
 
 ##### Match entities between 2 tenants
 ![alt text](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/entityFilter_2.gif "Match entities between 2 tenants")
