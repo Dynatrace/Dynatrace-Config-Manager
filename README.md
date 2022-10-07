@@ -6,6 +6,8 @@
 
 I made my code available to everyone, but this project is not stable for now.
 
+Error management is minimal, this should be fixed soon.
+
 It is not officially supported in any way by Dynatrace or myself.
 
 Use at your own risks.
