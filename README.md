@@ -12,6 +12,11 @@
 ### Vision:
 I am working towards a "one click migration" for all oneangents and and of their tenant's configuration to another tenant.
 
+### Access Tokens
+It is required that you use an access token with these scopes:
+* Minimal: Read entities & Read settings
+* Target Env, at the time of migration: Read entities & Read settings & Write entities & Write settings
+
 ### Functionalities (Animated Gifs):
 
 ##### Match entities between 2 tenants
