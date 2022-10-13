@@ -15,7 +15,6 @@ export function useEnhancedBackend() {
 
         const functions = {
             "backendGet": (api_method, searchParams, thenFunction) => {
-                console.log("3")
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
                 return backendGet(api_method, completedSearchParams, thenFunction)
             },
@@ -78,14 +77,14 @@ function useCompleteSearchParams() {
 
                     console.log(entityFilter)
                     console.log(entityFilter.applyMigrationChecked)
-                    if(entityFilter.applyMigrationChecked) {
+                    if (entityFilter.applyMigrationChecked) {
                         console.log("@@@")
                         setEntityFilterApplyMigrationChecked(false)
                         completedSearchParams['pre_migration'] = false
                     }
                 }
 
-                
+
 
             }
             return completedSearchParams
@@ -93,7 +92,8 @@ function useCompleteSearchParams() {
         }
 
         return completeSearchParamsFunction
-    }, [entityFilter.dateRangeChecked, entityFilter.startTimestamp, entityFilter.endTimestamp])
+    }, [entityFilter, entityFilter.dateRangeChecked, entityFilter.startTimestamp, 
+        entityFilter.endTimestamp])
 
     return completeSearchParams
 

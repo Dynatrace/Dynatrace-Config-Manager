@@ -10,14 +10,17 @@ export default function ForcedMatchInput() {
     const handleChangForcedMatchChecked = (event) => {
         setEntityFilterForcedMatchChecked(event.target.checked)
     }
-    const handleChangeForcedMatchMain = (event) => {
-        setEntityFilterForcedMatchMain(event.target.value)
-    }
-    const handleChangeForcedMatchTarget = (event) => {
-        setEntityFilterForcedMatchTarget(event.target.value)
-    }
 
     const forcedMatchComponents = React.useMemo(() => {
+
+        const handleChangeForcedMatchMain = (event) => {
+            setEntityFilterForcedMatchMain(event.target.value)
+        }
+
+        const handleChangeForcedMatchTarget = (event) => {
+            setEntityFilterForcedMatchTarget(event.target.value)
+        }
+
         if (entityFilter.forcedMatchChecked) {
             return (
                 <Grid container>

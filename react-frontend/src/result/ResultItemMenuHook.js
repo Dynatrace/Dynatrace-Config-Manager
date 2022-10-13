@@ -9,12 +9,17 @@ export default function useResultItemMenu(setOpenDrawer, data) {
 
   const [menuPosition, setMenuPosition] = React.useState(null);
   const [cursorPosition, setCursorPosition] = React.useState(null);
-  const { contextNode, setContextMenu, setContextNode } = useContextMenuState()
+  const { contextMenu, contextNode, setContextMenu, setContextNode } = useContextMenuState()
   const { tenant } = useCurrentTenant()
 
   React.useMemo(() => {
-    setContextMenu(null)
-    setContextNode(null)
+    console.log('data changed', contextMenu, contextNode)
+    if (contextMenu !== null) {
+      setContextMenu(null)
+    }
+    if (contextNode !== null) {
+      setContextNode(null)
+    }
   }, [data])
 
   const handleContextMenu = React.useMemo(() => {
@@ -74,7 +79,7 @@ export default function useResultItemMenu(setOpenDrawer, data) {
         <MenuItem key="drawer" onClick={handleOpenDrawer}>Details</MenuItem>
       ]
       if ('entity_type' in contextNode && 'entity_id' in contextNode) {
-        if (contextNode.entity_type == "PROCESS_GROUP_INSTANCE") {
+        if (contextNode.entity_type === "PROCESS_GROUP_INSTANCE") {
           if (tenant && tenant.url && tenant.url !== "") {
             const viewInTenantUIUrl = tenant.url + "#processdetails;id=" + contextNode.entity_id + ";gtf=-2h;gf=all"
             items.push(
@@ -85,10 +90,11 @@ export default function useResultItemMenu(setOpenDrawer, data) {
       }
     }
     return items
-  }, [handleClose, contextNode])
+  }, [handleClose, contextNode, handleOpenDrawer, tenant, toClipboard])
 
 
   React.useMemo(() => {
+    console.log("SET CONTEXT MENU")
 
     setContextMenu(
       <Menu

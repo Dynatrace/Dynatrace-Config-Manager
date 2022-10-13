@@ -34,7 +34,7 @@ export default function ExtractedTable({ data }) {
 
 
     const [columns, rows] = React.useMemo(() => {
-        if (data == undefined || !data['items']) {
+        if (!data || !data['items']) {
             return [null, null]
         }
 
@@ -95,11 +95,11 @@ const add_column = (columns, column_exist_hash, column_key) => {
         }
 
         let header = column_key
-        if (header == 'clazz') {
+        if (header === 'clazz') {
             header = 'class'
         }
         let hide = false
-        if (autoHiddenColumns[column_key] == true) {
+        if (autoHiddenColumns[column_key] === true) {
             hide = true
         }
         column_exist_hash[column_key] = true

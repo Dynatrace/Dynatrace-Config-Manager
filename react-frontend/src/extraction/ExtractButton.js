@@ -6,13 +6,13 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { backendPost } from '../backend/backend';
 import { useExecutionOptionsStateValue } from '../context/ExecutionContext';
 
-export default function ExtractButton({ handleChange, api, label, tenantType=TENANT_KEY_TYPE_MAIN }) {
+export default function ExtractButton({ handleChange, api, label, tenantType = TENANT_KEY_TYPE_MAIN }) {
 
     const { tenantKey } = useTenantKey(tenantType)
     const { useCache } = useExecutionOptionsStateValue()
 
     const handleExtract = () => {
-        const searchParams = { 'tenant_key': tenantKey, 'use_cache': useCache  }
+        const searchParams = { 'tenant_key': tenantKey, 'use_cache': useCache }
 
         backendPost(api, null, searchParams,
             promise =>

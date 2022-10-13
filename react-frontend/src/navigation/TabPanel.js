@@ -57,16 +57,17 @@ export default function BasicTabs() {
   };
 
   const [tabs, tabPanels] = React.useMemo(() => {
-    const tabs = []
-    const tabPanels = []
+    console.log("TABS TABS")
+    const outTabs = []
+    const outTabPanels = []
 
     tabConfig.forEach((tabConfig, index) => {
       const { tabLabel, tabComponent } = tabConfig
-      tabs.push(
+      outTabs.push(
         (
           <Tab label={tabLabel} key={"tab-" + index} {...a11yProps(index)} />
         ))
-      tabPanels.push(
+        outTabPanels.push(
         (
           <TabPanel value={value} index={index} key={"tab-panel-" + index}>
             {tabComponent}
@@ -76,8 +77,8 @@ export default function BasicTabs() {
 
     })
 
-    return [tabs, tabPanels]
-  })
+    return [outTabs, outTabPanels]
+  }, [value])
 
   return (
     <Box sx={{ width: '100%' }}>

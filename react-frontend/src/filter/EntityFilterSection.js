@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import * as React from 'react';
 import DateRangePicker from '../date/DateRangePicker';
 import EntityFilterSelector from './EntityFilterSelector';

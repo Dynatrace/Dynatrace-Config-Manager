@@ -15,19 +15,12 @@ export default function DateRangePicker({ label }) {
         setEntityFilterDateRangeChecked(event.target.checked)
     }
 
-    const handleChangeStartTimestamp = (newValue) => {
-        setEntityFilterStartTimestamp(newValue.valueOf())
-    }
-    const handleChangeEndTimestamp = (newValue) => {
-        setEntityFilterEndTimestamp(newValue.valueOf())
-    }
-
     const error = React.useMemo(() => {
         let props = {}
         if (entityFilter.startTimestamp > entityFilter.endTimestamp) {
             props.error = true
             props.helperText = "Negative timeframe"
-        } else if (entityFilter.startTimestamp == entityFilter.endTimestamp) {
+        } else if (entityFilter.startTimestamp === entityFilter.endTimestamp) {
             props.error = true
             props.helperText = "Empty timeframe"
         }
@@ -35,6 +28,14 @@ export default function DateRangePicker({ label }) {
     }, [entityFilter.startTimestamp, entityFilter.endTimestamp])
 
     const dateTimePickerComponents = React.useMemo(() => {
+
+        const handleChangeStartTimestamp = (newValue) => {
+            setEntityFilterStartTimestamp(newValue.valueOf())
+        }
+        const handleChangeEndTimestamp = (newValue) => {
+            setEntityFilterEndTimestamp(newValue.valueOf())
+        }
+
         if (entityFilter.dateRangeChecked) {
             return (
                 <Paper sx={{ mt: 0.5 }} elevation={0}>
@@ -56,7 +57,8 @@ export default function DateRangePicker({ label }) {
         } else {
             return null
         }
-    }, [entityFilter.dateRangeChecked, entityFilter.startTimestamp, entityFilter.endTimestamp, error])
+    }, [entityFilter.dateRangeChecked, entityFilter.startTimestamp, entityFilter.endTimestamp,
+        error])
 
     return (
         <React.Fragment>

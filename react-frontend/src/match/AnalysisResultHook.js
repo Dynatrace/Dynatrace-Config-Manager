@@ -49,7 +49,7 @@ export const useTreeResult = (defaultSortOrder = ALPHABETIC, containsEntrypoint 
             )
         }
         return null
-    }, [treeComponent, openDrawer, setOpenDrawer])
+    }, [treeComponent, openDrawer])
 
     return { tenantKey, hasAnalysisResult, setAnalysisResult, analysisResultComponent, setInitialFilterText }
 }

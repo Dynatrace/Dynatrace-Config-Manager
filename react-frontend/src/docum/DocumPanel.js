@@ -16,7 +16,7 @@ export default function DocumPanel() {
         }
         return documList
 
-    }, [documText])
+    }, [])
 
     return (
         <React.Fragment>

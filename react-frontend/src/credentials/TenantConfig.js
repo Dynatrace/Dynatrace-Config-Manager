@@ -12,7 +12,7 @@ export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
     const { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantNotes } = useTenant(tenantKey)
 
     const tenantUrlDisplay = React.useMemo(() => {
-        if (!tenant.url || tenant.url == "") {
+        if (!tenant.url || tenant.url === "") {
             return "https://<YOUR_TENANT>.live.dynatrace.com/"
         } else {
             return tenant.url

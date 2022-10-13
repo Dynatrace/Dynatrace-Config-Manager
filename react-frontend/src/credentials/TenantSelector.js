@@ -19,6 +19,7 @@ export default function TenantSelector({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
     }, [setTenantKey])
 
     const tenantItems = React.useMemo(() => {
+        console.log("setTenantKey")
         const tenantItemList = []
         tenantList.forEach((tenant, index) => {
             tenantItemList.push(
@@ -26,7 +27,7 @@ export default function TenantSelector({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
             )
         })
         return tenantItemList
-    }, [tenantList])
+    }, [tenantList, tenantKeyType])
 
     const selector = React.useMemo(() => {
         return (
@@ -41,7 +42,7 @@ export default function TenantSelector({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
                 {tenantItems}
             </Select>
         )
-    }, [tenantKey, tenantItems, handleChangeTenantKey])
+    }, [tenantKey, tenantItems, handleChangeTenantKey, tenantKeyType])
 
     const linkToTenantUI = React.useMemo(() => {
         if (tenant && tenant.url && tenant.url !== "") {

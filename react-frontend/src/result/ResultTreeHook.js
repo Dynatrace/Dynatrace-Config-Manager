@@ -19,7 +19,7 @@ export const useResultTree = (data, sortOrder, searchText, handleContextMenu, co
         const { elements: renderedTreeItems, expandedList: sub_expanded_list } = renderTreeItems(tree, oneFound, sampleSum, resultBlockSize, handleContextMenu)
         const expandedList = ["root"].concat(sub_expanded_list)
         return { renderedTreeItems, expandedList }
-    }, [data, sortOrder, searchText])
+    }, [data, sortOrder, searchText, containsEntrypoint, resultBlockSize])
 
 }
 
@@ -45,7 +45,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         if (oneFound) {
 
             colorComponent = true
-            if (parent.success == true) {
+            if (parent.success === true) {
                 props.sx = { color: 'success.main', boxShadow: 1 }
             } else if (parent.primary === true) {
                 props.sx = { color: 'primary.main', boxShadow: 1 }
@@ -85,7 +85,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         if (isExpandedFound) {
             isExpanded = true
         } else if (isChildItem && !isPrevExpandedFound) {
-            if (lastExpanded == 0 && resultBlockSize > 0) {
+            if (lastExpanded === 0 && resultBlockSize > 0) {
                 isExpanded = true
             } else if ((lastExpanded - lastExpandedRoot + 2) < resultBlockSize) {
                 isExpanded = true
@@ -95,7 +95,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         if (isExpanded) {
             expandedList.push(nodeId)
             lastExpanded = parseInt(nodeId)
-            if (lastExpandedRoot == 0) {
+            if (lastExpandedRoot === 0) {
                 lastExpandedRoot = lastExpanded
             }
         } else {
@@ -119,11 +119,6 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
             } else {
                 return null
             }
-        }
-
-        if (parent['displayName'] == "gke-ext-demo1-jmeter-1eb7c441-363w.c.dynatrace-demoability.internal"
-            || parent['displayName'] == "gke-ext-demo1-ubuntu-c94da477-jvbx.c.dynatrace-demoability.internal") {
-            console.log(parent['id'], props)
         }
 
         return {

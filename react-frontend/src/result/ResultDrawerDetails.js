@@ -84,7 +84,7 @@ const addEntrypointMap = (list, node, depth) => {
 
         sectionId += 1
         list = addParagraph(list, (sectionKey + sectionId + "title"), depth, "Where this Entrypoint has been seen: ")
-        for (const [tenantUI_idx, tenantUI] of Object.entries(entrypoint)) {
+        for (const tenantUI of Object.values(entrypoint)) {
             sectionId += 1
             depth += 1
             list = addParagraph(list, (sectionKey + sectionId + "tenant"), depth, tenantUI[0]['tenant'], "Tenant")
@@ -93,7 +93,7 @@ const addEntrypointMap = (list, node, depth) => {
                 depth += 1
                 list = addParagraph(list, (sectionKey + sectionId + "empty"), depth, " ")
                 for (const [key, value] of Object.entries(entry)) {
-                    if (key in extractionMap || key == 'tenant') {
+                    if (key in extractionMap || key === 'tenant') {
                         ;
                     } else {
                         sectionId += 1

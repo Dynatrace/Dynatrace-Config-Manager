@@ -22,8 +22,8 @@ export function useLoadSetting() {
                     })
                     .then(data => {
                         let state = initState()
-                        for (const [key, value] of Object.entries(data)) {
-                            if (key != 'undefined') {
+                        for (const key of Object.keys(data)) {
+                            if (key !== 'undefined') {
                                 state[key] = data[key]
                             }
                         }

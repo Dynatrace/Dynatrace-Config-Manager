@@ -56,7 +56,7 @@ export function useLoadEntityFilterList() {
                         .then(data => {
                             if (Object.keys(data).length >= 1) {
                                 if ('entityFilters' in data) {
-                                    for (const [key, entityFilter] of Object.entries(data['entityFilters'])) {
+                                    for (const entityFilter of Object.values(data['entityFilters'])) {
                                         for (const key of Object.keys(attributes)) {
                                             if (key in entityFilter) {
                                                 ;
@@ -205,7 +205,7 @@ export function useEntityFilter(key) {
             contextDispatch(action)
         }
 
-        for (const [key, config] of Object.entries(attributes)) {
+        for (const key of Object.keys(attributes)) {
             const functionName = 'setEntityFilter' + key[0].toUpperCase() + key.substring(1)
             returnValues[functionName] = (value) => {
                 setEntityFilterProperty(key, value)
