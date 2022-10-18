@@ -1,6 +1,6 @@
 import api_v2
 import handler_api
-
+import process_utils
 
 def extract_function(config, use_cache, cache_only, analysis_object, context_params=None):
 
@@ -13,6 +13,9 @@ def extract_function(config, use_cache, cache_only, analysis_object, context_par
 def extract_specific_scope(config, use_cache, cache_only, analysis_object, scope):
     
     scope_list = [{"scope": scope}]
+    
+    if(scope in process_utils.UNIQUE_ENTITY_LIST):
+        return None
     
     handler_api.extract_pages_from_input_list(
         config, scope_list,

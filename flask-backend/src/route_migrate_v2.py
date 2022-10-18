@@ -5,7 +5,8 @@ import json
 import flask_utils
 import process_migrate_config
 import ui_api_entity_config
-from filter import AnalysisFilter
+from credentials import RequestHeadersMissingError
+import process_utils
 
 
 @app.route('/migrate_config_v2', methods=['GET'])
@@ -19,14 +20,23 @@ def migrate_config_v2():
     active_rules = flask_utils.get_arg_json('active_rules')
     context_params = flask_utils.get_arg_json('context_params')
     pre_migration = flask_utils.get_arg_bool('pre_migration', True)
-    analysis_filter = AnalysisFilter(entity_filter)
 
-    result = process_migrate_config.migrate_config(
-        tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params, pre_migration)
+    result = None
+    return_status = 200
+    
+    run_info = process_utils.get_run_info(tenant_key_main, tenant_key_target, context_params, entity_filter)
+    analysis_filter = run_info['analysis_filter']
+    
+    try:
+        result = process_migrate_config.migrate_config(run_info, 
+            tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params, pre_migration)
+    except RequestHeadersMissingError as err:
+        result = {"error": str(err)}
+        return_status = 400
 
     response = app.response_class(
         response=json.dumps(result),
-        status=200,
+        status=return_status,
         mimetype='application/json'
     )
 
@@ -45,9 +55,12 @@ def migrate_ui_api_entity():
     context_params = flask_utils.get_arg_json('context_params')
     pre_migration = flask_utils.get_arg_bool('pre_migration', True)
 
+    run_info = process_utils.get_run_info(tenant_key_main, tenant_key_target, context_params, entity_filter)
+    analysis_filter = run_info['analysis_filter']
+
     done = ui_api_entity_config.copy_entity(
-        tenant_key_main, tenant_key_target, context_params)
-    
+        run_info)
+
     print(done)
 
     response = app.response_class(

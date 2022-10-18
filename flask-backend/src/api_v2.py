@@ -52,10 +52,10 @@ def _call_method(method, config, api, url_trail, payload):
 
 def _handle_response(response):
     if(response.status_code == 404):
-        print(response.text)
+        print("Error 404: ", response.text)
         pass
     else:
-        print(response.text)
+        #print(response.text)
         response.raise_for_status()
 
 

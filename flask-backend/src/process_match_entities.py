@@ -1,4 +1,3 @@
-import handler_api
 import entity_v2
 from weight import Weight
 import compare
@@ -50,10 +49,10 @@ match_rules_catalog = {
 }
 
 
-def match_entities_tree(tenant_key_main, tenant_key_target, analysis_filter, active_rules=None, context_params=None):
+def match_entities_tree(run_info, analysis_filter, active_rules=None, context_params=None):
 
     matched_entities_dict = match_entities(
-        tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params)
+        run_info, analysis_filter, active_rules, context_params)
 
     matched_entities_tree_dict = convert_matched_to_tree(matched_entities_dict)
 
@@ -62,12 +61,11 @@ def match_entities_tree(tenant_key_main, tenant_key_target, analysis_filter, act
     return result
 
 
-def match_entities(tenant_key_main, tenant_key_target, analysis_filter, active_rules=None, context_params=None):
+def match_entities(run_info, analysis_filter, active_rules=None, context_params=None):
 
-    run_info, all_tenant_entity_dict = process_utils.execute_match(tenant_key_main, tenant_key_target,
-                                                                   LoadEntities, analysis_filter,
+    run_info, all_tenant_entity_dict = process_utils.execute_match(run_info, LoadEntities, analysis_filter,
                                                                    entity_v2.extract_function,
-                                                                   context_params, live_extract=False)
+                                                                   live_extract=False)
 
     matched_entities_dict = process_entities_match(
         run_info, all_tenant_entity_dict, active_rules, context_params)
@@ -75,12 +73,11 @@ def match_entities(tenant_key_main, tenant_key_target, analysis_filter, active_r
     return matched_entities_dict
 
 
-def match_entities_forced_live(tenant_key_main, tenant_key_target, analysis_filter, active_rules=None, context_params=None):
+def match_entities_forced_live(run_info, analysis_filter, active_rules=None, context_params=None):
 
-    run_info, all_tenant_entity_dict = process_utils.execute_match(tenant_key_main, tenant_key_target,
-                                                                   LoadEntities, analysis_filter,
+    run_info, all_tenant_entity_dict = process_utils.execute_match(run_info, LoadEntities, analysis_filter,
                                                                    entity_v2.extract_specific_scope,
-                                                                   context_params, live_extract=True)
+                                                                   live_extract=True)
 
     matched_entities_dict = process_entities_match(
         run_info, all_tenant_entity_dict, active_rules, context_params)
@@ -273,7 +270,7 @@ def process_match_rules(run_info, index_dict_main, index_dict_target,
                 matched_entities_dict = match_index(matched_entities_dict, match_key, match_config, index_dict_main,
                                                     index_dict_target, entity_type, tenant_entity_dict_main, tenant_entity_dict_target)
             elif(match_config['action'] == 'provided_id'):
-                matched_entities_dict = match_provided_id(matched_entities_dict, match_key, match_config,
+                matched_entities_dict = match_provided_id(run_info, matched_entities_dict, match_key, match_config,
                                                           entity_type, tenant_entity_dict_main, tenant_entity_dict_target, context_params)
 
     return matched_entities_dict
@@ -307,13 +304,10 @@ def match_index(matched_entities_dict, match_key, match_config, index_dict_main,
     return matched_entities_dict
 
 
-def match_provided_id(matched_entities_dict, match_key, match_config,
+def match_provided_id(run_info, matched_entities_dict, match_key, match_config,
                       entity_type, tenant_entity_dict_main, tenant_entity_dict_target, context_params):
 
-    if(context_params is None):
-        return matched_entities_dict
-
-    if('provided_id' in context_params):
+    if(run_info['forced_match']):
         pass
     else:
         return matched_entities_dict

@@ -4,28 +4,37 @@ import ui_api
 import cache
 import json
 import entity_utils
-import process_utils
 import process_migrate_config
 import copy
 from deepdiff import DeepDiff
 
+entity_copy_configs = {'SERVICE':
+                       {'update_type': 'bundled',
+                        'settings_key': 'serviceSettings',
+                        'settings_and_default_value':
+                        {'binaryExtensions': ".exe, .zip",
+                         'imageExtensions': ".jpg, .png, .gif, .jpeg, .bmp, .svg, .ico, .woff, .ttf, .otf, .woff2, .eot, .dtdtdtdt",
+                         'serviceMethodNamingRuleList': [],
+                         'webRequestNamingByCleanupList': []}
+                        }
+                       }
 
-def copy_entity_standalone(tenant_key_main, tenant_key_target, context_params, pre_migration=True):
 
-    result_table = copy_entity(tenant_key_main, tenant_key_target,
-                               context_params, result_table=None, pre_migration=pre_migration)
+def copy_entity_standalone(run_info,  pre_migration=True):
+
+    result_table = copy_entity(
+        run_info, result_table=None, pre_migration=pre_migration)
 
     flat_result_table = process_migrate_config.flatten_results(result_table)
 
     return flat_result_table
 
 
-def copy_entity(tenant_key_main, tenant_key_target, context_params, result_table=None, pre_migration=True):
+def copy_entity(run_info, result_table=None, pre_migration=True):
     use_cache = False
     cache_only = False
-
-    run_info = process_utils.get_run_info(
-        tenant_key_main, tenant_key_target, context_params)
+    tenant_key_main = run_info['tenant_key_main']
+    tenant_key_target = run_info['tenant_key_target']
 
     all_tenant_entity_values = {}
 
@@ -36,19 +45,14 @@ def copy_entity(tenant_key_main, tenant_key_target, context_params, result_table
         if(tenant_key in all_tenant_entity_values):
             pass
         else:
-            all_tenant_entity_values[tenant_key] = get_entity(
+            entity = get_entity(
                 tenant_key, tenant_dict['scope'], use_cache, cache_only)
 
-    entity_copy_configs = {'SERVICE':
-                           {'update_type': 'bundled',
-                            'settings_key': 'serviceSettings',
-                            'settings_and_default_value':
-                            {'binaryExtensions': ".exe, .zip",
-                             'imageExtensions': ".jpg, .png, .gif, .jpeg, .bmp, .svg, .ico, .woff, .ttf, .otf, .woff2, .eot, .dtdtdtdt",
-                             'serviceMethodNamingRuleList': [],
-                             'webRequestNamingByCleanupList': []}
-                            }
-                           }
+            if(entity is None):
+                return result_table
+            else:
+                all_tenant_entity_values[tenant_key] = get_entity(
+                    tenant_key, tenant_dict['scope'], use_cache, cache_only)
 
     config_main_only = {}
     config_target_only = {}
@@ -65,7 +69,7 @@ def copy_entity(tenant_key_main, tenant_key_target, context_params, result_table
     settings_key = entity_copy_configs[entity_type]['settings_key']
     for copy_property, default_value in entity_copy_configs[entity_type]['settings_and_default_value'].items():
         is_in_main = False
-        print(all_tenant_entity_values[tenant_key_main]['data'])
+
         if(copy_property in all_tenant_entity_values[tenant_key_main]['data'][settings_key]):
             is_in_main = True
 
@@ -127,16 +131,19 @@ def copy_entity(tenant_key_main, tenant_key_target, context_params, result_table
     print(config_main_only)
     result_table = process_migrate_config.format_all_to_table(
         config_target_only, config_main_only, config_both, result_table)
-    print(result_table)
 
     return result_table
 
-#def update_bundle():
-    
 
 def get_entity(tenant_key, entity_id, use_cache, cache_only):
 
     entity_type = entity_utils.extract_type_from_entity_id(entity_id)
+
+    if(entity_type in entity_copy_configs):
+        pass
+    else:
+        print("type:", entity_type, "Not part of UIAPI")
+        return None
 
     config = credentials.get_ui_api_call_credentials(tenant_key)
     label = 'ui_api'

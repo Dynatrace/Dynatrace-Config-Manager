@@ -9,6 +9,7 @@ import flask_utils
 import process_match_entities
 import process_match_config
 from process_analysis import ScopeTypeAnalysis
+import process_utils
 
 
 @app.route('/analyze_config_v2', methods=['POST'])
@@ -47,9 +48,12 @@ def match_entities_v2():
 
     analysis_filter = AnalysisFilter(entity_filter, time_from, time_to)
     #analysis_filter = AnalysisFilter(entity_filter, 1663348592101, 1663598408747)
+    
+    run_info = process_utils.get_run_info(tenant_key_main, tenant_key_target, context_params, entity_filter)
+    analysis_filter = run_info['analysis_filter']
 
     result = process_match_entities.match_entities_tree(
-        tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params)
+        run_info, analysis_filter, active_rules, context_params)
 
     response = app.response_class(
         response=json.dumps(result),

@@ -3,6 +3,9 @@ import time
 import tenant
 
 
+class RequestHeadersMissingError(Exception):
+    pass
+
 def get_api_call_credentials(tenant_key, payload_type='application/json'):
 
     return get_call_credentials(tenant_key, payload_type, add_api_key)
@@ -36,7 +39,10 @@ def init_headers_config(tenant_key):
 
 def extract_headers(tenant_data, headers):
 
-    lines = tenant_data['headers'].splitlines()
+    try:
+        lines = tenant_data['headers'].splitlines()
+    except KeyError:
+        raise RequestHeadersMissingError("UI_API Request Headers not specified")
 
     # Strips the newline character
     header_prefixes = {

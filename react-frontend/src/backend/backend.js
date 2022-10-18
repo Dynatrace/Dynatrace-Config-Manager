@@ -51,7 +51,11 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction) {
     const fetchPromise = buildFetch(api_method, requestOptions, searchParams)
 
     if (thenFunction instanceof Function) {
-        return thenFunction(fetchPromise)
+        const validationPromise = validateReturnCodePromise(fetchPromise, api_method, thenFunction)
+
+        console.log(validationPromise)
+
+        return validationPromise
             .catch((error) => {
                 alert("Error Backend Api: " + api_method + "\n" + error)
             })
@@ -59,6 +63,28 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction) {
 
     alert("DEV ERROR: thenFunction not a function", thenFunction)
     console.trace()
+}
+
+function validateReturnCodePromise(fetchPromise, api_method, thenFunction) {
+    return fetchPromise.then(response => {
+        if (response.ok) {
+            return thenFunction(Promise.resolve(response))
+        } else if (response.status >= 400) {
+
+            const throwHTTPError = (responseTextPromise) => {
+                responseTextPromise.then(responseText => {
+                    console.log(responseText)
+                    throw new Error("Http Status: " + response.status + "\nBody: " + responseText)
+                })
+                .catch((error) => {
+                    alert("Error Backend Api: " + api_method + "\n" + error)
+                })
+
+            }
+
+            return throwHTTPError(response.text())
+        }
+    })
 }
 
 function buildFetch(api_method, requestOptions, searchParams) {
