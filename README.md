@@ -70,6 +70,7 @@ if [ -d "$HOME/.local/bin" ] ; then
 
 
 * Step 3: Running Application
+
 Now we clone the repo to run it:
 ```
 git clone https://github.com/dcryans/Dynatrace-Config-Manager
