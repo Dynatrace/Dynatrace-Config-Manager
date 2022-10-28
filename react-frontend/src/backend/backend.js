@@ -5,12 +5,12 @@ export const EXECUTION_OPTIONS = 'execution_options'
 export const GLOBAL_SETTINGS = 'global_settings'
 export const ENTITY_FILTER = 'entity_filter'
 
-export const EXTRACT_CONFIG_V2 = 'extract_config_v2'
+export const EXTRACT_SETTINGS_2_0 = 'extract_settings_2_0'
 export const EXTRACT_ENTITY_V2 = 'extract_entity_v2'
 
 export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 
-export const MIGRATE_CONFIG_V2 = 'migrate_config_v2'
+export const MIGRATE_SETTINGS_2_0 = 'migrate_settings_2_0'
 
 
 export function backendGet(api_method, searchParams, thenFunction) {

@@ -19,6 +19,11 @@ const flexSizes = {
     'from': 30,
     'to': 30,
 }
+const minWidthMap = {
+    'default': 50,
+    'from': 300,
+    'to': 300,
+}
 
 const autoHiddenColumns = {
     'web_request_id': true,
@@ -94,6 +99,11 @@ const add_column = (columns, column_exist_hash, column_key) => {
             flexSize = flexSizes[column_key]
         }
 
+        let minWidth = minWidthMap['default']
+        if(column_key in minWidthMap) {
+            minWidth = minWidthMap[column_key]
+        }
+
         let header = column_key
         if (header === 'clazz') {
             header = 'class'
@@ -103,7 +113,7 @@ const add_column = (columns, column_exist_hash, column_key) => {
             hide = true
         }
         column_exist_hash[column_key] = true
-        columns.push({ field: column_key, headerName: header, flex: flexSize, sortable: true, type: "string", hide })
+        columns.push({ field: column_key, headerName: header, minWidth: minWidth, flex: flexSize, sortable: true, type: "string", hide })
     }
 
     return [columns, column_exist_hash]

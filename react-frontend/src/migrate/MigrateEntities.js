@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import * as React from 'react';
-import { MIGRATE_CONFIG_V2 } from '../backend/backend';
+import { MIGRATE_SETTINGS_2_0 } from '../backend/backend';
 import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
 import ExtractedTable from '../extraction/ExtractedTable';
 import MatchButton from '../match/MatchButton';
@@ -64,7 +64,7 @@ export default function MigrateEntities() {
         }
 
         return (
-            <MatchButton handleChange={setExtractedData} api={MIGRATE_CONFIG_V2} label={label} />
+            <MatchButton handleChange={setExtractedData} api={MIGRATE_SETTINGS_2_0} label={label} />
         )
 
     }, [entityFilter.applyMigrationChecked])

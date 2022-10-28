@@ -1,10 +1,10 @@
 import { useMemo } from "react"
 import { useEntityFilter, useEntityFilterKey } from "../context/EntityFilterContext"
-import { backendDelete, backendGet, backendPost, MATCH_ENTITIES_V2, MIGRATE_CONFIG_V2 } from "./backend"
+import { backendDelete, backendGet, backendPost, MATCH_ENTITIES_V2, MIGRATE_SETTINGS_2_0 } from "./backend"
 
 const entityFilterMap = {
     [MATCH_ENTITIES_V2]: true,
-    [MIGRATE_CONFIG_V2]: true,
+    [MIGRATE_SETTINGS_2_0]: true,
 }
 
 export function useEnhancedBackend() {

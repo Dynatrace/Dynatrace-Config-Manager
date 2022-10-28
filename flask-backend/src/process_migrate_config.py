@@ -1,5 +1,7 @@
+from unittest import skip
 import process_match_entities
-import process_match_config
+import process_match_settings_2_0
+import process_analyze_schemas
 import credentials
 import api_v2
 import json
@@ -9,6 +11,9 @@ from deepdiff import DeepDiff
 
 def migrate_config(run_info, tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params, pre_migration=True):
 
+    schemas_definitions_dict = get_schemas_definitions_dict(
+        run_info, analysis_filter)
+
     matched_entities_dict = get_entities_dict(
         run_info, analysis_filter, active_rules, context_params)
 
@@ -17,7 +22,7 @@ def migrate_config(run_info, tenant_key_main, tenant_key_target, analysis_filter
 
     result_table = copy_configs_safe_same_entity_id(
         run_info, context_params, pre_migration, tenant_key_target,
-        matched_entities_dict,
+        matched_entities_dict, schemas_definitions_dict[tenant_key_main],
         all_tenant_config_dict[tenant_key_main], all_tenant_config_dict[tenant_key_target])
 
     if(run_info['forced_match']):
@@ -27,6 +32,13 @@ def migrate_config(run_info, tenant_key_main, tenant_key_target, analysis_filter
     flat_result_table = flatten_results(result_table)
 
     return flat_result_table
+
+
+def get_schemas_definitions_dict(run_info, analysis_filter):
+    schemas_definitions_dict = process_analyze_schemas.analyze_schemas(
+        run_info, analysis_filter)
+
+    return schemas_definitions_dict
 
 
 def get_entities_dict(run_info, analysis_filter, active_rules, context_params):
@@ -44,10 +56,10 @@ def get_entities_dict(run_info, analysis_filter, active_rules, context_params):
 
 def get_config_dict(run_info, analysis_filter):
 
-    config_function = process_match_config.match_config
+    config_function = process_match_settings_2_0.match_config
 
     if(run_info['forced_match']):
-        config_function = process_match_config.match_config_forced_live
+        config_function = process_match_settings_2_0.match_config_forced_live
 
     all_tenant_config_dict = config_function(run_info, analysis_filter)
 
@@ -55,17 +67,17 @@ def get_config_dict(run_info, analysis_filter):
 
 
 def copy_configs_safe_same_entity_id(run_info, context_params, pre_migration, tenant_key_target,
-                                     matched_entities_dict_compare,
+                                     matched_entities_dict_compare, schemas_definitions_dict,
                                      config_dict_main, config_dict_target):
 
     same_entity_id_index_main_to_target = {}
+
     if(run_info['unique_entity']):
-        same_entity_id_index_main_to_target = index_unique_entities(context_params)
+        same_entity_id_index_main_to_target = index_unique_entities(
+            context_params)
     else:
         same_entity_id_index_main_to_target = index_matched_entities(
             matched_entities_dict_compare)
-
-    print('\n\n\n TEST: A', same_entity_id_index_main_to_target)
 
     config_main_only = {}
     config_target_only = {}
@@ -74,10 +86,12 @@ def copy_configs_safe_same_entity_id(run_info, context_params, pre_migration, te
     for entity_id_main, entity_keys_target in same_entity_id_index_main_to_target.items():
         entity_type, entity_id_target = entity_keys_target
 
-        (config_main_only, config_both) = compare_config(entity_type, config_dict_main, entity_id_main, 'main', config_main_only,
-                                                         config_dict_target, entity_id_target, 'target', config_both)
-        (config_target_only, _) = compare_config(entity_type, config_dict_target, entity_id_target, 'target', config_target_only,
-                                                 config_dict_main, entity_id_main, 'main', {})
+        (config_main_only, config_both) = compare_config(entity_type, schemas_definitions_dict,
+                                                         config_dict_main, entity_id_main, config_main_only,
+                                                         config_dict_target, entity_id_target, config_both)
+        (config_target_only, _) = compare_config(entity_type, schemas_definitions_dict,
+                                                 config_dict_target, entity_id_target, config_target_only,
+                                                 config_dict_main, entity_id_main, {})
 
     if(pre_migration):
         pass
@@ -95,21 +109,22 @@ def copy_configs_safe_same_entity_id(run_info, context_params, pre_migration, te
     return result_table
 
 
-def format_all_to_table(config_target_only, config_main_only, config_both, result_table=None):
+def format_all_to_table(config_target_only, config_main_only, config_both, result_table=None, error_entries=None):
 
     if(result_table is None):
-        result_table = {'legend': {'actions': {'del': 'D',
-                                               'add': 'A', 'upd': 'U', 'identical': 'I'}}, 'entities': {}}
+        result_table = {'legend': {'actions': {
+            'del': 'D', 'add': 'A', 'upd': 'U', 'identical': 'I',
+            'multi_object': 'M', 'multi_ordered': 'O', 'scope_isn_t_entity': 'S'}}, 'entities': {}}
 
-    #schema_dict = config_v2.extract_schemas(credentials.get_api_call_credentials())
+    #schema_dict = settings_2_0.extract_schemas(credentials.get_api_call_credentials())
     # for schema_dict in
 
     result_table = run_on_all_configs(
-        'del', config_target_only, format_to_table, result_table)
+        'del', config_target_only, format_to_table, result_table, skip_errors=False)
     result_table = run_on_all_configs(
-        'add', config_main_only, format_to_table, result_table)
+        'add', config_main_only, format_to_table, result_table, skip_errors=False)
     result_table = run_on_all_configs(
-        'upd', config_both, format_to_table, result_table)
+        'upd', config_both, format_to_table, result_table, skip_errors=False)
 
     return result_table
 
@@ -118,15 +133,22 @@ def flatten_results(result_table):
 
     for entity_type in result_table['entities'].keys():
         type_dict = result_table['entities'][entity_type]
-        result_table['entities'][entity_type] = {'items': list(type_dict.values())}
+        result_table['entities'][entity_type] = {
+            'items': list(type_dict.values())}
 
     return result_table
 
 
-def run_on_all_configs(extra_input, config_dict, action_function, in_out_item):
+def run_on_all_configs(extra_input, config_dict, action_function, in_out_item, skip_errors=True):
     for schema_config_dict in config_dict.values():
         for config_id, config_dict in schema_config_dict.items():
-            action_function(extra_input, config_id, config_dict, in_out_item)
+
+            if(config_dict['error'] == True
+               and skip_errors):
+                pass
+            else:
+                action_function(extra_input, config_id,
+                                config_dict, in_out_item)
 
     return in_out_item
 
@@ -143,39 +165,56 @@ def format_to_table(action, config_id, config_dict, result_table):
         entity_id_to = entity_id_dict['from']
 
     entity_type = config_dict['type']
+
+    decorated_entity_type = entity_type
+    if(config_dict['error'] == True):
+        decorated_entity_type += ': ERRORS'
+
     schema_id = config_dict['schema_id']
 
-    if(entity_type in result_table['entities']):
+    if(decorated_entity_type in result_table['entities']):
         pass
     else:
-        result_table['entities'][entity_type] = {}
-        result_table['legend'][entity_type] = {'id': 0, 'schemas': {}}
+        result_table['entities'][decorated_entity_type] = {}
+        result_table['legend'][decorated_entity_type] = {
+            'id': 0, 'schemas': {}}
 
-    if(schema_id in result_table['legend'][entity_type]['schemas']):
+    if(schema_id in result_table['legend'][decorated_entity_type]['schemas']):
         pass
     else:
-        result_table['legend'][entity_type]['schemas'][schema_id] = result_table['legend'][entity_type]['id']
-        result_table['legend'][entity_type]['id'] += 1
+        result_table['legend'][decorated_entity_type]['schemas'][schema_id] = result_table['legend'][decorated_entity_type]['id']
+        result_table['legend'][decorated_entity_type]['id'] += 1
 
-    schema_key = result_table['legend'][entity_type]['schemas'][schema_id]
+    schema_key = result_table['legend'][decorated_entity_type]['schemas'][schema_id]
 
-    if(entity_id_to in result_table['entities'][entity_type]):
-        if(entity_id_from == result_table['entities'][entity_type][entity_id_to]['from']):
+    if(entity_id_to in result_table['entities'][decorated_entity_type]):
+        if(entity_id_from == result_table['entities'][decorated_entity_type][entity_id_to]['from']):
             pass
         else:
             print("ERROR: Multiple sources for a single entity??")
             return
 
     else:
-        result_table['entities'][entity_type][entity_id_to] = {
+        result_table['entities'][decorated_entity_type][entity_id_to] = {
             'to': entity_id_to, 'from': entity_id_from}
 
-    if('identical' in config_dict
-       and config_dict['identical'] == True):
+    action_label = ""
 
-        action = 'identical'
+    if(config_dict['identical']):
+        pass
+    else:
+        action_label = result_table['legend']['actions'][action]
 
-    result_table['entities'][entity_type][entity_id_to][schema_key] = result_table['legend']['actions'][action]
+    if('action' in config_dict):
+
+        for action_val in config_dict['action']:
+            if(action_label == ""):
+                pass
+            else:
+                action_label += ','
+            action_label += result_table['legend']['actions'][action_val]
+
+    result_table['entities'][decorated_entity_type][entity_id_to][schema_key] = action_label
 
 
 def delete_config(api_config, config_id, config_dict, _):
@@ -240,13 +279,13 @@ def replace_entities(config_dict, config_tenant_type):
     return config_dict_replaced
 
 
-def compare_config(entity_type, config_dict_from, entity_id_from, from_label, config_from_only,
-                   config_dict_to, entity_id_to, to_label, config_both):
+def compare_config(entity_type, schemas_definitions_dict,
+                   config_dict_from, entity_id_from, config_from_only,
+                   config_dict_to, entity_id_to, config_both):
 
     if(entity_type in config_dict_from['entity_config_index']):
         pass
     else:
-        print("B: ", entity_type, list(config_dict_from['entity_config_index'].keys()))
         return (config_from_only, config_both)
 
     for schema_id, schema_dict_from in config_dict_from['entity_config_index'][entity_type].items():
@@ -269,18 +308,26 @@ def compare_config(entity_type, config_dict_from, entity_id_from, from_label, co
 
             entity_id_dict = {'from': entity_id_from, 'to': entity_id_to}
 
+            error_id = None
+
+            if(schema_id in schemas_definitions_dict['ordered_schemas']):
+                error_id = 'multi_ordered'
+
+            elif(schema_id in schemas_definitions_dict['multi_object_schemas']):
+                error_id = 'multi_object'
+
             if(entity_id_in_to):
-                create_update_configs(config_both, entity_type, schema_id, entity_id_dict,
-                                      config_dict_from, schema_dict_from, entity_id_from,
-                                      config_dict_to, schema_dict_to, entity_id_to)
+                config_both = create_update_configs(config_both, entity_type, schema_id, entity_id_dict, error_id,
+                                                    config_dict_from, schema_dict_from, entity_id_from,
+                                                    config_dict_to, schema_dict_to, entity_id_to)
             else:
                 config_from_only = add_configs(config_from_only, entity_type, schema_id, 'current', schema_dict_from[entity_id_from][0],
-                                               schema_dict_from[entity_id_from], config_dict_from, entity_id_dict)
+                                               schema_dict_from[entity_id_from], config_dict_from, entity_id_dict, error_id=error_id)
 
     return (config_from_only, config_both)
 
 
-def create_update_configs(config_both, entity_type, schema_id, entity_id_dict,
+def create_update_configs(config_both, entity_type, schema_id, entity_id_dict, error_id,
                           config_dict_from, schema_dict_from, entity_id_from,
                           config_dict_to, schema_dict_to, entity_id_to):
 
@@ -299,13 +346,15 @@ def create_update_configs(config_both, entity_type, schema_id, entity_id_dict,
         identical = False
 
     config_both = add_configs(config_both, entity_type, schema_id, 'current', current_config_id,
-                              config_list_to, config_dict_to, entity_id_dict, identical)
+                              config_list_to, config_dict_to, entity_id_dict, identical, error_id)
     config_both = add_configs(config_both, entity_type, schema_id, 'source', current_config_id,
-                              config_list_from, config_dict_from, identical=identical)
+                              config_list_from, config_dict_from, identical=identical, error_id=error_id)
+
+    return config_both
 
 
 def add_configs(config_dict, entity_type, schema_id, config_tenant_type, current_config_id,
-                config_list, tenant_config_dict, entity_id_dict=None, identical=None):
+                config_list, tenant_config_dict, entity_id_dict=None, identical=False, error_id=None):
 
     if(schema_id in config_dict):
         pass
@@ -316,6 +365,8 @@ def add_configs(config_dict, entity_type, schema_id, config_tenant_type, current
         pass
     else:
         config_dict[schema_id][current_config_id] = {}
+        config_dict[schema_id][current_config_id]['action'] = []
+        config_dict[schema_id][current_config_id]['error'] = False
 
     object_id = config_list[0]
 
@@ -326,10 +377,11 @@ def add_configs(config_dict, entity_type, schema_id, config_tenant_type, current
     else:
         config_dict[schema_id][current_config_id]['entity_id_dict'] = entity_id_dict
 
-    if(identical is None):
-        pass
-    else:
-        config_dict[schema_id][current_config_id]['identical'] = identical
+    config_dict[schema_id][current_config_id]['identical'] = identical
+    if(identical == True):
+        config_dict[schema_id][current_config_id]['action'] = add_action_to_list(
+            config_dict[schema_id][current_config_id]['action'], 'identical')
+        
 
     config_dict[schema_id][current_config_id]['type'] = entity_type
     config_dict[schema_id][current_config_id]['schema_id'] = schema_id
@@ -343,9 +395,20 @@ def add_configs(config_dict, entity_type, schema_id, config_tenant_type, current
            or tenant_config_dict['configs'][object_id]['scope'] == entity_id_dict['to']):
             pass
         else:
-            print("Scope isn't the entity: ", tenant_config_dict['configs'][object_id]
-                  ['scope'], tenant_config_dict['configs'][object_id]['schemaId'])
+            config_dict[schema_id][current_config_id]['error'] = True
+            config_dict[schema_id][current_config_id]['action'] = add_action_to_list(
+                config_dict[schema_id][current_config_id]['action'], 'scope_isn_t_entity')
+
+            print("ERROR: Scope isn't the entity: ", tenant_config_dict['configs'][object_id]
+                  ['scope'], tenant_config_dict['configs'][object_id]['schemaId'], error_id)
             #print('\n', tenant_config_dict['configs'][object_id])
+
+    if(error_id is None):
+        pass
+    else:
+        config_dict[schema_id][current_config_id]['error'] = True
+        config_dict[schema_id][current_config_id]['action'] = add_action_to_list(
+            config_dict[schema_id][current_config_id]['action'], error_id)
 
     if(len(config_list) > 1):
         print(
@@ -353,6 +416,15 @@ def add_configs(config_dict, entity_type, schema_id, config_tenant_type, current
             "\n", schema_id, config_list, entity_id_dict)
 
     return config_dict
+
+
+def add_action_to_list(action_list, action):
+    if(action in action_list):
+        pass
+    else:
+        action_list.append(action)
+
+    return action_list
 
 
 def index_matched_entities(matched_entities_dict_compare):
@@ -380,18 +452,18 @@ def index_matched_entities(matched_entities_dict_compare):
 
 
 def index_unique_entities(context_params):
-    
+
     same_entity_id_index = {}
 
     for entity_id_target, entity_id_main in context_params['provided_id'].items():
-        
+
         if(entity_id_main == entity_id_target):
-            
-            same_entity_id_index[entity_id_main] = (entity_id_target, entity_id_target)
-            
+
+            same_entity_id_index[entity_id_main] = (
+                entity_id_target, entity_id_target)
+
         else:
-            
+
             print("ERROR: Unique Entity IDs should be identical on both sides")
-            
+
     return same_entity_id_index
-        

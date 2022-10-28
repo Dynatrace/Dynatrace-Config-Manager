@@ -1,23 +1,16 @@
 
 import api_v2
 import handler_api
-
-
-def extract_schemas(config, use_cache=True, cache_only=False):
-    schema_dict = handler_api.extract_basic_json(
-        config, api_v2.settings_schemas, 'settings_schemas',
-        use_cache, cache_only)
-
-    return schema_dict
+import settings_2_0_schemas
 
 
 def extract_function(config, use_cache, cache_only, analysis_object, input_params=None):
 
-    schema_dict = extract_schemas(
-        config, use_cache=False, cache_only=cache_only)
+    schema_dict = settings_2_0_schemas.extract_schemas(
+        config, use_cache=cache_only, cache_only=cache_only)
 
     _ = extract_configs(
-        item_id_query_dict_extractor, config, schema_dict, use_cache, cache_only, analysis_object)
+        schema_id_query_dict_extractor, config, schema_dict, use_cache, cache_only, analysis_object)
 
     return schema_dict
 
@@ -42,7 +35,7 @@ def extract_configs(item_id_extractor, config, input_dict, use_cache, cache_only
     return None
 
 
-def item_id_query_dict_extractor(item):
+def schema_id_query_dict_extractor(item):
 
     item_id = item['schemaId']
 
@@ -50,7 +43,9 @@ def item_id_query_dict_extractor(item):
     query_dict['schemaIds'] = item_id
     query_dict['fields'] = "objectId,scope,schemaId,value"
 
-    return item_id, query_dict
+    url_trail = None
+
+    return item_id, query_dict, url_trail
 
 
 def scope_query_dict_extractor(item):
@@ -61,4 +56,6 @@ def scope_query_dict_extractor(item):
     query_dict['scopes'] = scope
     query_dict['fields'] = "objectId,scope,schemaId,value"
 
-    return scope, query_dict
+    url_trail = None
+
+    return scope, query_dict, url_trail

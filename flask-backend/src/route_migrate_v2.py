@@ -9,9 +9,9 @@ from credentials import RequestHeadersMissingError
 import process_utils
 
 
-@app.route('/migrate_config_v2', methods=['GET'])
+@app.route('/migrate_settings_2_0', methods=['GET'])
 @cross_origin(origin='*')
-def migrate_config_v2():
+def migrate_settings_2_0():
     tenant_key_main = flask_utils.get_arg('tenant_key_main', '0')
     tenant_key_target = flask_utils.get_arg('tenant_key_target', '0')
     entity_filter = flask_utils.get_arg_json('entity_filter',

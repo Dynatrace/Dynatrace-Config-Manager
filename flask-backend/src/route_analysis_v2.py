@@ -2,25 +2,25 @@ from main_server import app
 from flask import Flask, request, jsonify
 from flask_cors import cross_origin
 import json
-import config_v2
+import settings_2_0
 from filter import AnalysisFilter
 import handler_api
 import flask_utils
 import process_match_entities
-import process_match_config
+import process_match_settings_2_0
 from process_analysis import ScopeTypeAnalysis
 import process_utils
 
 
-@app.route('/analyze_config_v2', methods=['POST'])
+@app.route('/analyze_settings_2_0', methods=['POST'])
 @cross_origin(origin='*')
-def analyze_config_v2():
+def analyze_settings_2_0():
     tenant_key = flask_utils.get_arg('tenant_key', '0')
 
     analysis_object = ScopeTypeAnalysis()
 
     done = handler_api.analyze(
-        tenant_key, config_v2.extract_function, analysis_object)
+        tenant_key, settings_2_0.extract_function, analysis_object)
 
     response = app.response_class(
         response=json.dumps(done),
@@ -64,15 +64,15 @@ def match_entities_v2():
     return response
 
 
-@app.route('/match_config_v2', methods=['GET'])
+@app.route('/match_settings_2_0', methods=['GET'])
 @cross_origin(origin='*')
-def match_config_v2():
+def match_settings_2_0():
     tenant_key_main = flask_utils.get_arg('tenant_key_main', '0')
     tenant_key_target = flask_utils.get_arg('tenant_key_target', '0')
     entity_filter = ['HOST', 'HOST_GROUP',
                      'PROCESS_GROUP', 'SERVICE', 'APPLICATION']
 
-    result = process_match_config.match_config(
+    result = process_match_settings_2_0.match_config(
         tenant_key_main, tenant_key_target, entity_filter)
 
     response = app.response_class(

@@ -31,31 +31,23 @@ def extract_entities_list(config, use_cache, cache_only, analysis_object=None):
 
         handler_api.extract_pages_from_input_list(
             config, entity_type_list_dict['types'],
-            'entities_list', api_v2.entities, item_id_query_dict_extractor,
+            'entities_list', api_v2.entities, type_query_dict_extractor,
             use_cache, cache_only, analysis_object)
 
     def get_entity_types():
-
-        def item_id_query_dict_extractor(item):
-
-            item_id = None
-            query_dict = {}
-            query_dict['pageSize'] = '500'
-
-            return item_id, query_dict
 
         use_cache_false = False
         no_analysis = None
 
         handler_api.extract_pages_from_input_list(
             config, None,
-            'entity_types', api_v2.entity_types, item_id_query_dict_extractor,
+            'entity_types', api_v2.entity_types, page_size_query_dict_extractor,
             use_cache_false, cache_only, no_analysis, get_entity_list_from_types)
 
     get_entity_types()
 
 
-def item_id_query_dict_extractor(item):
+def type_query_dict_extractor(item):
 
     item_id = item['type']
 
@@ -66,9 +58,20 @@ def item_id_query_dict_extractor(item):
     query_dict['from'] = 'now-1d'
 
     # query_dict['from'] = 'now-1y' #Default is now-3d
+    
+    url_trail = None
 
-    return item_id, query_dict
+    return item_id, query_dict, url_trail
 
+def page_size_query_dict_extractor(item):
+
+    item_id = None
+    query_dict = {}
+    query_dict['pageSize'] = '500'
+    
+    url_trail = None
+
+    return item_id, query_dict, url_trail
 
 def scope_query_dict_extractor(item):
 
@@ -79,5 +82,7 @@ def scope_query_dict_extractor(item):
     query_dict['pageSize'] = '1000'
     query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
     query_dict['from'] = 'now-1d'
+    
+    url_trail = None
 
-    return scope, query_dict
+    return scope, query_dict, url_trail

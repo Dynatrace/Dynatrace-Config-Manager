@@ -1,5 +1,5 @@
 from enum import unique
-import config_v2
+import settings_2_0
 import json
 import re
 import process_utils
@@ -9,7 +9,7 @@ def match_config(run_info, analysis_filter):
 
     _, all_tenant_config_dict = process_utils.execute_match(run_info,
                                                             LoadConfig, analysis_filter,
-                                                            config_v2.extract_function,
+                                                            settings_2_0.extract_function,
                                                             live_extract=False)
 
     return all_tenant_config_dict
@@ -19,7 +19,7 @@ def match_config_forced_live(run_info, analysis_filter):
 
     _, all_tenant_config_dict = process_utils.execute_match(run_info,
                                                             LoadConfig, analysis_filter,
-                                                            config_v2.extract_specific_scope,
+                                                            settings_2_0.extract_specific_scope,
                                                             live_extract=True)
 
     return all_tenant_config_dict

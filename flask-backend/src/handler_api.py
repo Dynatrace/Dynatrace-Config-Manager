@@ -85,7 +85,7 @@ def extract_page_for_item(config, use_cache, cache_only,
                           label, api_endpoint, item_id_query_dict_extractor, item, page_id,
                           analysis_object, post_process_function=None, nextPageKey=None):
 
-    item_id, init_query_dict = item_id_query_dict_extractor(item)
+    item_id, init_query_dict, url_trail = item_id_query_dict_extractor(item)
     cache_path = dirs.get_tenant_data_cache_sub_dir(
         config, label) + '/' + label
 
@@ -100,6 +100,10 @@ def extract_page_for_item(config, use_cache, cache_only,
     log_label = label + trail
 
     result_dict = None
+    
+    api_endpoint_complete = api_endpoint
+    if(url_trail is not None):
+        api_endpoint_complete += url_trail
 
     def extract_function():
         
@@ -111,7 +115,7 @@ def extract_page_for_item(config, use_cache, cache_only,
             query_dict['nextPageKey'] = nextPageKey
 
         return api_v2.get_json(
-            config, api_endpoint, "", query_dict)
+            config, api_endpoint_complete, "", query_dict)
 
     result_dict = cache.get_cached_data(
         use_cache, cache_only, cache_path, log_label, extract_function)
