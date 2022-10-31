@@ -1,6 +1,6 @@
 Setup:
 	Only tested in wsl2 Ubuntu
-	Python version: 3.8
+	Python version: 3.9
 	Install pipenv
 		installing pipenv can be clunky, but it's worth it
 		Don't forget to update your PATH with:
