@@ -42,7 +42,5 @@ class LoadSchemas(dict):
                 pass
 
     def get_results(self):
-        print('\n', 'ordered_schemas: ', self['ordered_schemas'])
-        print('\n', 'multi_object_schemas: ', self['multi_object_schemas'])
         
         return self

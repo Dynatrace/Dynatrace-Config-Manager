@@ -27,8 +27,6 @@ def extract_function(config, use_cache, cache_only, analysis_object, input_param
 
 def extract_schema_definitions(item_id_extractor, config, input_dict, use_cache, cache_only, analysis_object=None):
 
-    print("\n\n\n\n\n\n\n\n\n TEST TEST TEST", input_dict['items'][0], '\n\n\n', use_cache, cache_only)
-
     handler_api.extract_pages_from_input_list(
         config, input_dict['items'],
         'schema_definitions', api_v2.settings_schemas, item_id_extractor,

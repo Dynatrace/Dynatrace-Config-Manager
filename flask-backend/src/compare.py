@@ -1,3 +1,4 @@
+from deepdiff import DeepDiff
 
 def merge_lists(list_first, list_second):
     set_first = set(list_first)
@@ -5,7 +6,10 @@ def merge_lists(list_first, list_second):
 
     set_only_in_second = set_second - set_first
 
-    return list_first + list(set_only_in_second)
+    merged_list = list_first + list(set_only_in_second)
+    merged_list.sort()
+
+    return merged_list
 
 
 def compare_sorted_single_value_dict(list_key, dict_first, dict_second):
@@ -55,3 +59,13 @@ def get_top_matches(input_dict, weight_property):
             best_matches[key] = sub_dict
             
     return best_matches
+
+def is_deeply_different(object1, object2):
+    ddiff =  DeepDiff(object1, object2, ignore_order=True)
+    
+    deeply_different = True
+    
+    if(ddiff == {}):
+        deeply_different = False
+        
+    return deeply_different

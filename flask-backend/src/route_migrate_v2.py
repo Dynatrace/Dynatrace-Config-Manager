@@ -61,8 +61,6 @@ def migrate_ui_api_entity():
     done = ui_api_entity_config.copy_entity(
         run_info)
 
-    print(done)
-
     response = app.response_class(
         response=json.dumps(done),
         status=200,

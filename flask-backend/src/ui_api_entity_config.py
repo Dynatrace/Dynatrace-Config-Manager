@@ -2,11 +2,11 @@ import dirs
 import credentials
 import ui_api
 import cache
+import compare
 import json
 import entity_utils
 import process_migrate_config
 import copy
-from deepdiff import DeepDiff
 
 entity_copy_configs = {'SERVICE':
                        {'update_type': 'bundled',
@@ -54,13 +54,11 @@ def copy_entity(run_info, result_table=None, pre_migration=True):
                 all_tenant_entity_values[tenant_key] = get_entity(
                     tenant_key, tenant_dict['scope'], use_cache, cache_only)
 
-    config_main_only = {}
-    config_target_only = {}
-    config_both = {}
+    compare_config_dict = {}
+
     entity_id_main = all_tenant_entity_values[tenant_key_main]['entity_id']
     entity_id_target = all_tenant_entity_values[tenant_key_target]['entity_id']
     entity_id_dict = {'from': entity_id_main, 'to': entity_id_target}
-    entity_id_dict_inverted = {'to': entity_id_main, 'from': entity_id_target}
     entity_type = entity_utils.extract_type_from_entity_id(entity_id_target)
 
     updated_entity_data = copy.deepcopy(
@@ -77,49 +75,49 @@ def copy_entity(run_info, result_table=None, pre_migration=True):
         if(copy_property in all_tenant_entity_values[tenant_key_target]['data'][settings_key]):
             is_in_target = True
 
-        if(is_in_main == True):
+        if(is_in_main
+           and is_in_target):
 
-            if(is_in_target == True):
-                ddiff = DeepDiff(all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property],
-                                 all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property],
-                                 ignore_order=True)
+            is_deeply_different = compare.is_deeply_different(
+                all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property],
+                all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property])
 
-                identical = True
-                if(len(ddiff) > 0):
-                    identical = False
+            identical = True
+            action = process_migrate_config.ACTION_IDENTICAL
+            if(is_deeply_different):
+                identical = False
+                action = process_migrate_config.ACTION_UPDATE
 
-                config_both = process_migrate_config.add_configs(config_both, entity_type, copy_property, 'current', entity_id_target,
-                                                                 [entity_id_target], {'configs': {
-                                                                     entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
-                                                                 entity_id_dict, identical)
-                config_both = process_migrate_config.add_configs(config_both, entity_type, copy_property, 'source', entity_id_main,
-                                                                 [entity_id_main], {'configs': {
-                                                                     entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
-                                                                 entity_id_dict, identical)
-            else:
-                config_main_only = process_migrate_config.add_configs(config_main_only, entity_type, copy_property, 'current', entity_id_main,
-                                                                      [entity_id_main], {'configs': {
-                                                                          entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
-                                                                      entity_id_dict)
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, 'target', entity_id_target,
+                                                                     [entity_id_target], {'configs': {
+                                                                         entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
+                                                                     entity_id_dict, identical)
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, 'main', entity_id_main,
+                                                                     [entity_id_main], {'configs': {
+                                                                         entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
+                                                                     entity_id_dict, identical)
+        elif(is_in_main):
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_ADD, entity_type, copy_property, 'main', entity_id_main,
+                                                                     [entity_id_main], {'configs': {
+                                                                         entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
+                                                                     entity_id_dict)
 
             updated_entity_data[settings_key][
                 copy_property] = all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]
 
-        else:
+        elif(is_in_target):
 
-            if(is_in_target == True):
+            is_deeply_different = compare.is_deeply_different(
+                default_value,
+                all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property])
 
-                ddiff = DeepDiff(default_value,
-                                 all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property],
-                                 ignore_order=True)
+            if(is_deeply_different):
+                compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_DELETE, entity_type, copy_property, 'target', entity_id_target,
+                                                                         [entity_id_target], {'configs': {
+                                                                             entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
+                                                                         entity_id_dict)
 
-                if(len(ddiff) > 0):
-                    config_target_only = process_migrate_config.add_configs(config_target_only, entity_type, copy_property, 'current', entity_id_target,
-                                                                            [entity_id_target], {'configs': {
-                                                                                entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
-                                                                            entity_id_dict_inverted)
-
-                    updated_entity_data[settings_key][copy_property] = default_value
+                updated_entity_data[settings_key][copy_property] = default_value
 
     if(pre_migration == True):
         pass
@@ -128,9 +126,8 @@ def copy_entity(run_info, result_table=None, pre_migration=True):
             tenant_key_target, all_tenant_entity_values[tenant_key_target]['entity_id'], updated_entity_data)
         print(update_response)
 
-    print(config_main_only)
     result_table = process_migrate_config.format_all_to_table(
-        config_target_only, config_main_only, config_both, result_table)
+        compare_config_dict, result_table)
 
     return result_table
 
@@ -176,8 +173,6 @@ def update_entity(tenant_key, entity_id, payload):
 
     url_trail = get_entity_url_trail(entity_type, entity_id)
     print('updating entity')
-
-    print(type(payload), payload)
     print(json.dumps(payload))
 
     return ui_api.put(

@@ -18,9 +18,9 @@ export default function MigrateEntities() {
         if (extractedData
             && 'legend' in extractedData) {
             components.push(
-                <Typography>Action Legend: </Typography>
+                <Typography>Status Legend: </Typography>
             )
-            for (const [actionLetter, action] of Object.entries(extractedData['legend']['actions'])) {
+            for (const [actionLetter, action] of Object.entries(extractedData['legend']['status'])) {
                 components.push(
                     <Typography sx={{ ml: 1 }}>{actionLetter + ": " + action}</Typography>
                 )
