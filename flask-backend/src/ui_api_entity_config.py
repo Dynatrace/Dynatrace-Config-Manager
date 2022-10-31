@@ -148,7 +148,7 @@ def get_entity(tenant_key, entity_id, use_cache, cache_only):
     log_label = label + '/' + filename
 
     cache_path = dirs.get_tenant_data_cache_sub_dir(config, label)
-    cache_path += '/' + filename + '.json'
+    cache_path = dirs.get_file_path(cache_path, filename)
 
     def extract_function():
         url_trail = get_entity_url_trail(entity_type, entity_id)

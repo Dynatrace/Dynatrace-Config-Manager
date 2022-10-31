@@ -9,6 +9,7 @@ flask = "*"
 flask-cors = "*"
 autodynatrace = "*"
 deepdiff = "*"
+colorama = "*"
 
 [dev-packages]
 

@@ -29,7 +29,7 @@ def analyze(tenant_key, extract_function, analysis_object, input_params=None):
 def extract_basic_json(config, api_endpoint, label, use_cache, cache_only):
 
     cache_path = dirs.get_tenant_data_cache_sub_dir(config, label)
-    cache_path += '/' + label + '.json'
+    cache_path = dirs.get_file_path(cache_path, label)
 
     def extract_function():
         return api_v2.get_json(config, api_endpoint, "")
@@ -87,7 +87,7 @@ def extract_page_for_item(config, use_cache, cache_only,
 
     item_id, init_query_dict, url_trail = item_id_query_dict_extractor(item)
     cache_path = dirs.get_tenant_data_cache_sub_dir(
-        config, label) + '/' + label
+        config, label)
 
     trail = ''
 
@@ -96,7 +96,7 @@ def extract_page_for_item(config, use_cache, cache_only,
 
     trail += '_page_' + str(page_id)
 
-    cache_path += trail + '.json'
+    cache_path = dirs.get_file_path(cache_path, label+trail)
     log_label = label + trail
 
     result_dict = None
