@@ -1,5 +1,4 @@
-from main_server import app
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint, Response
 from flask_cors import cross_origin
 import json
 import flask_utils
@@ -8,8 +7,9 @@ import ui_api_entity_config
 from credentials import RequestHeadersMissingError
 import process_utils
 
+blueprint_route_migrate_v2 = Blueprint('blueprint_route_migrate_v2', __name__)
 
-@app.route('/migrate_settings_2_0', methods=['GET'])
+@blueprint_route_migrate_v2.route('/migrate_settings_2_0', methods=['GET'])
 @cross_origin(origin='*')
 def migrate_settings_2_0():
     tenant_key_main = flask_utils.get_arg('tenant_key_main', '0')
@@ -30,11 +30,11 @@ def migrate_settings_2_0():
     try:
         result = process_migrate_config.migrate_config(run_info, 
             tenant_key_main, tenant_key_target, analysis_filter, active_rules, context_params, pre_migration)
-    except RequestHeadersMissingError as err:
+    except (RequestHeadersMissingError, OverflowError) as err:
         result = {"error": str(err)}
         return_status = 400
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(result),
         status=return_status,
         mimetype='application/json'
@@ -43,7 +43,7 @@ def migrate_settings_2_0():
     return response
 
 
-@app.route('/migrate_ui_api_entity', methods=['POST'])
+@blueprint_route_migrate_v2.route('/migrate_ui_api_entity', methods=['POST'])
 @cross_origin(origin='*')
 def migrate_ui_api_entity():
     tenant_key_main = flask_utils.get_arg('tenant_key_main', '0')
@@ -61,7 +61,7 @@ def migrate_ui_api_entity():
     done = ui_api_entity_config.copy_entity(
         run_info)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(done),
         status=200,
         mimetype='application/json'

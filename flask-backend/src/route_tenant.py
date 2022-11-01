@@ -1,18 +1,17 @@
-from main_server import app
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint, Response
 from flask_cors import cross_origin
-import threading
 import json
 import tenant
 
+blueprint_route_tenant = Blueprint('blueprint_route_tenant', __name__)
 
-@app.route('/tenant_list', methods=['GET'])
+@blueprint_route_tenant.route('/tenant_list', methods=['GET'])
 @cross_origin(origin='*')
 def tenant_list_get():
     
     tenant_list = tenant.load_tenant_list()
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(tenant_list),
         status=200,
         mimetype='application/json'
@@ -21,14 +20,14 @@ def tenant_list_get():
     return response
 
 
-@app.route('/tenant_list', methods=['POST'])
+@blueprint_route_tenant.route('/tenant_list', methods=['POST'])
 @cross_origin(origin='*')
 def tenant_list_post():
     payload = json.loads(request.data.decode("utf-8"))
 
     tenant.save_tenant_list(payload)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(payload),
         status=200,
         mimetype='application/json'

@@ -1,3 +1,5 @@
+from unittest import result
+from urllib.error import HTTPError
 import dirs
 import credentials
 import ui_api
@@ -7,6 +9,7 @@ import json
 import entity_utils
 import process_migrate_config
 import copy
+import requests
 
 entity_copy_configs = {'SERVICE':
                        {'update_type': 'bundled',
@@ -22,15 +25,42 @@ entity_copy_configs = {'SERVICE':
 
 def copy_entity_standalone(run_info,  pre_migration=True):
 
+    result_table = None
+
     result_table = copy_entity(
         run_info, result_table=None, pre_migration=pre_migration)
-
+    
     flat_result_table = process_migrate_config.flatten_results(result_table)
 
     return flat_result_table
 
 
 def copy_entity(run_info, result_table=None, pre_migration=True):
+        
+    try:
+        result_table = do_copy_entity(run_info, result_table, pre_migration)
+    except requests.exceptions.HTTPError as err:
+        result_table = gen_http_error_message(result_table, err)
+        
+    return result_table
+
+def gen_http_error_message(result_table, err):
+    
+    message = ''
+    
+    if(err.response.status_code == 401):
+        message = "Request Headers for UIApi calls are not valid or expired: "
+    else:
+        message = "UIApi Request failed with an unexpected code: "
+
+    message += '\n'
+    message += 'Error message: '
+    message += str(err)
+    result_table = process_migrate_config.add_error_message(result_table, message)
+    
+    return result_table
+
+def do_copy_entity(run_info, result_table=None, pre_migration=True):
     use_cache = False
     cache_only = False
     tenant_key_main = run_info['tenant_key_main']
@@ -131,7 +161,6 @@ def copy_entity(run_info, result_table=None, pre_migration=True):
 
     return result_table
 
-
 def get_entity(tenant_key, entity_id, use_cache, cache_only):
 
     entity_type = entity_utils.extract_type_from_entity_id(entity_id)
@@ -144,11 +173,10 @@ def get_entity(tenant_key, entity_id, use_cache, cache_only):
 
     config = credentials.get_ui_api_call_credentials(tenant_key)
     label = 'ui_api'
-    filename = entity_type + '_' + entity_id
-    log_label = label + '/' + filename
+    log_label = label + '/' + entity_type + '_' +  entity_id
 
     cache_path = dirs.get_tenant_data_cache_sub_dir(config, label)
-    cache_path = dirs.get_file_path(cache_path, filename)
+    cache_path = dirs.get_file_path(cache_path, entity_id)
 
     def extract_function():
         url_trail = get_entity_url_trail(entity_type, entity_id)

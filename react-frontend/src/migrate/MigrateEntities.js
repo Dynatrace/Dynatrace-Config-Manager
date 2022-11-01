@@ -5,6 +5,8 @@ import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterCont
 import ExtractedTable from '../extraction/ExtractedTable';
 import MatchButton from '../match/MatchButton';
 
+const error_color = 'error.dark'
+
 export default function MigrateEntities() {
 
     const [extractedData, setExtractedData] = React.useState({});
@@ -16,9 +18,28 @@ export default function MigrateEntities() {
 
 
         if (extractedData
+            && 'errors' in extractedData) {
+
+            components.push(
+                <Typography sx={{ color: error_color, mt: 1 }}>Error Messages: </Typography>
+            )
+            let messageNumber = 0
+            for (const message of extractedData['errors']) {
+                messageNumber++
+                const line_break = '\n'
+                components.push(
+                    <Typography sx={{ color: error_color, mt: 0.5, ml: 1 }} style={{whiteSpace: 'pre-line'}}>Message #{messageNumber}:</Typography>
+                )
+                components.push(
+                    <Typography sx={{ color: error_color, ml: 2 }} style={{whiteSpace: 'pre-line'}}>{message}</Typography>
+                )
+            }
+        }
+
+        if (extractedData
             && 'legend' in extractedData) {
             components.push(
-                <Typography>Status Legend: </Typography>
+                <Typography sx={{ mt: 1 }}>Status Legend: </Typography>
             )
             for (const [actionLetter, action] of Object.entries(extractedData['legend']['status'])) {
                 components.push(

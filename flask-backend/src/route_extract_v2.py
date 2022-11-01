@@ -1,5 +1,4 @@
-from main_server import app
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint, Response
 from flask_cors import cross_origin
 import json
 import settings_2_0
@@ -8,8 +7,9 @@ import entity_v2
 import handler_api
 import flask_utils
 
+blueprint_route_extract_v2 = Blueprint('blueprint_route_extract_v2', __name__)
 
-@app.route('/extract_settings_2_0', methods=['POST'])
+@blueprint_route_extract_v2.route('/extract_settings_2_0', methods=['POST'])
 @cross_origin(origin='*')
 def extract_settings_2_0():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
@@ -18,7 +18,7 @@ def extract_settings_2_0():
     done = handler_api.pull(tenant_key, settings_2_0_schemas.extract_function, use_cache)
     done = handler_api.pull(tenant_key, settings_2_0.extract_function, use_cache)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(done),
         status=200,
         mimetype='application/json'
@@ -26,7 +26,7 @@ def extract_settings_2_0():
 
     return response
 
-@app.route('/extract_settings_2_0_scope', methods=['POST'])
+@blueprint_route_extract_v2.route('/extract_settings_2_0_scope', methods=['POST'])
 @cross_origin(origin='*')
 def extract_settings_2_0_scope():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
@@ -35,7 +35,7 @@ def extract_settings_2_0_scope():
 
     done = handler_api.pull(tenant_key, settings_2_0.extract_specific_scope, use_cache, input_params=scope)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(done),
         status=200,
         mimetype='application/json'
@@ -44,7 +44,7 @@ def extract_settings_2_0_scope():
     return response
 
 
-@app.route('/extract_entity_v2', methods=['POST'])
+@blueprint_route_extract_v2.route('/extract_entity_v2', methods=['POST'])
 @cross_origin(origin='*')
 def extract_entity_v2():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
@@ -52,7 +52,7 @@ def extract_entity_v2():
 
     done = handler_api.pull(tenant_key, entity_v2.extract_function, use_cache)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(done),
         status=200,
         mimetype='application/json'

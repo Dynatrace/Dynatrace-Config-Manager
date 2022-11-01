@@ -32,7 +32,7 @@ def init_headers_config(tenant_key):
 
     headers = get_init_headers()
 
-    config, headers = extract_config(tenant_data, headers)
+    config, headers = extract_config(tenant_key, tenant_data, headers)
 
     return config, headers, tenant_data
 
@@ -115,10 +115,11 @@ def add_content_type(headers, payload_type):
     return headers
 
 
-def extract_config(tenant_data, headers):
+def extract_config(tenant_key, tenant_data, headers):
 
     config = tenant_data
 
+    config['tenant_key'] = str(tenant_key)
     config['tenant'] = re.search(r"\/\/(.*?)\/", tenant_data['url']).group(1)
 
     config_keys = {

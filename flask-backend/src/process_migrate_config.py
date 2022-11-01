@@ -139,10 +139,11 @@ def format_all_to_table(compare_config_dict, result_table=None):
 
 def flatten_results(result_table):
 
-    for entity_type in result_table['entities'].keys():
-        type_dict = result_table['entities'][entity_type]
-        result_table['entities'][entity_type] = {
-            'items': list(type_dict.values())}
+    if('entities' in result_table):
+        for entity_type in result_table['entities'].keys():
+            type_dict = result_table['entities'][entity_type]
+            result_table['entities'][entity_type] = {
+                'items': list(type_dict.values())}
 
     return result_table
 
@@ -217,6 +218,19 @@ def format_to_table(config_dict, result_table):
 
     result_table['entities'][decorated_entity_type][entity_id_target][schema_key] = status_label
 
+    return result_table
+
+def add_error_message(result_table, message):
+    if (result_table is None):
+        result_table = {}
+        
+    if('errors' in result_table):
+        pass
+    else:
+        result_table['errors'] = []
+        
+    result_table['errors'].append(message)
+    
     return result_table
 
 

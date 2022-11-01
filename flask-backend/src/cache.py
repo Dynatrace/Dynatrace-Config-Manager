@@ -17,17 +17,17 @@ def get_cached_data(use_cache, cache_only, cache_path, log_label, extract_functi
                 else:
                     data = f.read()
                     
-            print("Loaded from cache: ", log_label, cache_path)
+            print("Loaded from cache: ", log_label)
             extract_data_from_api = False
 
         elif(cache_only):
-            print("Not part of cache", log_label, cache_path)
+            print("Not part of cache", log_label, '\n', cache_path)
             extract_data_from_api = False
             data = None
                
 
     if(extract_data_from_api == True):
-        print("Extracting:        ", log_label, cache_path)
+        print("Extracting:        ", log_label)
         
         data = extract_function()
 

@@ -19,7 +19,6 @@ export default function TenantSelector({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
     }, [setTenantKey])
 
     const tenantItems = React.useMemo(() => {
-        console.log("setTenantKey")
         const tenantItemList = []
         tenantList.forEach((tenant, index) => {
             tenantItemList.push(

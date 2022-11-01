@@ -1,12 +1,12 @@
-from main_server import app
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint, Response
 from flask_cors import cross_origin
 import json
 import ui_api_entity_config
 import flask_utils
 
+blueprint_route_extract_ui_api = Blueprint('blueprint_route_extract_ui_api', __name__)
 
-@app.route('/extract_ui_api_entity', methods=['POST'])
+@blueprint_route_extract_ui_api.route('/extract_ui_api_entity', methods=['POST'])
 @cross_origin(origin='*')
 def extract_ui_api_entity():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
@@ -16,7 +16,7 @@ def extract_ui_api_entity():
     done = ui_api_entity_config.get_entity(
         tenant_key, entity_id, use_cache, cache_only=False)
 
-    response = app.response_class(
+    response = Response(
         response=json.dumps(done),
         status=200,
         mimetype='application/json'
