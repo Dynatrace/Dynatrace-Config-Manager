@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template
 from flask_cors import CORS
 from route_extract_ui_api import blueprint_route_extract_ui_api
 from route_analysis_v2 import blueprint_route_analysis_v2
