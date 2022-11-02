@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "DT Config Manager",
+  "name": "Dynatrace Config Manager",
   "icons": [
     {
       "src": "favicon.ico",
