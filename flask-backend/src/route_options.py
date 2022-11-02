@@ -1,98 +1,77 @@
-from main_server import app
-from flask import Flask, request, jsonify
+from flask import Flask, request, Blueprint
 from flask_cors import cross_origin
 import json
 import options
+import response_utils
+
+blueprint_route_options = Blueprint('blueprint_route_options', __name__)
 
 
-@app.route('/execution_options', methods=['GET'])
+@blueprint_route_options.route('/execution_options', methods=['GET'])
 @cross_origin(origin='*')
 def execution_options_get():
 
-    execution_options = options.load_execution_options()
+    def call_process():
+        execution_options = options.load_execution_options()
+        return execution_options
 
-    response = app.response_class(
-        response=json.dumps(execution_options),
-        status=200,
-        mimetype='application/json'
-    )
-
-    return response
+    return response_utils.call_and_get_response(call_process)
 
 
-@app.route('/execution_options', methods=['POST'])
+@blueprint_route_options.route('/execution_options', methods=['POST'])
 @cross_origin(origin='*')
 def execution_options_post():
     payload = json.loads(request.data.decode("utf-8"))
 
-    options.save_execution_options(payload)
+    def call_process():
 
-    response = app.response_class(
-        response=json.dumps(payload),
-        status=200,
-        mimetype='application/json'
-    )
+        options.save_execution_options(payload)
+        return payload
 
-    return response
+    return response_utils.call_and_get_response(call_process)
 
 
-@app.route('/global_settings', methods=['GET'])
+@blueprint_route_options.route('/global_settings', methods=['GET'])
 @cross_origin(origin='*')
 def global_settings_get():
 
-    global_settings = options.load_global_settings()
+    def call_process():
+        global_settings = options.load_global_settings()
+        return global_settings
 
-    response = app.response_class(
-        response=json.dumps(global_settings),
-        status=200,
-        mimetype='application/json'
-    )
-
-    return response
+    return response_utils.call_and_get_response(call_process)
 
 
-@app.route('/global_settings', methods=['POST'])
+@blueprint_route_options.route('/global_settings', methods=['POST'])
 @cross_origin(origin='*')
 def global_settings_post():
     payload = json.loads(request.data.decode("utf-8"))
 
-    options.save_global_settings(payload)
+    def call_process():
+        options.save_global_settings(payload)
+        return payload
 
-    response = app.response_class(
-        response=json.dumps(payload),
-        status=200,
-        mimetype='application/json'
-    )
-
-    return response
+    return response_utils.call_and_get_response(call_process)
 
 
-@app.route('/entity_filter', methods=['GET'])
+@blueprint_route_options.route('/entity_filter', methods=['GET'])
 @cross_origin(origin='*')
 def entity_filter_get():
 
-    global_settings = options.load_entity_filter()
+    def call_process():
+        entity_filter = options.load_entity_filter()
+        return entity_filter
 
-    response = app.response_class(
-        response=json.dumps(global_settings),
-        status=200,
-        mimetype='application/json'
-    )
-
-    return response
+    return response_utils.call_and_get_response(call_process)
 
 
-@app.route('/entity_filter', methods=['POST'])
+@blueprint_route_options.route('/entity_filter', methods=['POST'])
 @cross_origin(origin='*')
 def entity_filter_post():
     payload = json.loads(request.data.decode("utf-8"))
 
-    options.save_entity_filter(payload)
+    def call_process():
+        options.save_entity_filter(payload)
+        return payload
 
-    response = app.response_class(
-        response=json.dumps(payload),
-        status=200,
-        mimetype='application/json'
-    )
-
-    return response
+    return response_utils.call_and_get_response(call_process)

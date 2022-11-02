@@ -48,7 +48,6 @@ function useCompleteSearchParams() {
 
             let completedSearchParams = {}
 
-            console.log(searchParams)
             if (searchParams) {
                 completedSearchParams = { ...searchParams }
             }
@@ -75,10 +74,7 @@ function useCompleteSearchParams() {
                         }
                     })
 
-                    console.log(entityFilter)
-                    console.log(entityFilter.applyMigrationChecked)
                     if (entityFilter.applyMigrationChecked) {
-                        console.log("@@@")
                         setEntityFilterApplyMigrationChecked(false)
                         completedSearchParams['pre_migration'] = false
                     }

@@ -53,8 +53,6 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction) {
     if (thenFunction instanceof Function) {
         const validationPromise = validateReturnCodePromise(fetchPromise, api_method, thenFunction)
 
-        console.log(validationPromise)
-
         return validationPromise
             .catch((error) => {
                 alert("Error Backend Api: " + api_method + "\n" + error)
@@ -73,7 +71,6 @@ function validateReturnCodePromise(fetchPromise, api_method, thenFunction) {
 
             const throwHTTPError = (responseTextPromise) => {
                 responseTextPromise.then(responseText => {
-                    console.log(responseText)
                     throw new Error("Http Status: " + response.status + "\nBody: " + responseText)
                 })
                 .catch((error) => {

@@ -55,7 +55,7 @@ def type_query_dict_extractor(item):
     query_dict['entitySelector'] = 'type("' + item_id + '")'
     query_dict['pageSize'] = '1000'
     query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
-    query_dict['from'] = 'now-1d'
+    query_dict['from'] = 'now-2w'
 
     # query_dict['from'] = 'now-1y' #Default is now-3d
     
@@ -81,7 +81,7 @@ def scope_query_dict_extractor(item):
     query_dict['entitySelector'] = 'entityId("' + scope + '")'
     query_dict['pageSize'] = '1000'
     query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
-    query_dict['from'] = 'now-1d'
+    query_dict['from'] = 'now-2M'
     
     url_trail = None
 

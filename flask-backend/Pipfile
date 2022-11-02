@@ -9,6 +9,9 @@ flask = "*"
 flask-cors = "*"
 autodynatrace = "*"
 deepdiff = "*"
+colorama = "*"
+cx-freeze = "*"
+charset-normalizer = "*"
 
 [dev-packages]
 

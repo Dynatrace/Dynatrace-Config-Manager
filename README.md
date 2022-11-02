@@ -15,15 +15,15 @@ I am working towards a "one click migration" for all oneangents and and of their
 ### Access Tokens
 It is required that you use an access token with these scopes:
 * Minimal: Read entities & Read settings
-* Target Env, at the time of migration: Read entities & Read settings & Write entities & Write settings
+* Target Env, at the time of migration: Read entities & Read settings & Write settings
 
 ### Functionalities (Animated Gifs):
 
 ##### Match entities between 2 tenants
-![alt text](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/entityFilter_2.gif "Match entities between 2 tenants")
+![alt text](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/documentation/gifs/entityFilter_2.gif "Match entities between 2 tenants")
 
 ##### Compare entities configurations (by schema)
-![alt text](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/Pre-Migrate_v1.gif "Compare entities configurations")
+![alt text](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/documentation/gifs/Pre-Migrate_v1.gif "Compare entities configurations")
 
 
 ### Setup Steps <a name = "setup-steps"></a>

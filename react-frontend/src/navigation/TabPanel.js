@@ -57,7 +57,6 @@ export default function BasicTabs() {
   };
 
   const [tabs, tabPanels] = React.useMemo(() => {
-    console.log("TABS TABS")
     const outTabs = []
     const outTabPanels = []
 

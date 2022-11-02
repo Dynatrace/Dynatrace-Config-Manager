@@ -1,10 +1,8 @@
 import re
 import time
 import tenant
+from exception import RequestHeadersMissingError
 
-
-class RequestHeadersMissingError(Exception):
-    pass
 
 def get_api_call_credentials(tenant_key, payload_type='application/json'):
 
@@ -32,7 +30,7 @@ def init_headers_config(tenant_key):
 
     headers = get_init_headers()
 
-    config, headers = extract_config(tenant_data, headers)
+    config, headers = extract_config(tenant_key, tenant_data, headers)
 
     return config, headers, tenant_data
 
@@ -42,7 +40,8 @@ def extract_headers(tenant_data, headers):
     try:
         lines = tenant_data['headers'].splitlines()
     except KeyError:
-        raise RequestHeadersMissingError("UI_API Request Headers not specified")
+        raise RequestHeadersMissingError(
+            "UI_API Request Headers not specified")
 
     # Strips the newline character
     header_prefixes = {
@@ -54,7 +53,7 @@ def extract_headers(tenant_data, headers):
 
     for line in lines:
         for key, prefix in header_prefixes.items():
-            if(line.startswith(prefix)):
+            if (line.startswith(prefix)):
                 headers[key] = line.partition(prefix)[2].rstrip()
                 continue
 
@@ -65,20 +64,20 @@ def create_util_config(config, headers):
 
     config['headers'] = headers
 
-    if('timeframe' not in config):
+    if ('timeframe' not in config):
         current_time = int(time.time()*1000)
         days = 1
         previous_time = current_time - (1000 * 60 * 60 * 24 * days)
         config['timeframe'] = "custom" + \
             str(previous_time) + "to" + str(current_time)
 
-    if('gtf' not in config):
+    if ('gtf' not in config):
         config['gtf'] = "l_2_DAYS"
 
-    if('throttle_delay' not in config):
+    if ('throttle_delay' not in config):
         config['throttle_delay'] = 1
 
-    if('purepath_limit' not in config):
+    if ('purepath_limit' not in config):
         config['purepath_limit'] = 3000
 
     return config
@@ -115,10 +114,11 @@ def add_content_type(headers, payload_type):
     return headers
 
 
-def extract_config(tenant_data, headers):
+def extract_config(tenant_key, tenant_data, headers):
 
     config = tenant_data
 
+    config['tenant_key'] = str(tenant_key)
     config['tenant'] = re.search(r"\/\/(.*?)\/", tenant_data['url']).group(1)
 
     config_keys = {
@@ -126,7 +126,7 @@ def extract_config(tenant_data, headers):
     }
 
     for key, config_key in config_keys.items():
-        if(config_key in tenant_data):
+        if (config_key in tenant_data):
             headers[key] = tenant_data[config_key]
 
     return config, headers

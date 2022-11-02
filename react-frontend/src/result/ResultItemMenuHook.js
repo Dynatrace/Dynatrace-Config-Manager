@@ -13,7 +13,6 @@ export default function useResultItemMenu(setOpenDrawer, data) {
   const { tenant } = useCurrentTenant()
 
   React.useMemo(() => {
-    console.log('data changed', contextMenu, contextNode)
     if (contextMenu !== null) {
       setContextMenu(null)
     }
@@ -94,7 +93,6 @@ export default function useResultItemMenu(setOpenDrawer, data) {
 
 
   React.useMemo(() => {
-    console.log("SET CONTEXT MENU")
 
     setContextMenu(
       <Menu
