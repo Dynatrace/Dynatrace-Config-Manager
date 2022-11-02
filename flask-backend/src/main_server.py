@@ -9,7 +9,7 @@ from route_tenant import blueprint_route_tenant
 
 FLASK_PORT = 5004
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./')
 app.register_blueprint(blueprint_route_extract_ui_api)
 app.register_blueprint(blueprint_route_analysis_v2)
 app.register_blueprint(blueprint_route_extract_v2)
