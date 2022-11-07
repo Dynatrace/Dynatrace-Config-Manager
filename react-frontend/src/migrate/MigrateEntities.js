@@ -28,10 +28,10 @@ export default function MigrateEntities() {
                 messageNumber++
                 const line_break = '\n'
                 components.push(
-                    <Typography sx={{ color: error_color, mt: 0.5, ml: 1 }} style={{whiteSpace: 'pre-line'}}>Message #{messageNumber}:</Typography>
+                    <Typography sx={{ color: error_color, mt: 0.5, ml: 1 }} style={{ whiteSpace: 'pre-line' }}>Message #{messageNumber}:</Typography>
                 )
                 components.push(
-                    <Typography sx={{ color: error_color, ml: 2 }} style={{whiteSpace: 'pre-line'}}>{message}</Typography>
+                    <Typography sx={{ color: error_color, ml: 2 }} style={{ whiteSpace: 'pre-line' }}>{message}</Typography>
                 )
             }
         }
@@ -54,13 +54,18 @@ export default function MigrateEntities() {
             for (const [type, entityData] of Object.entries(extractedData['entities'])) {
 
                 let schemaComponents = []
-                schemaComponents.push(
-                    <Typography sx={{ mt: 1 }}>{type + " Schema Legend:"}</Typography>
-                )
-                for (const [schemaLabel, schema_key] of Object.entries(extractedData['legend'][type]['schemas'])) {
+
+                if (type in extractedData['legend']
+                    && 'schemas' in extractedData['legend'][type]) {
+
                     schemaComponents.push(
-                        <Typography sx={{ ml: 1 }}>{schema_key + ": " + schemaLabel}</Typography>
+                        <Typography sx={{ mt: 1 }}>{type + " Schema Legend:"}</Typography>
                     )
+                    for (const [schemaLabel, schema_key] of Object.entries(extractedData['legend'][type]['schemas'])) {
+                        schemaComponents.push(
+                            <Typography sx={{ ml: 1 }}>{schema_key + ": " + schemaLabel}</Typography>
+                        )
+                    }
                 }
 
                 components.push(

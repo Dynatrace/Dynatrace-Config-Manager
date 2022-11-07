@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
+import { IconButton } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 const flexSizes = {
     'default': 4,
@@ -16,13 +18,17 @@ const flexSizes = {
     'context_root': 12,
     'host': 10,
     'relative_url': 16,
+    'scope': 30,
     'from': 30,
     'to': 30,
+    'schemaId': 30,
 }
 const minWidthMap = {
     'default': 50,
+    'scope': 300,
     'from': 300,
     'to': 300,
+    'schemaId': 300,
 }
 
 const autoHiddenColumns = {
@@ -30,9 +36,11 @@ const autoHiddenColumns = {
     'service_id': true,
 }
 
-const orderedColumns = [
+const keyColumns = [
+    'scope',
     'from',
-    'to'
+    'to',
+    'schemaId'
 ]
 
 export default function ExtractedTable({ data }) {
@@ -43,21 +51,49 @@ export default function ExtractedTable({ data }) {
             return [null, null]
         }
 
+
+        const onContextMenu = (e, cell) => {
+            console.log(cell['value']);
+        };
+
         let columns = []
+        columns.push({
+            field: "ctxMenuBtn", headerName: "", minWidth: minWidthMap['default'], flex: flexSizes['default'], sortable: true, type: "string", hide: false,
+            renderCell: (cellValues) => {
+                let value = ""
+                if (cellValues) {
+                    value = cellValues
+                }
+                return (
+                    <IconButton
+                        variant="outlined"
+                        color="primary"
+                        onClick={(event) => {
+                            onContextMenu(event, value)
+                        }}
+                    >
+                        <MoreHorizIcon />
+                    </IconButton>
+                )
+            }
+        })
         let column_exist_hash = {}
         let rows = []
         let id = 0
 
         for (const row_data of Object.values(data['items'])) {
+            
 
-            for (const column_key of orderedColumns) {
-                if(column_key in row_data) {
+            let keyObject = {}
+            for (const column_key of keyColumns) {
+                if (column_key in row_data) {
                     [columns, column_exist_hash] = add_column(columns, column_exist_hash, column_key)
+                    keyObject[column_key] = row_data[column_key]
                 }
             }
 
             for (const column_key of Object.keys(row_data)) {
-                
+
                 [columns, column_exist_hash] = add_column(columns, column_exist_hash, column_key)
             }
 
@@ -66,6 +102,8 @@ export default function ExtractedTable({ data }) {
                 row['the_id'] = row['id']
                 row['id'] = id
             }
+            row['ctxMenuBtn'] = keyObject
+
             rows.push({ id, ...row })
             id += 1
         }
@@ -75,6 +113,7 @@ export default function ExtractedTable({ data }) {
     }, [data])
 
     const grid = React.useMemo(() => {
+
         if (rows && rows.length > 0) {
             return (
                 <DataGrid
@@ -100,7 +139,7 @@ const add_column = (columns, column_exist_hash, column_key) => {
         }
 
         let minWidth = minWidthMap['default']
-        if(column_key in minWidthMap) {
+        if (column_key in minWidthMap) {
             minWidth = minWidthMap[column_key]
         }
 
