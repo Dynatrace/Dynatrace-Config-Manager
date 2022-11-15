@@ -174,25 +174,23 @@ def format_to_table(config_dict, result_table):
         decorated_entity_type += ': ERRORS'
 
     schema_id = config_dict['schema_id']
-    
+
     is_unique_entity = False
     row_key = entity_id_target
-    print(entity_id_target, process_utils.UNIQUE_ENTITY_LIST)
+
     if (entity_id_target in process_utils.UNIQUE_ENTITY_LIST):
         is_unique_entity = True
         row_key = entity_id_target + "_" + schema_id
-        print(row_key)
 
     if (decorated_entity_type in result_table['entities']):
         pass
     else:
         result_table['entities'][decorated_entity_type] = {}
-        if(is_unique_entity):
+        if (is_unique_entity):
             pass
         else:
             result_table['legend'][decorated_entity_type] = {
                 'id': 0, 'schemas': {}}
-
 
     if (row_key in result_table['entities'][decorated_entity_type]):
         if (entity_id_main == result_table['entities'][decorated_entity_type][row_key]['from']):
@@ -225,8 +223,16 @@ def format_to_table(config_dict, result_table):
                 status_label += ','
             status_label += result_table['legend']['status'][status_val]
 
+    result_table['entities'][decorated_entity_type][row_key]['unique'] = is_unique_entity
+
     if (is_unique_entity):
         result_table['entities'][decorated_entity_type][row_key]['status'] = status_label
+        if ('main' in config_dict):
+            result_table['entities'][decorated_entity_type][row_key]['data_main'] = json.dumps(
+                config_dict['main'])
+        if ('target' in config_dict):
+            result_table['entities'][decorated_entity_type][row_key]['data_target'] = json.dumps(
+                config_dict['target'])
     else:
 
         if (schema_id in result_table['legend'][decorated_entity_type]['schemas']):
@@ -237,6 +243,23 @@ def format_to_table(config_dict, result_table):
 
         schema_key = result_table['legend'][decorated_entity_type]['schemas'][schema_id]
         result_table['entities'][decorated_entity_type][row_key][schema_key] = status_label
+
+        if('data' in result_table['entities'][decorated_entity_type][row_key]):
+            pass
+        else:
+            result_table['entities'][decorated_entity_type][row_key]['data'] = {}
+            
+        if(schema_key in result_table['entities'][decorated_entity_type][row_key]['data']):
+            pass
+        else:
+            result_table['entities'][decorated_entity_type][row_key]['data'][schema_key] = {}
+
+        if ('main' in config_dict):
+            result_table['entities'][decorated_entity_type][row_key]['data'][schema_key]['data_main'] = json.dumps(
+                config_dict['main'])
+        if ('target' in config_dict):
+            result_table['entities'][decorated_entity_type][row_key]['data'][schema_key]['data_target'] = json.dumps(
+                config_dict['target'])
 
     return result_table
 

@@ -25,5 +25,5 @@ def my_index():
 
 
 if (__name__ == "__main__"):
-    print(FLASK_PORT)
+    print("Running on port:", FLASK_PORT)
     app.run(port=FLASK_PORT)

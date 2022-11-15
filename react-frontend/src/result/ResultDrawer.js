@@ -47,10 +47,10 @@ export default function ResultDrawer({ openDrawer, setOpenDrawer, children }) {
     const container = undefined;
 
     const alwaysShowAndScrollable = React.useMemo(() => {
-        if(openDrawer) {
+        if (openDrawer) {
             return {}
         } else {
-            return {'position': 'absolute'}
+            return { 'position': 'absolute' }
         }
 
     }, [openDrawer])
@@ -93,7 +93,7 @@ export default function ResultDrawer({ openDrawer, setOpenDrawer, children }) {
                         <Puller />
                     </Box>
                     <Box sx={{ p: 1, m: 1 }}>
-                        <Button onClick={toggleDrawer(!openDrawer)} disabled={drawerEmpty} fullWidth>Details</Button>
+                        <Button onClick={toggleDrawer(!openDrawer)} disabled={drawerEmpty} fullWidth>DETAILS</Button>
                     </Box>
                     <Box>
                         <ResultDrawerDetails />

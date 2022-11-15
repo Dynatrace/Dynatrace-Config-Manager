@@ -6,7 +6,7 @@ import SortOrderOption from '../options/SortOrderOption'
 import { Box, FormControl } from '@mui/material'
 import { useDebouncedTextField } from '../text/DebouncedInputHook'
 import { useResultTree } from './ResultTreeHook'
-import useResultItemMenu from './ResultItemMenuHook'
+import { useResultItemMenu } from './ResultItemMenuHook'
 
 export default function ResultTree({ data, defaultSortOrder, initialFilterText, setOpenDrawer, containsEntrypoint=false }) {
 

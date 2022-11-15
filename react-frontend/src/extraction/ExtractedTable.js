@@ -3,6 +3,12 @@ import { DataGrid } from '@mui/x-data-grid';
 import { IconButton } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
+
+const dataColumnsPrefix = [
+    'data_',
+]
+
+
 const flexSizes = {
     'default': 4,
     'type': 3,
@@ -34,17 +40,18 @@ const minWidthMap = {
 const autoHiddenColumns = {
     'web_request_id': true,
     'service_id': true,
+    'unique': true,
+    'data': true,
 }
 
-const keyColumns = [
+export const keyColumns = [
     'scope',
     'from',
     'to',
     'schemaId'
 ]
 
-export default function ExtractedTable({ data }) {
-
+export default function ExtractedTable({ data, resultKey, keyArray, entityType, handleClickMenu }) {
 
     const [columns, rows] = React.useMemo(() => {
         if (!data || !data['items']) {
@@ -52,8 +59,9 @@ export default function ExtractedTable({ data }) {
         }
 
 
-        const onContextMenu = (e, cell) => {
-            console.log(cell['value']);
+        const onClickMenu = (e, cell) => {
+            console.log(cell)
+            handleClickMenu(e, cell)
         };
 
         let columns = []
@@ -69,7 +77,7 @@ export default function ExtractedTable({ data }) {
                         variant="outlined"
                         color="primary"
                         onClick={(event) => {
-                            onContextMenu(event, value)
+                            onClickMenu(event, value)
                         }}
                     >
                         <MoreHorizIcon />
@@ -77,18 +85,16 @@ export default function ExtractedTable({ data }) {
                 )
             }
         })
+
         let column_exist_hash = {}
         let rows = []
         let id = 0
 
-        for (const row_data of Object.values(data['items'])) {
-            
+        for (const [idx, row_data] of Object.entries(data['items'])) {
 
-            let keyObject = {}
             for (const column_key of keyColumns) {
                 if (column_key in row_data) {
                     [columns, column_exist_hash] = add_column(columns, column_exist_hash, column_key)
-                    keyObject[column_key] = row_data[column_key]
                 }
             }
 
@@ -102,7 +108,15 @@ export default function ExtractedTable({ data }) {
                 row['the_id'] = row['id']
                 row['id'] = id
             }
-            row['ctxMenuBtn'] = keyObject
+            
+            let keyArrayData = []
+            if (row['unique'] == true) {
+                ;
+            } else {
+                keyArrayData = ['data', '0']
+            }
+
+            row['ctxMenuBtn'] = { resultKey, 'keyArray': [...keyArray, 'items', idx, ...keyArrayData]}
 
             rows.push({ id, ...row })
             id += 1
@@ -132,6 +146,12 @@ export default function ExtractedTable({ data }) {
 }
 
 const add_column = (columns, column_exist_hash, column_key) => {
+
+    for (const prefix of dataColumnsPrefix) {
+        if (column_key.startsWith(prefix))
+            return [columns, column_exist_hash]
+    }
+
     if (!column_exist_hash[column_key]) {
         let flexSize = flexSizes['default']
         if (column_key in flexSizes) {

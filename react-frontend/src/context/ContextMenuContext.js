@@ -64,6 +64,5 @@ export function useContextMenuState() {
         setProperty("contextNode", value)
     }
 
-
     return { contextMenu, contextNode, setContextMenu, setContextNode }
 }
