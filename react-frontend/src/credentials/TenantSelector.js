@@ -6,7 +6,7 @@ import Select from '@mui/material/Select';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey, useTenantList } from '../context/TenantListContext';
 import { Box, Button } from '@mui/material';
 
-export default function TenantSelector({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
+export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
 
     const { tenantKey, setTenantKey } = useTenantKey(tenantKeyType)
     const { tenant } = useTenant(tenantKey)

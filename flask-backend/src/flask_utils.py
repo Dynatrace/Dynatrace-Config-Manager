@@ -49,7 +49,7 @@ def get_arg_int(key, default=None):
         value = int(value)
         valid = True
 
-    if(value == True):
+    if(valid == False):
         print("Bad parameter value for", key, value, "using default:", default)
         value = default
 

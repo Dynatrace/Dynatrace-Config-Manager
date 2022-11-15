@@ -1,5 +1,13 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
+import { IconButton } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+
+
+const dataColumnsPrefix = [
+    'data_',
+]
+
 
 const flexSizes = {
     'default': 4,
@@ -16,48 +24,82 @@ const flexSizes = {
     'context_root': 12,
     'host': 10,
     'relative_url': 16,
+    'scope': 30,
     'from': 30,
     'to': 30,
+    'schemaId': 30,
 }
 const minWidthMap = {
     'default': 50,
+    'scope': 300,
     'from': 300,
     'to': 300,
+    'schemaId': 300,
 }
 
 const autoHiddenColumns = {
     'web_request_id': true,
     'service_id': true,
+    'unique': true,
+    'data': true,
 }
 
-const orderedColumns = [
+export const keyColumns = [
+    'scope',
     'from',
-    'to'
+    'to',
+    'schemaId'
 ]
 
-export default function ExtractedTable({ data }) {
-
+export default function ExtractedTable({ data, resultKey, keyArray, entityType, handleClickMenu }) {
 
     const [columns, rows] = React.useMemo(() => {
         if (!data || !data['items']) {
             return [null, null]
         }
 
+
+        const onClickMenu = (e, cell) => {
+            console.log(cell)
+            handleClickMenu(e, cell)
+        };
+
         let columns = []
+        columns.push({
+            field: "ctxMenuBtn", headerName: "", minWidth: minWidthMap['default'], flex: flexSizes['default'], sortable: true, type: "string", hide: false,
+            renderCell: (cellValues) => {
+                let value = ""
+                if (cellValues) {
+                    value = cellValues
+                }
+                return (
+                    <IconButton
+                        variant="outlined"
+                        color="primary"
+                        onClick={(event) => {
+                            onClickMenu(event, value)
+                        }}
+                    >
+                        <MoreHorizIcon />
+                    </IconButton>
+                )
+            }
+        })
+
         let column_exist_hash = {}
         let rows = []
         let id = 0
 
-        for (const row_data of Object.values(data['items'])) {
+        for (const [idx, row_data] of Object.entries(data['items'])) {
 
-            for (const column_key of orderedColumns) {
-                if(column_key in row_data) {
+            for (const column_key of keyColumns) {
+                if (column_key in row_data) {
                     [columns, column_exist_hash] = add_column(columns, column_exist_hash, column_key)
                 }
             }
 
             for (const column_key of Object.keys(row_data)) {
-                
+
                 [columns, column_exist_hash] = add_column(columns, column_exist_hash, column_key)
             }
 
@@ -66,6 +108,16 @@ export default function ExtractedTable({ data }) {
                 row['the_id'] = row['id']
                 row['id'] = id
             }
+            
+            let keyArrayData = []
+            if (row['unique'] == true) {
+                ;
+            } else {
+                keyArrayData = ['data', '0']
+            }
+
+            row['ctxMenuBtn'] = { resultKey, 'keyArray': [...keyArray, 'items', idx, ...keyArrayData]}
+
             rows.push({ id, ...row })
             id += 1
         }
@@ -75,6 +127,7 @@ export default function ExtractedTable({ data }) {
     }, [data])
 
     const grid = React.useMemo(() => {
+
         if (rows && rows.length > 0) {
             return (
                 <DataGrid
@@ -93,6 +146,12 @@ export default function ExtractedTable({ data }) {
 }
 
 const add_column = (columns, column_exist_hash, column_key) => {
+
+    for (const prefix of dataColumnsPrefix) {
+        if (column_key.startsWith(prefix))
+            return [columns, column_exist_hash]
+    }
+
     if (!column_exist_hash[column_key]) {
         let flexSize = flexSizes['default']
         if (column_key in flexSizes) {
@@ -100,7 +159,7 @@ const add_column = (columns, column_exist_hash, column_key) => {
         }
 
         let minWidth = minWidthMap['default']
-        if(column_key in minWidthMap) {
+        if (column_key in minWidthMap) {
             minWidth = minWidthMap[column_key]
         }
 

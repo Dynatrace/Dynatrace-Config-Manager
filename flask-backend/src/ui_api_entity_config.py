@@ -1,5 +1,3 @@
-from unittest import result
-from urllib.error import HTTPError
 import dirs
 import credentials
 import ui_api
