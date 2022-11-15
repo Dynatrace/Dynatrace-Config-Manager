@@ -125,7 +125,7 @@ def extract_page_for_item(config, use_cache, cache_only,
             query_dict['nextPageKey'] = nextPageKey
 
         return api_v2.get_json(
-            config, api_endpoint, "", query_dict)
+            config, api_endpoint, url_trail, query_dict)
 
     result_dict = cache.get_cached_data(
         use_cache, cache_only, cache_path, log_label, extract_function)
