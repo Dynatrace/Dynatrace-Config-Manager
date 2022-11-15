@@ -108,16 +108,18 @@ export default function ExtractedTable({ data, resultKey, keyArray, entityType, 
                 row['the_id'] = row['id']
                 row['id'] = id
             }
-            
-            let keyArrayData = []
-            if (row['unique'] == true) {
-                ;
-            } else {
-                keyArrayData = ['data', '0']
+
+            if (keyArray) {
+                let keyArrayData = []
+                if (row['unique'] == true) {
+                    ;
+                } else {
+                    keyArrayData = ['data', '0']
+                }
+
+                row['ctxMenuBtn'] = { resultKey, 'keyArray': [...keyArray, 'items', idx, ...keyArrayData] }
             }
-
-            row['ctxMenuBtn'] = { resultKey, 'keyArray': [...keyArray, 'items', idx, ...keyArrayData]}
-
+            
             rows.push({ id, ...row })
             id += 1
         }
