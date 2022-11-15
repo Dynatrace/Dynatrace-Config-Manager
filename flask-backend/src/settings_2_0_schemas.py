@@ -1,9 +1,9 @@
-
 import api_v2
 import handler_api
 
 
-ALWAYS_USE_CACHE_SCHEMA_DEFINITIONS = True
+ALWAYS_USE_CACHE_SCHEMAS = True
+NO_CACHE_ONLY_SCHEMAS = False
 
 
 def extract_schemas(config, use_cache=True, cache_only=False):
@@ -17,10 +17,10 @@ def extract_schemas(config, use_cache=True, cache_only=False):
 def extract_function(config, use_cache, cache_only, analysis_object, input_params=None):
 
     schema_dict = extract_schemas(
-        config, use_cache=cache_only, cache_only=cache_only)
+        config, ALWAYS_USE_CACHE_SCHEMAS, NO_CACHE_ONLY_SCHEMAS)
 
     _ = extract_schema_definitions(
-        schema_id_url_trail_extractor, config, schema_dict, ALWAYS_USE_CACHE_SCHEMA_DEFINITIONS, cache_only, analysis_object)
+        schema_id_url_trail_extractor, config, schema_dict, ALWAYS_USE_CACHE_SCHEMAS, NO_CACHE_ONLY_SCHEMAS, analysis_object)
 
     return schema_dict
 
