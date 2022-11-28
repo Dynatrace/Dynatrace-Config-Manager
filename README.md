@@ -45,6 +45,7 @@ If installing on Windows Server 2019 or older, follow documentation on wsl websi
 
 Once wsl is installed, open it setup user info, can be whatever you want, then run the following to install dependencies:
 ```
+sudo apt-get update
 sudo apt upgrade
 sudo apt install -y curl
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
@@ -73,14 +74,15 @@ if [ -d "$HOME/.local/bin" ] ; then
 
 Now we clone the repo to run it:
 ```
+source .profile
 git clone https://github.com/dcryans/Dynatrace-Config-Manager
-cd Dynatrace-config-Manager
-cd flash-backend
+cd Dynatrace-Config-Manager
+cd flask-backend
 ```
 
 the following command uses the python version you have installed, mine is 3.8.10
 ```
-sudo pipenv install --python 3.8.10 
+pipenv install --python 3.8.10 
 ```
 
 If there is an error running pipenv then run the following:
