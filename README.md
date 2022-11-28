@@ -100,7 +100,7 @@ sh run_flask.sh
 At this point backend should be running. Now run frontend portion, open new terminal
 ```
 cd Dynatrace-Config-Manager/react-frontend
-npm install --force
+npm install
 npm start
 ```
 
