@@ -13,6 +13,7 @@ const attributes = {
     'forcedMatchChecked': { 'default': false },
     'forcedMatchMain': {}, 
     'forcedMatchTarget': {},
+    'useEnvironmentCache': { 'default': true },
     'applyMigrationChecked': {},
 }
 

@@ -9,7 +9,7 @@ export const useResultTree = (data, sortOrder, searchText, handleContextMenu, co
 
     const { resultBlockSize } = useSettingStateValue()
 
-    return React.useMemo(() => {
+    const resultTreeObject = React.useMemo(() => {
         const hasSearchText = (searchText !== undefined && searchText !== "")
         const [tree, metadata, oneFound] = convertData(data, sortOrder, hasSearchText, searchText, containsEntrypoint)
         let sampleSum = null
@@ -18,8 +18,11 @@ export const useResultTree = (data, sortOrder, searchText, handleContextMenu, co
         }
         const { elements: renderedTreeItems, expandedList: sub_expanded_list } = renderTreeItems(tree, oneFound, sampleSum, resultBlockSize, handleContextMenu)
         const expandedList = ["root"].concat(sub_expanded_list)
+
         return { renderedTreeItems, expandedList }
     }, [data, sortOrder, searchText, containsEntrypoint, resultBlockSize])
+
+    return resultTreeObject
 
 }
 
@@ -36,7 +39,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         let expandedList = []
 
         let props = {
-            key: parent.id, nodeId, label: genName(parent, sampleSum),
+            key: parent.id, nodeId, label: genName(parent, level, sampleSum),
             onContextMenu: (event) => { handleContextMenu(event, parent) }
         }
 
@@ -124,7 +127,9 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         return {
             'elements':
                 <TreeItem {...props}>
-                    {genChilds()}
+                    <div>
+                        {genChilds()}
+                    </div>
                 </TreeItem >
             , expandedList
         }
@@ -141,15 +146,21 @@ const sample_types = {
     "NET_IO": 0
 }
 
-const genName = (node, sampleSum = null) => {
+const genName = (node, level, sampleSum = null) => {
     let nameInfo = { 'name': node.name, 'hasParenthesis': false }
 
     if ('displayName' in node) {
         nameInfo = { 'name': node.displayName, 'hasParenthesis': false }
         nameInfo = addInfoToLabel(nameInfo, node, 'name', 'id')
     }
+
     nameInfo = addInfoToLabel(nameInfo, node, 'top_match', 'Top Match')
-    nameInfo = addInfoToLabel(nameInfo, node, 'match_type', 'Match Type', matchTypeLabeler)
+    
+    if(level === 2) {
+        nameInfo = addInfoToLabel(nameInfo, node, 'match_type', 'Worst Match Type', matchTypeLabeler)
+    } else {
+        nameInfo = addInfoToLabel(nameInfo, node, 'match_type', 'Match Type', matchTypeLabeler)
+    }
     nameInfo = addInfoToLabel(nameInfo, node, 'value', 'Value')
     nameInfo = addInfoToLabel(nameInfo, node, 'total_frames', 'Frames')
     nameInfo = addInfoToLabel(nameInfo, node, 'total_traces', 'Traces')
@@ -215,7 +226,7 @@ const addonLabeler = (nameInfo, label, value, percent) => {
 }
 
 const addInfoToLabel = (nameInfo, source, key, label, labeler = tagLabeler, sampleSum = null, acceptZero = false) => {
-    if(key in source) {
+    if (key in source) {
         ;
     } else {
         return nameInfo

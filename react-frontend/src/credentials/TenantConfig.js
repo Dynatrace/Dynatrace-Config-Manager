@@ -4,12 +4,12 @@ import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import ClearIcon from '@mui/icons-material/Clear';
-import { TextField } from '@mui/material';
+import { Checkbox, FormControlLabel, TextField } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from "../context/TenantListContext";
 
-export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
+export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
     const { tenantKey } = useTenantKey(tenantType)
-    const { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantNotes } = useTenant(tenantKey)
+    const { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantDisableSSLVerification, setTenantNotes } = useTenant(tenantKey)
 
     const tenantUrlDisplay = React.useMemo(() => {
         if (!tenant.url || tenant.url === "") {
@@ -65,6 +65,10 @@ export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
         setTenantAPIKey(event.target.value)
     }
 
+    const handleChangeDisableSSLVerification = (event) => {
+        setTenantDisableSSLVerification(event.target.checked)
+    }
+
     const handleChangeNotes = (event) => {
         setTenantNotes(event.target.value)
     }
@@ -73,20 +77,20 @@ export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
         <Fragment>
             <React.Fragment>
                 <FormControl fullWidth>
-                    <TextField id="tenant-text-field" variant="standard"
-                         label="Tenant Label" value={tenant.label} onChange={handleChangeLabel} />
+                    <TextField id={"tenant-text-field" + tenantKey} variant="standard"
+                        label="Tenant Label" value={tenant.label} onChange={handleChangeLabel} />
                 </FormControl>
             </React.Fragment>
             <React.Fragment>
                 <FormControl fullWidth>
-                    <TextField id="tenant-url-field" variant="standard"
+                    <TextField id={"tenant-url-field" + tenantKey} variant="standard"
                         label="Tenant Url (https://<YOUR_TENANT>.live.dynatrace.com/)" value={tenantUrlDisplay}
                         onChange={handleChangeUrl} />
                 </FormControl>
             </React.Fragment>
             <React.Fragment>
                 <FormControl fullWidth>
-                    <TextField id="headers-text-field" variant="standard" type="password"
+                    <TextField id={"headers-text-field" + tenantKey} variant="standard" type="password"
                         label="Headers" value={tenant.headers} onChange={handleChangeHeaders} />
                 </FormControl>
             </React.Fragment>
@@ -100,7 +104,7 @@ export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
             </React.Fragment>
             <React.Fragment>
                 <FormControl fullWidth>
-                    <TextField id="api_key-text-field" variant="standard" type="password"
+                    <TextField id={"api_key-text-field" + tenantKey} variant="standard" type="password"
                         label="API Key" value={tenant.APIKey} onChange={handleChangeAPIKey} />
                 </FormControl>
             </React.Fragment>
@@ -114,7 +118,13 @@ export default function TenantConfig({tenantType=TENANT_KEY_TYPE_MAIN}) {
             </React.Fragment>
             <React.Fragment>
                 <FormControl fullWidth>
-                    <TextField id="notes-text-field" variant="standard"
+                    <FormControlLabel control={<Checkbox checked={tenant.disableSSLVerification === true}
+                        onChange={handleChangeDisableSSLVerification} />} label={"Disable SSL Verification"} />
+                </FormControl>
+            </React.Fragment>
+            <React.Fragment>
+                <FormControl fullWidth>
+                    <TextField id={"notes-text-field" + tenantKey} variant="standard"
                         label="Notes" value={tenant.notes} onChange={handleChangeNotes} />
                 </FormControl>
             </React.Fragment>

@@ -30,7 +30,7 @@ const flexSizes = {
     'schemaId': 30,
 }
 const minWidthMap = {
-    'default': 50,
+    'default': 75,
     'scope': 300,
     'from': 300,
     'to': 300,
@@ -51,6 +51,8 @@ export const keyColumns = [
     'schemaId'
 ]
 
+export const defaultColumnArray = ['data', '0']
+
 export default function ExtractedTable({ data, resultKey, keyArray, entityType, handleClickMenu }) {
 
     const [columns, rows] = React.useMemo(() => {
@@ -60,7 +62,6 @@ export default function ExtractedTable({ data, resultKey, keyArray, entityType, 
 
 
         const onClickMenu = (e, cell) => {
-            console.log(cell)
             handleClickMenu(e, cell)
         };
 
@@ -110,16 +111,11 @@ export default function ExtractedTable({ data, resultKey, keyArray, entityType, 
             }
 
             if (keyArray) {
-                let keyArrayData = []
-                if (row['unique'] == true) {
-                    ;
-                } else {
-                    keyArrayData = ['data', '0']
-                }
-
-                row['ctxMenuBtn'] = { resultKey, 'keyArray': [...keyArray, 'items', idx, ...keyArrayData] }
+                let columnArray = [...defaultColumnArray]
+                let rowArray = [...keyArray, 'items', idx]
+                row['ctxMenuBtn'] = { resultKey, 'rowArray': rowArray, 'columnArray': [...rowArray, ...columnArray]}
             }
-            
+
             rows.push({ id, ...row })
             id += 1
         }
@@ -137,6 +133,7 @@ export default function ExtractedTable({ data, resultKey, keyArray, entityType, 
                     columns={columns}
                     autoHeight
                     resizable
+                    pageSize={12}
                 />
             )
         }

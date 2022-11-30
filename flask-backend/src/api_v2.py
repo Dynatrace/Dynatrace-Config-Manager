@@ -1,7 +1,7 @@
 import requests
 import json
 from urllib.parse import urlencode
-from exception import TokenNotAuthorized
+from exception import TokenNotAuthorized, SettingsValidationError
 
 
 # Methods
@@ -49,7 +49,7 @@ def get(config, api, url_trail, query_dict={}):
     url_trail = _append_query_string(url_trail, query_dict)
     call_url = config['url'] + api + url_trail
 
-    response = requests.request(method, call_url, headers=config['headers'])
+    response = requests.request(method, call_url, headers=config['headers'], verify=config['verifySSL'])
     _handle_response(response, method, api)
 
     return response
@@ -60,7 +60,7 @@ def delete(config, api, url_trail):
 
     call_url = config['url'] + api + url_trail
 
-    response = requests.request(method, call_url, headers=config['headers'])
+    response = requests.request(method, call_url, headers=config['headers'], verify=config['verifySSL'])
     _handle_response(response, method, api)
 
     return response
@@ -77,25 +77,30 @@ def put(config, api, url_trail, payload):
 def _call_method(method, config, api, url_trail, payload):
 
     call_url = config['url'] + api + url_trail
-
+    
     response = requests.request(
-        method, call_url, headers=config['headers'], data=payload)
+        method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'])
     _handle_response(response, method, api)
 
     return response
 
 
 def _handle_response(response, method, api):
+    
+    if(response.status_code >= 400):
+         print("Error", response.status_code, ": ", response.text)
+    
     if (response.status_code == 401):
         requiredTokenScope = api_token_map[api]["prefix"]
         requiredTokenScope += method_token_map[method]
         raise TokenNotAuthorized(
             "Token not authorized for required scope: " + requiredTokenScope)
     elif (response.status_code == 404):
-        print("Error 404: ", response.text)
         pass
+    elif (response.status_code == 400):
+        raise SettingsValidationError(
+            "Settings 2.0 Validation error: ", response.text)
     else:
-        # print(response.text)
         response.raise_for_status()
 
 

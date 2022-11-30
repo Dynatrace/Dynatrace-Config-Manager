@@ -8,7 +8,7 @@ export const TenantListContextState = React.createContext();
 export const TenantListContextDispatch = React.createContext();
 
 function getDefaultTenant() {
-    const tenant = { label: "", headers:"", APIKey: "", url: "", notes: "" }
+    const tenant = { label: "", headers:"", APIKey: "", url: "", disableSSLVerification: false, notes: "" }
     return { ...tenant }
 }
 
@@ -189,11 +189,15 @@ export function useTenant(key) {
             setTenantProperty("APIKey", value)
         }
 
+        const setTenantDisableSSLVerification = (value) => {
+            setTenantProperty("disableSSLVerification", value)
+        }
+
         const setTenantNotes = (value) => {
             setTenantProperty("notes", value)
         }
 
-        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantNotes }
+        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantDisableSSLVerification, setTenantNotes }
     }
     return {}
 }

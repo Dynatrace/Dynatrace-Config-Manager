@@ -29,7 +29,6 @@ export const useTreeResult = (defaultSortOrder = ALPHABETIC, containsEntrypoint 
     
     const { tenantKey, initialFilterText, analysisResult, hasAnalysisResult, openDrawer, setAnalysisResult, setInitialFilterText, setOpenDrawer } = useAnalysisResult()
 
-
     const treeComponent = React.useMemo(() => {
         setOpenDrawer(false)
         if (!_.isEmpty(analysisResult)) {

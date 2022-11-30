@@ -9,12 +9,12 @@ export default function MatchButton({ handleChange, api, label }) {
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
-    const { backendGet } = useEnhancedBackend()
+    const { backendPost } = useEnhancedBackend()
 
     const handleExtract = () => {
         const searchParams = { 'tenant_key_main': tenantKeyMain, 'tenant_key_target': tenantKeyTarget }
 
-        backendGet(api, searchParams,
+        backendPost(api, null, searchParams,
             promise =>
                 promise
                     .then(response => {

@@ -18,7 +18,7 @@ export function backendGet(api_method, searchParams, thenFunction) {
     const requestOptions = {
         method: 'GET',
         mode: 'cors',
-    };
+    }
 
     return fetchRunThen(api_method, requestOptions, searchParams, thenFunction)
 }
@@ -30,7 +30,7 @@ export function backendPost(api_method, payload, searchParams, thenFunction) {
         headers: { 'Content-Type': 'application/json' },
         mode: 'cors',
         body: JSON.stringify(payload)
-    };
+    }
 
     return fetchRunThen(api_method, requestOptions, searchParams, thenFunction)
 }
@@ -42,7 +42,7 @@ export function backendDelete(api_method, payload, searchParams, thenFunction) {
         headers: { 'Content-Type': 'application/json' },
         mode: 'cors',
         body: JSON.stringify(payload)
-    };
+    }
 
     return fetchRunThen(api_method, requestOptions, searchParams, thenFunction)
 }

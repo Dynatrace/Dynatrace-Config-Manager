@@ -2,7 +2,7 @@ import api_v2
 import handler_api
 import process_utils
 
-def extract_function(config, use_cache, cache_only, analysis_object, context_params=None):
+def extract_function(config, use_cache, cache_only, analysis_object, context_params=None, run_info=None):
 
     _ = extract_entities_list(
         config, use_cache, cache_only, analysis_object)
@@ -10,7 +10,7 @@ def extract_function(config, use_cache, cache_only, analysis_object, context_par
     return None
 
 
-def extract_specific_scope(config, use_cache, cache_only, analysis_object, scope):
+def extract_specific_scope(config, use_cache, cache_only, analysis_object, scope, run_info=None):
     
     scope_list = [{"scope": scope}]
     
@@ -81,7 +81,7 @@ def scope_query_dict_extractor(item):
     query_dict['entitySelector'] = 'entityId("' + scope + '")'
     query_dict['pageSize'] = '1000'
     query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
-    query_dict['from'] = 'now-2M'
+    query_dict['from'] = 'now-6M'
     
     url_trail = None
 
