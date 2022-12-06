@@ -1,11 +1,19 @@
 
 class AnalysisFilter():
 
-    def __init__(self, entity_type_list, time_from=None, time_to=None, time_filter_type=None):
+    def __init__(self, entity_type_list, time_from=None, time_to=None):
 
+        self.accept_all_types = True
         self.entity_type_list = entity_type_list
+        '''
+        self.entity_type_excluded = ['EC2_INSTANCE', 'SERVICE_INSTANCE', 'PROCESS_GROUP_INSTANCE',
+                                     'CONTAINER_GROUP_INSTANCE', 'SERVICE_METHOD_GROUP', 'DISK', 'os:service', 'APPLICATION_METHOD_GROUP',
+                                     'cloud:gcp:k8s_container', 'NETWORK_INTERFACE']
+        '''
+        self.entity_type_excluded = []
+        print("TODO: Review entity matching for performance, use sorted arrays, not maps, by then, we are excluding some entities from matching, excluded types are: ", self.entity_type_excluded)
 
-        if(time_from is None
+        if (time_from is None
            or time_to is None):
 
             self.do_time_filter = False
@@ -13,29 +21,42 @@ class AnalysisFilter():
         else:
 
             self.do_time_filter = True
-            self.time_filter_type = time_filter_type
+            self.is_target_tenant = None
+            self.time_filter_type = None
             self.time_from = time_from
             self.time_to = time_to
 
-    def set_time_filter_type(self, is_target_tenant):
+    def set_target_tenant(self, is_target_tenant):
 
-        if(is_target_tenant == True):
+        self.is_target_tenant = is_target_tenant
+
+        if (self.is_target_tenant == True):
             self.time_filter_type = 'firstSeenTms'
         else:
             self.time_filter_type = 'lastSeenTms'
 
     def is_type_selected(self, entity):
 
-        return entity['type'] in self.entity_type_list
+        if (self.accept_all_types == True):
+            pass
+        elif (entity['type'] in self.entity_type_list):
+            pass
+        else:
+            return False
+
+        if (entity['type'] in self.entity_type_excluded):
+            return False
+
+        return True
 
     def is_time_in_range(self, entity):
 
-        if(self.time_filter_type is None):
+        if (self.time_filter_type is None):
             pass
 
-        elif(self.do_time_filter == True):
+        elif (self.do_time_filter == True):
 
-            if(entity[self.time_filter_type] >= self.time_from
+            if (entity[self.time_filter_type] >= self.time_from
                     and entity[self.time_filter_type] <= self.time_to):
 
                 pass
@@ -47,7 +68,7 @@ class AnalysisFilter():
 
     def is_entity_seleted(self, entity):
 
-        if(self.is_type_selected(entity)
+        if (self.is_type_selected(entity)
            and self.is_time_in_range(entity)):
 
             return True

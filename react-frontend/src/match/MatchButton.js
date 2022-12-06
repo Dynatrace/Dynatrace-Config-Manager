@@ -1,37 +1,26 @@
 import * as React from 'react';
 import IconButton from '@mui/material/IconButton';
-import { Box, Typography } from '@mui/material';
-import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import { useEnhancedBackend } from '../backend/useEnhancedBackend';
+import { Box, Typography } from '@mui/material';
+import { useHandlePostCurrent } from '../backend/useHandlePost';
 
-export default function MatchButton({ handleChange, api, label }) {
+export default function MatchButton({ handleChange, api, label, confirm = false }) {
 
-    const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
-    const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
-    const { backendGet } = useEnhancedBackend()
+    const handlePost = useHandlePostCurrent(handleChange, api)
 
-    const handleExtract = () => {
-        const searchParams = { 'tenant_key_main': tenantKeyMain, 'tenant_key_target': tenantKeyTarget }
+    const button = React.useMemo(() => {
 
-        backendGet(api, searchParams,
-            promise =>
-                promise
-                    .then(response => {
-                        return response.json()
-                    })
-                    .then(data => {
-                        handleChange(data)
-                    })
+        return (
+            <IconButton onClick={handlePost} color='primary'>
+                <PlayCircleOutlineIcon fontSize='large'/>
+                <Typography sx={{ ml: 1 }}>{label}</Typography>
+            </IconButton>
         )
-    }
+    }, [confirm, label, handlePost])
 
     return (
         <Box sx={{ my: 1 }}>
-            <IconButton onClick={handleExtract} color='primary'>
-                <PlayCircleOutlineIcon fontSize='large' />
-                <Typography>{label}</Typography>
-            </IconButton>
+            {button}
         </Box>
     );
 }

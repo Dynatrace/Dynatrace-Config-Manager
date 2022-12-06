@@ -10,3 +10,11 @@ class RequestHeadersMissingError(UIForwartException):
 
 class TokenNotAuthorized(UIForwartException):
     pass
+
+
+
+class AggregateExceptions(Exception):
+    pass
+
+class SettingsValidationError(AggregateExceptions):
+    pass

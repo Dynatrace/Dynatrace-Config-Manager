@@ -125,6 +125,12 @@ def extract_config(tenant_key, tenant_data, headers):
         "Referer": "url",
     }
 
+    config['verifySSL'] = True
+    if ('disableSSLVerification' in tenant_data
+       and tenant_data['disableSSLVerification'] == True):
+        
+        config['verifySSL'] = False
+
     for key, config_key in config_keys.items():
         if (config_key in tenant_data):
             headers[key] = tenant_data[config_key]

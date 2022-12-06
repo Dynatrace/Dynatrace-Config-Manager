@@ -1,39 +1,38 @@
 import { ALPHABETIC, FIRST_SEEN_TMS, LAST_SEEN_TMS, MATCH_TYPE } from '../options/SortOrderOption';
 
-export const convertData = (data, sortOrder, hasSearchText, searchText, containsEntrypoint) => {
+export const convertData = (data, sortOrder, hasSearchText, searchText) => {
 
     let tree = null
-    let metadata = null
 
     const entries = Object.entries(data)
 
     if (entries.length < 1) {
         const oneFound = false
-        return [tree, metadata, oneFound]
+        return [tree, oneFound]
+    }
+
+    let topName = 'Analysis Result'
+    if (data && 'data' in data && 'name' in data['data']) {
+        topName = data['data']['name']
     }
 
     tree = {
         id: 'root',
-        name: 'Analysis Result'
+        name: topName
     }
 
-    const isFoundFunction = genIsFoundFunction(hasSearchText, searchText, containsEntrypoint)
+    const isFoundFunction = genIsFoundFunction(hasSearchText, searchText)
 
     const sortFunction = genSortFunction(sortOrder, hasSearchText)
 
-    if ('metadata' in data) {
-        metadata = data['metadata']
-    }
-
-    const [subChildren, oneFound,] = convertItem(data['data'], metadata, sortOrder, isFoundFunction, sortFunction)
+    const [subChildren, oneFound,] = convertItem(data['data'], sortOrder, isFoundFunction, sortFunction)
     tree['children'] = subChildren
-    tree = addUpSubSamples(tree)
 
     if (tree['children'].length > 0) {
-        return [tree, metadata, oneFound]
+        return [tree, oneFound]
     }
 
-    return [tree, metadata, oneFound]
+    return [tree, oneFound]
 
 }
 
@@ -65,37 +64,11 @@ const genSortFunction = (sortOrder, hasSearchText) => {
 }
 
 
-const genIsFoundFunction = (hasSearchText, searchText, containsEntrypoint) => {
+const genIsFoundFunction = (hasSearchText, searchText) => {
 
     let defaultValue = false
 
     let hasEntrypointInfo = (node) => [false, false, false]
-    if (containsEntrypoint) {
-        defaultValue = false
-
-        hasEntrypointInfo = (node) => {
-            let isPrimary = false
-            let isSecondary = false
-            let isLocal = false
-
-            if (node.hasOwnProperty('entrypoint')) {
-                for (const tenantUI of node['entrypoint']) {
-                    for (const entrypoint of tenantUI) {
-                        if (entrypoint['type'] === "Pre Entry") {
-                            isSecondary = true
-                        } else if (entrypoint['type'] === "Entry") {
-                            isPrimary = true
-                        }
-                    }
-                }
-            }
-            if (node.hasOwnProperty('local_entrypoint')) {
-                isLocal = true
-            }
-            return [isPrimary, isSecondary, isLocal]
-
-        }
-    }
 
     let containsSearchText = (node) => false
 
@@ -121,7 +94,7 @@ const genIsFoundFunction = (hasSearchText, searchText, containsEntrypoint) => {
 }
 
 
-const convertItem = (object, metadata, sortOrder, isFoundFunction, sortFunction, isFirstCall = true, id_num = 0) => {
+const convertItem = (object, sortOrder, isFoundFunction, sortFunction, isFirstCall = true, id_num = 0) => {
 
     let sortedChildren = []
     let oneChildFound = false
@@ -138,7 +111,7 @@ const convertItem = (object, metadata, sortOrder, isFoundFunction, sortFunction,
                 id_num += 1
                 const id = "" + id_num
 
-                const [sub_children, sub_found, sub_id] = convertItem(value, metadata, sortOrder, isFoundFunction, sortFunction, false, id_num)
+                const [sub_children, sub_found, sub_id] = convertItem(value, sortOrder, isFoundFunction, sortFunction, false, id_num)
                 id_num = sub_id
 
                 let child = { id, 'name': key }
@@ -191,73 +164,6 @@ const applyNodeFound = (node, nodeFound, oneChildFound, isFirstCall) => {
 
         node['expand'] = false
 
-        if (nodeFound) {
-            ;
-        } else {
-
-            if ('samples' in node) {
-                node = addUpSubSamples(node, nodeFound)
-            }
-
-        }
-
-    } else {
-        node = addUpSubSamples(node, false)
-    }
-
-    return node
-}
-
-const addUpSubSamples = (node, isFound) => {
-    let samples = {}
-    let hasSamples = false
-
-    const _addUpOneSampleNode = (source, doAdd) => {
-
-        if ('samples' in source) {
-            for (const key of Object.keys(source['samples'])) {
-                if (samples[key] === undefined) {
-                    samples[key] = 0
-                    hasSamples = true
-                }
-                if (doAdd) {
-                    samples[key] += source['samples'][key]
-                }
-
-            }
-        }
-    }
-
-    if ('children' in node) {
-        for (const child of Object.values(node['children'])) {
-            _addUpOneSampleNode(child, true)
-        }
-    } else {
-        _addUpOneSampleNode(node, isFound)
-    }
-
-    if (hasSamples) {
-        node = setNewSamples(node, samples)
-    }
-
-    return node
-}
-
-const setNewSamples = (node, samples) => {
-
-    let hasChangedValues = false
-
-    if ('samples' in node) {
-        for (const [key, value] of Object.entries(node['samples'])) {
-            if (samples[key] !== value) {
-                hasChangedValues = true
-            }
-        }
-    }
-
-    if (hasChangedValues) {
-        node['original_samples'] = node['samples']
-        node['samples'] = samples
     }
 
     return node
@@ -274,25 +180,6 @@ const genCompareNumericValuesL1 = (key) => {
             }
         } else if (a[key]) {
             return 0 - a[key]
-        }
-        return 0
-    }
-
-    return compareNumericValues
-}
-
-const genCompareNumericValuesL2 = (key, sub_key) => {
-
-    const compareNumericValues = (a, b) => {
-
-        if (b[key] && b[key][sub_key]) {
-            if (a[key] && a[key][sub_key]) {
-                return b[key][sub_key] - a[key][sub_key]
-            } else {
-                return b[key][sub_key] - 0
-            }
-        } else if (a[key] && a[key][sub_key]) {
-            return 0 - a[key][sub_key]
         }
         return 0
     }

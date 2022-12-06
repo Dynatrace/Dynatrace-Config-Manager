@@ -27,26 +27,27 @@ def copy_entity_standalone(run_info,  pre_migration=True):
 
     result_table = copy_entity(
         run_info, result_table=None, pre_migration=pre_migration)
-    
+
     flat_result_table = process_migrate_config.flatten_results(result_table)
 
     return flat_result_table
 
 
 def copy_entity(run_info, result_table=None, pre_migration=True):
-        
+
     try:
         result_table = do_copy_entity(run_info, result_table, pre_migration)
     except requests.exceptions.HTTPError as err:
         result_table = gen_http_error_message(result_table, err)
-        
+
     return result_table
 
+
 def gen_http_error_message(result_table, err):
-    
+
     message = ''
-    
-    if(err.response.status_code == 401):
+
+    if (err.response.status_code == 401):
         message = "Request Headers for UIApi calls are not valid or expired: "
     else:
         message = "UIApi Request failed with an unexpected code: "
@@ -54,9 +55,11 @@ def gen_http_error_message(result_table, err):
     message += '\n'
     message += 'Error message: '
     message += str(err)
-    result_table = process_migrate_config.add_error_message(result_table, message)
-    
+    result_table = process_migrate_config.add_error_message(
+        result_table, message)
+
     return result_table
+
 
 def do_copy_entity(run_info, result_table=None, pre_migration=True):
     use_cache = False
@@ -66,17 +69,17 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
 
     all_tenant_entity_values = {}
 
-    for tenant_dict in run_info['tenant_dict_list']:
+    for tenant_dict in run_info['tenant_param_dict'].values():
 
         tenant_key = tenant_dict['tenant_key']
 
-        if(tenant_key in all_tenant_entity_values):
+        if (tenant_key in all_tenant_entity_values):
             pass
         else:
             entity = get_entity(
                 tenant_key, tenant_dict['scope'], use_cache, cache_only)
 
-            if(entity is None):
+            if (entity is None):
                 return result_table
             else:
                 all_tenant_entity_values[tenant_key] = get_entity(
@@ -96,14 +99,14 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
     for copy_property, default_value in entity_copy_configs[entity_type]['settings_and_default_value'].items():
         is_in_main = False
 
-        if(copy_property in all_tenant_entity_values[tenant_key_main]['data'][settings_key]):
+        if (copy_property in all_tenant_entity_values[tenant_key_main]['data'][settings_key]):
             is_in_main = True
 
         is_in_target = False
-        if(copy_property in all_tenant_entity_values[tenant_key_target]['data'][settings_key]):
+        if (copy_property in all_tenant_entity_values[tenant_key_target]['data'][settings_key]):
             is_in_target = True
 
-        if(is_in_main
+        if (is_in_main
            and is_in_target):
 
             is_deeply_different = compare.is_deeply_different(
@@ -112,42 +115,45 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
 
             identical = True
             action = process_migrate_config.ACTION_IDENTICAL
-            if(is_deeply_different):
+            if (is_deeply_different):
                 identical = False
                 action = process_migrate_config.ACTION_UPDATE
 
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, 'target', entity_id_target,
-                                                                     [entity_id_target], {'configs': {
-                                                                         entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
-                                                                     entity_id_dict, identical)
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, 'main', entity_id_main,
-                                                                     [entity_id_main], {'configs': {
-                                                                         entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
-                                                                     entity_id_dict, identical)
-        elif(is_in_main):
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_ADD, entity_type, copy_property, 'main', entity_id_main,
-                                                                     [entity_id_main], {'configs': {
-                                                                         entity_id_main: all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]}},
-                                                                     entity_id_dict)
+            tenant_config_dict = create_tenant_config_dict(
+                entity_id_target, all_tenant_entity_values, tenant_key_target, settings_key, copy_property)
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, '', 'target', entity_id_target,
+                                                                     [entity_id_target], tenant_config_dict, entity_id_dict, identical)
+
+            tenant_config_dict = create_tenant_config_dict(
+                entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, '', 'main', entity_id_main,
+                                                                     [entity_id_main], tenant_config_dict, entity_id_dict, identical)
+
+        elif (is_in_main):
+
+            tenant_config_dict = create_tenant_config_dict(
+                entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
+            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_ADD, entity_type, copy_property, '', 'main', entity_id_main,
+                                                                     [entity_id_main], tenant_config_dict, entity_id_dict)
 
             updated_entity_data[settings_key][
                 copy_property] = all_tenant_entity_values[tenant_key_main]['data'][settings_key][copy_property]
 
-        elif(is_in_target):
+        elif (is_in_target):
 
             is_deeply_different = compare.is_deeply_different(
                 default_value,
                 all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property])
 
-            if(is_deeply_different):
-                compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_DELETE, entity_type, copy_property, 'target', entity_id_target,
-                                                                         [entity_id_target], {'configs': {
-                                                                             entity_id_target: all_tenant_entity_values[tenant_key_target]['data'][settings_key][copy_property]}},
-                                                                         entity_id_dict)
+            if (is_deeply_different):
+                tenant_config_dict = create_tenant_config_dict(
+                    entity_id_target, all_tenant_entity_values, tenant_key_target, settings_key, copy_property)
+                compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_DELETE, entity_type, copy_property, '', 'target', entity_id_target,
+                                                                         [entity_id_target], tenant_config_dict, entity_id_dict)
 
                 updated_entity_data[settings_key][copy_property] = default_value
 
-    if(pre_migration == True):
+    if (pre_migration == True):
         pass
     else:
         update_response = update_entity(
@@ -159,11 +165,24 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
 
     return result_table
 
+
+def create_tenant_config_dict(entity_id, all_tenant_entity_values, tenant_key, settings_key, copy_property):
+    # TODO: We should validate multi_matched_objects and management_zone_objects for UI API, but no impact for Web Request Naming
+
+    return {
+        'multi_matched_objects': {},
+        'management_zone_objects': {},
+        'configs': {
+            entity_id: all_tenant_entity_values[tenant_key]['data'][settings_key][copy_property]
+        }
+    }
+
+
 def get_entity(tenant_key, entity_id, use_cache, cache_only):
 
     entity_type = entity_utils.extract_type_from_entity_id(entity_id)
 
-    if(entity_type in entity_copy_configs):
+    if (entity_type in entity_copy_configs):
         pass
     else:
         print("type:", entity_type, "Not part of UIAPI")
@@ -171,7 +190,7 @@ def get_entity(tenant_key, entity_id, use_cache, cache_only):
 
     config = credentials.get_ui_api_call_credentials(tenant_key)
     label = 'ui_api'
-    log_label = label + '/' + entity_type + '_' +  entity_id
+    log_label = label + '/' + entity_type + '_' + entity_id
 
     cache_path = dirs.get_tenant_data_cache_sub_dir(config, label)
     cache_path = dirs.get_file_path(cache_path, entity_id)

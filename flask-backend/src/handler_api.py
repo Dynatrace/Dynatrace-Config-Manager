@@ -4,13 +4,13 @@ import cache
 import api_v2
 
 
-def pull(tenant_key, extract_function, use_cache=False, input_params=None):
+def pull(tenant_key, extract_function, use_cache=False, input_params=None, run_info=None):
 
     cache_only = False
     analysis_object = None
 
     output_data, _ = pull_analysis(
-        tenant_key, extract_function, analysis_object, use_cache, cache_only, input_params)
+        tenant_key, extract_function, analysis_object, use_cache, cache_only, input_params, run_info)
 
     return output_data
 
@@ -40,12 +40,12 @@ def extract_basic_json(config, api_endpoint, label, use_cache, cache_only):
     return result_json
 
 
-def pull_analysis(tenant_key, extract_function, analysis_object, use_cache, cache_only, input_params=None):
+def pull_analysis(tenant_key, extract_function, analysis_object, use_cache, cache_only, input_params=None, run_info=None):
 
     config = credentials.get_api_call_credentials(tenant_key)
 
     output_data = extract_function(
-        config, use_cache, cache_only, analysis_object, input_params)
+        config, use_cache, cache_only, analysis_object, input_params, run_info)
 
     analysis_result = None
 

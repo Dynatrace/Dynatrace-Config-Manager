@@ -2,10 +2,13 @@ import * as React from 'react'
 import _ from 'lodash';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import ResultDrawer from './ResultDrawer';
-import { Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import ExtractedTable from '../extraction/ExtractedTable';
 import { useResultItemMenu } from './ResultItemMenuHook';
 import { useResult } from '../context/ResultContext';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ResultTreeGroup from './ResultTreeGroup';
+import { MATCH_TYPE } from '../options/SortOrderOption';
 
 const error_color = 'error.dark'
 
@@ -39,6 +42,29 @@ export const useMigrationResultHook = () => {
     const tableComponents = React.useMemo(() => {
         let components = []
 
+
+        const genAccordion = (label, entityList) => {
+
+            if (entityList && entityList.length > 0) {
+                return (
+                    // unmountOnExit: Only render the details when the accordion is expanded
+                    <Accordion defaultExpanded={false} TransitionProps={{ unmountOnExit: true }} >
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            id={label}
+                        >
+                            <Typography sx={{ color: error_color }}>{label}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            {entityList}
+                        </AccordionDetails>
+                    </Accordion>
+                )
+            } else {
+                return null
+            }
+        }
+
         if (extractedData
             && 'errors' in extractedData) {
 
@@ -55,6 +81,54 @@ export const useMigrationResultHook = () => {
                     <Typography sx={{ color: error_color, ml: 2 }} style={{ whiteSpace: 'pre-line' }}>{message}</Typography>
                 )
             }
+        }
+
+        if (extractedData
+            && 'aggregate_error' in extractedData) {
+
+            components.push(
+                <Typography sx={{ color: error_color, mt: 1 }}>API Call Errors: </Typography>
+            )
+            let messageNumber = 0
+            for (const message of extractedData['aggregate_error']) {
+                messageNumber++
+                components.push(
+                    <Typography sx={{ color: error_color, mt: 0.5, ml: 1 }} style={{ whiteSpace: 'pre-line' }}>Message #{messageNumber}:</Typography>
+                )
+                components.push(
+                    <Typography sx={{ color: error_color, ml: 2 }} style={{ whiteSpace: 'pre-line' }}>{message}</Typography>
+                )
+            }
+        }
+
+        if (extractedData
+            && 'entity_match_missing' in extractedData) {
+
+            let missingList = []
+            for (const entityId of Object.keys(extractedData['entity_match_missing'])) {
+                let entityLabel = entityId + ' (' + 'ERR_NOT_EXTRACTED' + ')'
+
+                missingList.push(
+                    <Typography sx={{ ml: 1 }}>{entityLabel}</Typography>
+                )
+
+            }
+
+            const missingComponent = genAccordion("ERROR: UNMATCHED Entities MISSING from the extraction (Expected for Forced Match or 'Dead' Entity)", missingList)
+            components.push(missingComponent)
+        }
+
+        if (extractedData
+            && 'entity_match_unmatched_dict' in extractedData) {
+
+
+            const unmatchedTreeList = []
+            unmatchedTreeList.push(
+                <ResultTreeGroup data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
+            )
+
+            const unmatchedComponent = genAccordion("ERROR: UNMATCHED Entities that were part of the extraction (May need to ajust Rules using the Match Tab)", unmatchedTreeList)
+            components.push(unmatchedComponent)
         }
 
         if (extractedData
@@ -80,7 +154,7 @@ export const useMigrationResultHook = () => {
                     && 'schemas' in extractedData['legend'][type]) {
 
                     schemaComponents.push(
-                        <Typography sx={{ mt: 1 }}>{type + " Schema Legend:"}</Typography>
+                        <Typography sx={{ mt: 1 }}>{"Schema Legend:"}</Typography>
                     )
                     for (const [schemaLabel, schema_key] of Object.entries(extractedData['legend'][type]['schemas'])) {
                         schemaComponents.push(

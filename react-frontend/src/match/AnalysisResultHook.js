@@ -1,6 +1,6 @@
 import * as React from 'react'
 import _ from 'lodash';
-import ResultTree from '../result/ResultTree';
+import ResultTreeGroup from '../result/ResultTreeGroup';
 import { useTenantKey } from '../context/TenantListContext';
 import { ALPHABETIC } from '../options/SortOrderOption';
 import ResultDrawer from '../result/ResultDrawer';
@@ -25,16 +25,15 @@ export const useAnalysisResult = () => {
     return { tenantKey, initialFilterText, analysisResult, hasAnalysisResult, openDrawer, setAnalysisResult, setInitialFilterText, setOpenDrawer }
 }
 
-export const useTreeResult = (defaultSortOrder = ALPHABETIC, containsEntrypoint = false) => {
+export const useTreeResult = (defaultSortOrder = ALPHABETIC) => {
     
     const { tenantKey, initialFilterText, analysisResult, hasAnalysisResult, openDrawer, setAnalysisResult, setInitialFilterText, setOpenDrawer } = useAnalysisResult()
-
 
     const treeComponent = React.useMemo(() => {
         setOpenDrawer(false)
         if (!_.isEmpty(analysisResult)) {
             return (
-                <ResultTree data={analysisResult} defaultSortOrder={defaultSortOrder} initialFilterText={initialFilterText} setOpenDrawer={setOpenDrawer} containsEntrypoint={containsEntrypoint} />
+                <ResultTreeGroup data={analysisResult} defaultSortOrder={defaultSortOrder} initialFilterText={initialFilterText} setOpenDrawer={setOpenDrawer} />
             )
         }
         return null

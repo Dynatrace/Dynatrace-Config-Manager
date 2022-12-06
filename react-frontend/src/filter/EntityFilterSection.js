@@ -6,7 +6,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
 import EntityFilterNameInput from './EntityFilterNameInput';
 import ForcedMatchInput from './ForcedMatchInput';
-import ApplyMigrationBox from './ApplyMigrationBox';
 
 export default function EntityFilterSection() {
 
@@ -63,7 +62,6 @@ export default function EntityFilterSection() {
                     <EntityFilterNameInput />
                     <DateRangePicker label={"Migration Date Range"} />
                     <ForcedMatchInput label={"Forced Match Mapping"} />
-                    <ApplyMigrationBox/>
                 </AccordionDetails>
             </Accordion>
         </React.Fragment>

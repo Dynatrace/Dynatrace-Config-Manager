@@ -9,7 +9,7 @@ export default function MatchTypeLegend() {
 
         for (let match_key of Object.keys(match_type_palettes)) {
             matchTypeTypographyList.push(
-                <Grid item xs={2}>
+                <Grid id={match_key} item xs={2}>
                     <Typography sx={{ color: match_type_palettes[match_key] }}>{"" + match_key + ": " + match_type_label[match_key]}</Typography>
                 </Grid>
             )

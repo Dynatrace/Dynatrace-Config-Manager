@@ -7,9 +7,30 @@ const entityFilterMap = {
     [MIGRATE_SETTINGS_2_0]: true,
 }
 
-export function useEnhancedBackend() {
+export function useEnhancedBackendCurrent() {
 
-    const completeSearchParams = useCompleteSearchParams()
+    const { entityFilterKey } = useEntityFilterKey()
+    const { entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache } = useEntityFilter(entityFilterKey)
+
+    const completeSearchParams = useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache)
+
+    const enhancedBackendFunctions = useEnhancedBackendFunctions(completeSearchParams)
+
+    return enhancedBackendFunctions
+
+}
+
+export function useEnhancedBackendSpecific(entityFilter) {
+
+    const completeSearchParams = useCompleteSearchParams(entityFilter, null, null)
+
+    const enhancedBackendFunctions = useEnhancedBackendFunctions(completeSearchParams)
+
+    return enhancedBackendFunctions
+
+}
+
+export function useEnhancedBackendFunctions(completeSearchParams) {
 
     const enhancedBackendFunctions = useMemo(() => {
 
@@ -38,10 +59,7 @@ export function useEnhancedBackend() {
 
 }
 
-function useCompleteSearchParams() {
-
-    const { entityFilterKey } = useEntityFilterKey()
-    const { entityFilter, setEntityFilterApplyMigrationChecked } = useEntityFilter(entityFilterKey)
+function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache) {
 
     const completeSearchParams = useMemo(() => {
         const completeSearchParamsFunction = (api_method, searchParams) => {
@@ -60,27 +78,60 @@ function useCompleteSearchParams() {
                     completedSearchParams['time_to'] = entityFilter.endTimestamp
                 }
 
-                if (entityFilter.forcedMatchChecked
-                    && entityFilter.forcedMatchMain
-                    && entityFilter.forcedMatchTarget) {
+                if (entityFilter.forcedMatchChecked) {
 
-                    const forcedMatchMain = entityFilter.forcedMatchMain
-                    const forcedMatchTarget = entityFilter.forcedMatchTarget
+                    let isForcedMatch = false
 
-                    completedSearchParams['active_rules'] = JSON.stringify(['6'])
-                    completedSearchParams['context_params'] = JSON.stringify({
-                        'provided_id': {
-                            [forcedMatchTarget]: forcedMatchMain
-                        }
-                    })
+                    if (entityFilter.forcedMatchEntityChecked === true
+                        && entityFilter.forcedMatchMain
+                        && entityFilter.forcedMatchMain !== ""
+                        && entityFilter.forcedMatchTarget
+                        && entityFilter.forcedMatchTarget !== "") {
 
-                    if (entityFilter.applyMigrationChecked) {
-                        setEntityFilterApplyMigrationChecked(false)
-                        completedSearchParams['pre_migration'] = false
+                        const forcedMatchMain = entityFilter.forcedMatchMain
+                        const forcedMatchTarget = entityFilter.forcedMatchTarget
+
+                        completedSearchParams['active_rules'] = JSON.stringify(['6'])
+                        completedSearchParams['context_params'] = JSON.stringify({
+                            'provided_id': {
+                                [forcedMatchTarget]: forcedMatchMain
+                            }
+                        })
+
+                        isForcedMatch = true
                     }
+
+                    if (entityFilter.forcedMatchSchemaIdChecked === true
+                        && entityFilter.forcedMatchSchemaId) {
+
+                        completedSearchParams['forced_schema_id'] = entityFilter.forcedMatchSchemaId
+
+                        isForcedMatch = true
+                    }
+
+                    if (entityFilter.forcedMatchKeyIdChecked
+                        && entityFilter.forcedMatchKeyId) {
+
+                        completedSearchParams['forced_key_id'] = entityFilter.forcedMatchKeyId
+
+                        isForcedMatch = true
+                    }
+
+                    if (isForcedMatch) {
+                        completedSearchParams['use_environment_cache'] = entityFilter.useEnvironmentCache
+                    }
+
                 }
 
-
+                if (entityFilter.applyMigrationChecked) {
+                    if(setEntityFilterApplyMigrationChecked) {
+                        setEntityFilterApplyMigrationChecked(false)
+                    }
+                    if(setEntityFilterUseEnvironmentCache) {
+                        setEntityFilterUseEnvironmentCache(false)
+                    }
+                    completedSearchParams['pre_migration'] = false
+                }
 
             }
             return completedSearchParams
@@ -88,16 +139,8 @@ function useCompleteSearchParams() {
         }
 
         return completeSearchParamsFunction
-    }, [entityFilter, entityFilter.dateRangeChecked, entityFilter.startTimestamp, 
-        entityFilter.endTimestamp])
+    }, [entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache])
 
     return completeSearchParams
 
 }
-
-
-/*
-
-
-
-*/

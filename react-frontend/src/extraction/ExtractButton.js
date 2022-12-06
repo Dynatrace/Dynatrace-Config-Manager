@@ -13,6 +13,7 @@ export default function ExtractButton({ handleChange, api, label, tenantType = T
 
     const handleExtract = () => {
         const searchParams = { 'tenant_key': tenantKey, 'use_cache': useCache }
+        handleChange(null)
 
         backendPost(api, null, searchParams,
             promise =>

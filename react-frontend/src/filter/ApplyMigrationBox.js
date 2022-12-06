@@ -1,4 +1,4 @@
-import { Checkbox, FormControlLabel, Paper } from '@mui/material';
+import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import * as React from 'react';
 import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
 
@@ -13,20 +13,15 @@ export default function ApplyMigrationBox() {
             setEntityFilterApplyMigrationChecked(event.target.checked)
         }
 
-        if (entityFilter.forcedMatchChecked && entityFilter.forcedMatchMain && entityFilter.forcedMatchTarget) {
             return (
                 <FormControlLabel control={<Checkbox checked={entityFilter.applyMigrationChecked}
-                    onChange={handleChangApplyMigrationChecked} />} label={"Apply Migration (Testing, only Forced Matches)"} />
+                    onChange={handleChangApplyMigrationChecked} />} label={"Apply Migration"} />
             )
-        } else {
-            return null
-        }
-    }, [entityFilter.applyMigrationChecked, entityFilter.forcedMatchChecked, entityFilter.forcedMatchMain, 
-        entityFilter.forcedMatchTarget])
+    }, [entityFilter.applyMigrationChecked])
 
     return (
-        <Paper sx={{ mt: 1 }}>
+        <Box sx={{ ml: 1 }}>
             {applyMigrationComponents}
-        </Paper>
+        </Box>
     )
 }

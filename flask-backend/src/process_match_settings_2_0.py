@@ -3,22 +3,23 @@ import settings_2_0
 import json
 import re
 import process_utils
+import process_analysis
 
 
-def match_config(run_info, analysis_filter):
+def match_config(run_info):
 
     _, all_tenant_config_dict = process_utils.execute_match(run_info,
-                                                            LoadConfig, analysis_filter,
+                                                            LoadConfig,
                                                             settings_2_0.extract_function,
                                                             live_extract=False)
 
     return all_tenant_config_dict
 
 
-def match_config_forced_live(run_info, analysis_filter):
+def match_config_forced_live(run_info):
 
     _, all_tenant_config_dict = process_utils.execute_match(run_info,
-                                                            LoadConfig, analysis_filter,
+                                                            LoadConfig,
                                                             settings_2_0.extract_specific_scope,
                                                             live_extract=True)
 
@@ -27,102 +28,210 @@ def match_config_forced_live(run_info, analysis_filter):
 
 class LoadConfig(dict):
 
-    def __init__(self, analysis_filter):
+    def __init__(self, run_info):
 
         self['entity_config_index'] = {}
         self['config_entity_index'] = {}
+        self['multi_matched_schemas'] = {}
+        self['key_not_found_schemas'] = {}
+        self['multi_matched_objects'] = {}
+        self['management_zone_objects'] = {}
         self['configs'] = {}
+        self['entities'] = {}
+        self['forced_schema_id'] = run_info['forced_schema_id']
+        self['forced_key_id'] = run_info['forced_key_id']
 
-        entity_filter_str = ""
+        analysis_filter = run_info['analysis_filter']
+        self['schemas_definitions_dict'] = process_utils.get_tenant_schemas_definitions_dict(
+            run_info, analysis_filter.is_target_tenant)
+
         unique_entity_filter_str = ""
-        nb_entity = 0
         nb_unique_entity = 0
         for entity in analysis_filter.entity_type_list:
-            is_unique = False
-            
-            if(entity in process_utils.UNIQUE_ENTITY_LIST):
-                is_unique = True
-            
-            if(is_unique):
+
+            if (entity in process_utils.UNIQUE_ENTITY_LIST):
                 nb_unique_entity += 1
-                if(nb_unique_entity > 1):
+                if (nb_unique_entity > 1):
                     unique_entity_filter_str += '|'
                 unique_entity_filter_str += entity
-            else:
-                nb_entity += 1
-                if(nb_entity > 1):
-                    entity_filter_str += '|'
-                entity_filter_str += entity
-        
-        if(nb_unique_entity > 0):
-            self['entity_filter_regex'] = r'"scope": "(' + \
-                unique_entity_filter_str + ')()".*'
-        else:
-            self['entity_filter_regex'] = r'((' + \
-                entity_filter_str + ')-[A-Z0-9]*)'
-                
-        if(nb_unique_entity > 0 and nb_entity > 0):
-            print("ERROR: Unique entities mixed with entities: ",  analysis_filter.entity_type_list)
+
+        self['entity_filter_regex_list'] = []
+        if (nb_unique_entity > 0):
+            # This Regex has an empty group, it is because there is no type for unique entities
+            # But we still want to return 2 values to match the entity regex
+            self['entity_filter_regex_list'].append(r'"scope": "(' +
+                                                    unique_entity_filter_str + ')()"')
+
+        self['entity_filter_regex_list'].append(
+            r'(((?:[A-Z]+_)?(?:[A-Z]+_)?(?:[A-Z]+_)?[A-Z]+)-[0-9A-Z]{16})')
+
+        self['management_zone_regex'] = r'(?:mzId\((?:[-]{1})?\d+)|("managementZones": \[[^\]]+\])|(managementZone": "(?:[-]{1})?\d+)'
 
     def analyze(self, config_data):
-        
-        if('errorCode' in config_data):
+
+        if ('errorCode' in config_data):
             print("Error for ", config_data)
+            return
+
+        for conf_object in config_data['items']:
+
+            schema_id = conf_object['schemaId']
+            main_key_value = self.get_main_key_value(conf_object)
+            object_id = conf_object['objectId']
+
+            if (self.is_forced_filtered_out(schema_id, main_key_value)):
+                continue
+
+            object_string = json.dumps(conf_object)
+
+            self.extract_entities(object_id, object_string,
+                                  conf_object, schema_id, main_key_value)
+
+            self.extract_management_zone(object_id, object_string)
+
+    def is_forced_filtered_out(self, schema_id, main_key_value):
+
+        if (self['forced_schema_id'] is None):
+            pass
+        elif (self['forced_schema_id'] == schema_id):
+            pass
         else:
-            for object in config_data['items']:
+            return True
 
-                object_string = json.dumps(object)
-                # r"((APPLICATION|HOST|PROCESS_GROUP|SERVICE)-[A-Z0-9]*)",
-                matches = re.findall(self['entity_filter_regex'],
-                                     object_string)
+        if (self['forced_key_id'] is None):
+            pass
+        elif (self['forced_key_id'] == main_key_value):
+            pass
+        else:
+            return True
 
-                object_id = object['objectId']
+        return False
 
-                if(len(matches) > 0):
+    def extract_management_zone(self, object_id, object_string):
 
-                    self.add_config(object_id, object)
+        matches = re.findall(self['management_zone_regex'], object_string)
 
-                    for match in matches:
-                        entity_id, entity_type = match
-                        
-                        if(entity_type == ""):
-                            entity_type = entity_id
-                            
-                        self.add_index('entity_config_index',
-                                       entity_type, object['schemaId'], entity_id, object_id)
-                        self.add_index('config_entity_index',
-                                       entity_type, object['schemaId'], object_id, entity_id)
+        if (len(matches) > 0):
+            self['management_zone_objects'][object_id] = True
+
+    def extract_entities(self, object_id, object_string, conf_object, schema_id, main_key_value):
+
+        for entity_filter_regex in self['entity_filter_regex_list']:
+
+            matches = re.findall(entity_filter_regex,
+                                 object_string)
+
+            if (len(matches) > 0):
+
+                self.add_config(object_id, conf_object)
+
+                for match in matches:
+                    entity_id, entity_type = match
+
+                    if (entity_type == ""):
+                        entity_type = entity_id
+
+                    self.add_entity(entity_type, entity_id)
+
+                    self.add_entity_config_index(
+                        entity_type, schema_id, entity_id, main_key_value, object_id)
+
+                    self.add_config_entity_index(object_id, entity_id)
 
     def get_results(self):
         return self
 
-    def add_config(self, object_id, object):
+    def get_main_key_value(self, conf_object):
 
-        if(object_id in self['configs']):
-            raise KeyError("Duplicate object id")
+        schema_id = conf_object['schemaId']
 
-        self['configs'][object_id] = object
+        multi_ordered = False
+        multi_object = False
+        if (schema_id in self['schemas_definitions_dict']['ordered_schemas']):
+            multi_ordered = True
+
+        elif (schema_id in self['schemas_definitions_dict']['multi_object_schemas']):
+            multi_object = True
+
+        main_key_value = ""
+        if (multi_object or multi_ordered):
+
+            main_key_list = self['schemas_definitions_dict']['main_keys'][schema_id]
+
+            if (len(main_key_list) > 0):
+                main_key = main_key_list[0]
+
+                if (main_key in conf_object['value']):
+                    main_key_value = conf_object['value'][main_key]
+
+            if (main_key_value == ""):
+                self['key_not_found_schemas'][schema_id] = True
+
+        return main_key_value
+
+    def add_config(self, object_id, conf_object):
+
+        if (object_id in self['configs']):
+            self['multi_matched_objects'][object_id] = True
+        else:
+            self['configs'][object_id] = conf_object
+
+    def add_entity(self, entity_type, entity_id):
+
+        if (entity_type in self['entities']):
+            pass
+        else:
+            self['entities'][entity_type] = {}
+
+        if (entity_id in self['entities'][entity_type]):
+            pass
+        else:
+            self['entities'][entity_type][entity_id] = False
 
     def add_schema_to_index(self, index_type, type, schema_id):
-        if(type in self[index_type]):
+        if (type in self[index_type]):
             pass
         else:
             self[index_type][type] = {}
 
-        if(schema_id in self[index_type][type]):
+        if (schema_id in self[index_type][type]):
             pass
         else:
             self[index_type][type][schema_id] = {}
 
-    def add_index(self, index_type, type, schema_id, key_id, value_id):
+    def add_entity_config_index(self, type, schema_id, entity_id, main_key_value, object_id):
+
+        index_type = 'entity_config_index'
+
         self.add_schema_to_index(index_type, type, schema_id)
 
-        if(key_id in self[index_type][type][schema_id]):
+        if (entity_id in self[index_type][type][schema_id]):
             pass
         else:
-            self[index_type][type][schema_id][key_id] = []
+            self[index_type][type][schema_id][entity_id] = {}
 
-        if(value_id in self[index_type][type][schema_id][key_id]):
+        if (main_key_value in self[index_type][type][schema_id][entity_id]):
             pass
         else:
-            self[index_type][type][schema_id][key_id].append(value_id)
+            self[index_type][type][schema_id][entity_id][main_key_value] = []
+
+        if (object_id in self[index_type][type][schema_id][entity_id][main_key_value]):
+            pass
+        else:
+            self[index_type][type][schema_id][entity_id][main_key_value].append(
+                object_id)
+
+            if (len(self[index_type][type][schema_id][entity_id][main_key_value]) > 1):
+                self['multi_matched_schemas'][schema_id] = True
+
+    def add_config_entity_index(self, object_id, entity_id):
+
+        if (object_id in self['config_entity_index']):
+            pass
+        else:
+            self['config_entity_index'][object_id] = {}
+
+        if (entity_id in self['config_entity_index'][object_id]):
+            pass
+        else:
+            self['config_entity_index'][object_id][entity_id] = ""

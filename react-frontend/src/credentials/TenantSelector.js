@@ -69,6 +69,19 @@ export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN })
 }
 
 const genTenantItem = (tenant, tenantKeyType) => {
+    return (
+        <MenuItem value={tenant.key} key={"menuItem" + tenant.key}>{genTenantLabel(tenant, tenantKeyType)}</MenuItem>
+    )
+}
+
+export const genTenantLabel = (tenant, tenantKeyType) => {
+
+    if(tenant){
+        ;
+    } else {
+        return ""
+    }
+
     let label = tenant.label
     if (!label || label === "") {
         label = "New Tenant"
@@ -81,7 +94,6 @@ const genTenantItem = (tenant, tenantKeyType) => {
         url = ""
     }
     label = "[" + tenantKeyType + "] " + tenant.key + ": " + label + url
-    return (
-        <MenuItem value={tenant.key} key={"menuItem" + tenant.key}>{label}</MenuItem>
-    )
+
+    return label
 }

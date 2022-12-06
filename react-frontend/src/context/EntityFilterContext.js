@@ -8,15 +8,21 @@ export const EntityFilterListContextDispatch = React.createContext();
 const attributes = {
     'label': {},
     'dateRangeChecked': { 'default': false },
-    'startTimestamp': { 'default': dayjs().valueOf() }, 
-    'endTimestamp': { 'default': dayjs().valueOf() }, 
+    'startTimestamp': { 'default': dayjs().valueOf() },
+    'endTimestamp': { 'default': dayjs().valueOf() },
     'forcedMatchChecked': { 'default': false },
-    'forcedMatchMain': {}, 
+    'forcedMatchEntityChecked': { 'default': false },
+    'forcedMatchMain': {},
     'forcedMatchTarget': {},
-    'applyMigrationChecked': {},
+    'forcedMatchSchemaIdChecked': { 'default': false },
+    'forcedMatchSchemaId': {},
+    'forcedMatchKeyIdChecked': { 'default': false },
+    'forcedMatchKeyId': {},
+    'useEnvironmentCache': { 'default': true },
+    'applyMigrationChecked': { 'default': false },
 }
 
-function getDefaultEntityFilter() {
+export function getDefaultEntityFilter() {
     let entityFilter = {}
     for (const key of Object.keys(attributes)) {
         entityFilter[key] = getDefaultValue(key)
@@ -25,11 +31,9 @@ function getDefaultEntityFilter() {
 }
 
 function getDefaultValue(key) {
-    if (attributes[key]) {
-        const defaultValue = attributes[key]['default']
-        if (defaultValue) {
-            return defaultValue
-        }
+    if (key in attributes
+        && 'default' in attributes[key]) {
+        return attributes[key]['default']
     }
     return ""
 }
@@ -106,10 +110,12 @@ function reducer(state, action) {
             break
         case 'updateEntityFilter':
             newState = { ...state }
+            newState['entityFilters'][action.key] = { ...state['entityFilters'][action.key] }
             newState['entityFilters'][action.key] = action.entityFilter
             break
         case 'updateEntityFilterProperty':
             newState = { ...state }
+            newState['entityFilters'][action.key] = { ...state['entityFilters'][action.key] }
             newState['entityFilters'][action.key][action.property] = action.value
             break
         default:

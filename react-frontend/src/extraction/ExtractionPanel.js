@@ -17,7 +17,7 @@ export default function ExtractionPanel() {
 
             gridComponentList.push(
                 <React.Fragment>
-                    <Grid item xs={5}>
+                    <Grid item xs={5} id={keyType}>
                         <ExecutionOptions />
                         <ExtractConfigs tenantType={keyType} />
                         <ExtractEntities tenantType={keyType} />

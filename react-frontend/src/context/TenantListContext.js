@@ -8,7 +8,7 @@ export const TenantListContextState = React.createContext();
 export const TenantListContextDispatch = React.createContext();
 
 function getDefaultTenant() {
-    const tenant = { label: "", headers:"", APIKey: "", url: "", notes: "" }
+    const tenant = { label: "", headers:"", APIKey: "", url: "", disableSSLVerification: false, notes: "" }
     return { ...tenant }
 }
 
@@ -73,10 +73,12 @@ function reducer(state, action) {
             break
         case 'updateTenant':
             newState = { ...state }
+            newState['tenants'][action.key] = {...state['tenants'][action.key]}
             newState['tenants'][action.key] = action.tenant
             break
         case 'updateTenantProperty':
             newState = { ...state }
+            newState['tenants'][action.key] = {...state['tenants'][action.key]}
             newState['tenants'][action.key][action.property] = action.value
             break
         default:
@@ -189,11 +191,15 @@ export function useTenant(key) {
             setTenantProperty("APIKey", value)
         }
 
+        const setTenantDisableSSLVerification = (value) => {
+            setTenantProperty("disableSSLVerification", value)
+        }
+
         const setTenantNotes = (value) => {
             setTenantProperty("notes", value)
         }
 
-        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantNotes }
+        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantDisableSSLVerification, setTenantNotes }
     }
     return {}
 }
