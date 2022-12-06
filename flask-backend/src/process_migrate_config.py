@@ -206,8 +206,10 @@ def execute_all_configs(run_info, tenant_key_target, config_dict, pre_migration)
                     try:
                         action_function(api_config, config_id,
                                         config_dict, pre_migration)
+
                     except AggregateExceptions as err:
-                        process_utils.add_aggregate_error(run_info, err)
+                        process_utils.add_config_aggregate_error(
+                            run_info, config_dict, err)
 
 
 def format_all_to_table(compare_config_dict, result_table=None):

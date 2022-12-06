@@ -102,6 +102,23 @@ def set_run_tags(run_info, tenant_key_main, tenant_key_target, context_params):
     return run_info
 
 
+def add_config_aggregate_error(run_info, config_dict, error):
+    err_msg = str(error)
+    err_msg += " Additional Info on the error: "
+
+    for key in ['schema_id', 'type', 'entity_id_dict', 'key_id']:
+
+        if (key in config_dict):
+
+            if (config_dict[key] == ''):
+                pass
+            else:
+                err_msg = err_msg + ' ' + key + \
+                    ': ' + str(config_dict[key]) + ','
+                    
+    add_aggregate_error(run_info, err_msg)
+
+
 def add_aggregate_error(run_info, error):
     if ('aggregate_error' in run_info):
         pass

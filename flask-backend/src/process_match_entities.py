@@ -314,18 +314,14 @@ def process_match_rules(run_info,
 
     for entity_type, entity_type_dict_main in tenant_entity_dict_main.items():
 
-        matched_entities_dict = process_match_entity_type(run_info, matched_entities_dict, entity_type,
-                                                          entity_type_dict_main, tenant_entity_dict_main,
-                                                          tenant_entity_dict_target,
-                                                          sorted_active_match_rules, context_params)
+        matched_entities_dict = process_match_entity_type(matched_entities_dict, entity_type, entity_type_dict_main,
+                                                          tenant_entity_dict_target, sorted_active_match_rules, context_params)
 
     return matched_entities_dict
 
 
-def process_match_entity_type(run_info, matched_entities_dict, entity_type,
-                              entity_type_dict_main, tenant_entity_dict_main,
-                              tenant_entity_dict_target,
-                              sorted_active_match_rules, context_params):
+def process_match_entity_type(matched_entities_dict, entity_type, entity_type_dict_main,
+                              tenant_entity_dict_target, sorted_active_match_rules, context_params):
 
     index_dict_target = {}
 
@@ -373,62 +369,21 @@ def process_match_entity_type(run_info, matched_entities_dict, entity_type,
 
             if (match_config['action'] == 'index'):
 
-                entity_value_main = get_json_value_from_path(
-                    entity_main, match_config['path'])
+                current_weighted_entity_match_dict, current_max_weight, do_continue = process_index_match(
+                    entity_id_main, entity_main, index_dict_target, match_key, match_config, first_match_layer,
+                    kept_weighted_entity_match_dict, current_weight_value,
+                    current_weighted_entity_match_dict, current_max_weight)
 
-                if (entity_value_main is None
-                   or entity_value_main == ""):
+                if (do_continue == True):
                     continue
-
-                entity_value_main_list = []
-
-                if (type(entity_value_main) is list):
-                    entity_value_main_list = entity_value_main
-                else:
-                    entity_value_main_list = [entity_value_main]
-
-                for value in entity_value_main_list:
-
-                    entity_id_dict_target = None
-                    try:
-                        entity_id_dict_target = index_dict_target[match_key][value]
-                    except KeyError:
-                        continue
-                    
-
-                    if (entity_id_dict_target is None):
-                        pass
-                    elif(entity_id_dict_target['disabled'] == True):
-                        pass
-                    elif (len(entity_id_dict_target['entities']) > 0):
-
-                        entity_id_list_target = list(
-                            entity_id_dict_target['entities'].keys())
-
-                        for entity_id_target in entity_id_list_target:
-
-                            current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
-                                first_match_layer, current_max_weight, entity_id_main, entity_id_target,
-                                match_key, current_weight_value, value,
-                                current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
-                                forced_match=False)
 
             elif (match_config['action'] == 'provided_id'):
 
-                for entity_id_target, entity_id_forced_main in context_params['provided_id'].items():
-
-                    if (entity_id_forced_main == entity_id_main):
-
-                        if (entity_id_forced_main in entity_type_dict_main
-                                and entity_id_target in entity_type_dict_target):
-
-                            value = entity_id_target
-
-                            current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
-                                first_match_layer, current_max_weight, entity_id_main, entity_id_target,
-                                match_key, current_weight_value, value,
-                                current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
-                                forced_match=True)
+                current_weighted_entity_match_dict, current_max_weight = process_provided_id(
+                    entity_id_main, context_params, match_key, first_match_layer,
+                    entity_type_dict_main, entity_type_dict_target,
+                    kept_weighted_entity_match_dict, current_weight_value,
+                    current_weighted_entity_match_dict, current_max_weight)
 
             kept_weighted_entity_match_dict = process_weight_type_change(
                 first_match_layer, entity_id_main, current_max_weight, current_weight_type_value,
@@ -451,6 +406,78 @@ def process_match_entity_type(run_info, matched_entities_dict, entity_type,
                             entity_type_dict_target, match_config, match_rule['match_key'], match_rule['value'], forced_match)
 
     return matched_entities_dict
+
+
+def process_index_match(entity_id_main, entity_main, index_dict_target, match_key, match_config, first_match_layer,
+                        kept_weighted_entity_match_dict, current_weight_value,
+                        current_weighted_entity_match_dict, current_max_weight):
+
+    do_continue = False
+
+    entity_value_main = get_json_value_from_path(
+        entity_main, match_config['path'])
+
+    if (entity_value_main is None
+            or entity_value_main == ""):
+        do_continue = True
+        return current_weighted_entity_match_dict, current_max_weight, do_continue
+
+    entity_value_main_list = []
+
+    if (type(entity_value_main) is list):
+        entity_value_main_list = entity_value_main
+    else:
+        entity_value_main_list = [entity_value_main]
+
+    for value in entity_value_main_list:
+
+        entity_id_dict_target = None
+        try:
+            entity_id_dict_target = index_dict_target[match_key][value]
+        except KeyError:
+            continue
+
+        if (entity_id_dict_target is None):
+            pass
+        elif (entity_id_dict_target['disabled'] == True):
+            pass
+        elif (len(entity_id_dict_target['entities']) > 0):
+
+            entity_id_list_target = list(
+                entity_id_dict_target['entities'].keys())
+
+            for entity_id_target in entity_id_list_target:
+
+                current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
+                    first_match_layer, current_max_weight, entity_id_main, entity_id_target,
+                    match_key, current_weight_value, value,
+                    current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
+                    forced_match=False)
+
+    return current_weighted_entity_match_dict, current_max_weight, do_continue
+
+
+def process_provided_id(entity_id_main, context_params, match_key, first_match_layer,
+                        entity_type_dict_main, entity_type_dict_target,
+                        kept_weighted_entity_match_dict, current_weight_value,
+                        current_weighted_entity_match_dict, current_max_weight):
+
+    for entity_id_target, entity_id_forced_main in context_params['provided_id'].items():
+
+        if (entity_id_forced_main == entity_id_main):
+
+            if (entity_id_forced_main in entity_type_dict_main
+                    and entity_id_target in entity_type_dict_target):
+
+                value = entity_id_target
+
+                current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
+                    first_match_layer, current_max_weight, entity_id_main, entity_id_target,
+                    match_key, current_weight_value, value,
+                    current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
+                    forced_match=True)
+
+    return current_weighted_entity_match_dict, current_max_weight
 
 
 def add_current_weighted_entity(first_match_layer, current_max_weight, entity_id_main, entity_id_target,

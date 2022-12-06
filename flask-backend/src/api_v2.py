@@ -100,6 +100,9 @@ def _handle_response(response, method, api):
     elif (response.status_code == 400):
         raise SettingsValidationError(
             "Settings 2.0 Validation error: ", response.text)
+    elif (response.status_code == 403):
+        raise SettingsValidationError(
+            "Token missing the required scope for Settings 2.0 object: ", response.text)
     else:
         response.raise_for_status()
 
