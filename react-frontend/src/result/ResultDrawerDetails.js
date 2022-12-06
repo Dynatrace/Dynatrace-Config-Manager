@@ -132,8 +132,6 @@ export default function ResultDrawerDetails() {
 
         if ('status' in keyValues) {
 
-            console.log(keyValues['status'] in actionnableStatusMap, keyValues)
-
             if (keyValues['status'] in actionnableStatusMap
                 && 'from' in keyValues
                 && 'to' in keyValues
@@ -156,7 +154,6 @@ export default function ResultDrawerDetails() {
                     entityFilter['forcedMatchKeyId'] = keyId
                 }
                 entityFilter['applyMigrationChecked'] = true
-                console.log(entityFilter)
 
                 let tempKeyId = keyId
                 if (keyId == null) {
@@ -198,7 +195,6 @@ export default function ResultDrawerDetails() {
                             newActionCompleted[from][to][schemaId][tempKeyId]['aggregate_error'] = data['aggregate_error']
                         }
                         newActionCompleted[from][to][schemaId][tempKeyId]['isActionCompleted'] = newActionCOmpleted
-                        console.log(newActionCompleted)
                         setActionCompleted(newActionCompleted)
                     }
                 }
