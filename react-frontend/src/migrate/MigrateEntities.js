@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { MIGRATE_SETTINGS_2_0 } from '../backend/backend';
 import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
-import MatchButton from '../match/MatchButton';
 import { useMigrationResultHook } from '../result/ResultHook';
+import MigrateButtonUncontrolled from './MigrateButtonUncontrolled';
 
 export default function MigrateEntities() {
 
@@ -12,13 +11,15 @@ export default function MigrateEntities() {
     const { entityFilter } = useEntityFilter(entityFilterKey)
 
     const migrateButtonComponent = React.useMemo(() => {
-        let label = "Pre-Migrate Configs V2"
+        let label = "Compare Both Environment Configs"
+        let confirm = false
         if (entityFilter.applyMigrationChecked) {
-            label = "Migrate Configs V2"
+            label = "Update Target Environment Configs"
+            confirm = true
         }
 
         return (
-            <MatchButton handleChange={setExtractedData} api={MIGRATE_SETTINGS_2_0} label={label} />
+            <MigrateButtonUncontrolled handleChange={setExtractedData} label={label} confirm={confirm} />
         )
 
     }, [entityFilter.applyMigrationChecked])

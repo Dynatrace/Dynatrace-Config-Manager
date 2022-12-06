@@ -73,10 +73,12 @@ function reducer(state, action) {
             break
         case 'updateTenant':
             newState = { ...state }
+            newState['tenants'][action.key] = {...state['tenants'][action.key]}
             newState['tenants'][action.key] = action.tenant
             break
         case 'updateTenantProperty':
             newState = { ...state }
+            newState['tenants'][action.key] = {...state['tenants'][action.key]}
             newState['tenants'][action.key][action.property] = action.value
             break
         default:

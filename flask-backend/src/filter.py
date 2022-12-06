@@ -5,9 +5,12 @@ class AnalysisFilter():
 
         self.accept_all_types = True
         self.entity_type_list = entity_type_list
+        '''
         self.entity_type_excluded = ['EC2_INSTANCE', 'SERVICE_INSTANCE', 'PROCESS_GROUP_INSTANCE',
                                      'CONTAINER_GROUP_INSTANCE', 'SERVICE_METHOD_GROUP', 'DISK', 'os:service', 'APPLICATION_METHOD_GROUP',
                                      'cloud:gcp:k8s_container', 'NETWORK_INTERFACE']
+        '''
+        self.entity_type_excluded = []
         print("TODO: Review entity matching for performance, use sorted arrays, not maps, by then, we are excluding some entities from matching, excluded types are: ", self.entity_type_excluded)
 
         if (time_from is None

@@ -38,6 +38,8 @@ class LoadConfig(dict):
         self['management_zone_objects'] = {}
         self['configs'] = {}
         self['entities'] = {}
+        self['forced_schema_id'] = run_info['forced_schema_id']
+        self['forced_key_id'] = run_info['forced_key_id']
 
         analysis_filter = run_info['analysis_filter']
         self['schemas_definitions_dict'] = process_utils.get_tenant_schemas_definitions_dict(
@@ -77,12 +79,33 @@ class LoadConfig(dict):
             main_key_value = self.get_main_key_value(conf_object)
             object_id = conf_object['objectId']
 
+            if (self.is_forced_filtered_out(schema_id, main_key_value)):
+                continue
+
             object_string = json.dumps(conf_object)
 
             self.extract_entities(object_id, object_string,
                                   conf_object, schema_id, main_key_value)
 
             self.extract_management_zone(object_id, object_string)
+
+    def is_forced_filtered_out(self, schema_id, main_key_value):
+
+        if (self['forced_schema_id'] is None):
+            pass
+        elif (self['forced_schema_id'] == schema_id):
+            pass
+        else:
+            return True
+
+        if (self['forced_key_id'] is None):
+            pass
+        elif (self['forced_key_id'] == main_key_value):
+            pass
+        else:
+            return True
+
+        return False
 
     def extract_management_zone(self, object_id, object_string):
 

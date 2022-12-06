@@ -4,29 +4,70 @@ import { convertData } from '../result/ResultConvert';
 import { useSettingStateValue } from '../context/SettingContext';
 import { match_type_label, match_type_palettes } from '../match/matchPalette';
 
-export const useResultTree = (data, sortOrder, searchText, handleContextMenu, containsEntrypoint = false) => {
+const max_items_per_page = 500
 
+export const useResultTree = (data, sortOrder, searchText, handleContextMenu) => {
 
     const { resultBlockSize } = useSettingStateValue()
 
-    const resultTreeObject = React.useMemo(() => {
+    const resultTreeObjectList = React.useMemo(() => {
         const hasSearchText = (searchText !== undefined && searchText !== "")
-        const [tree, metadata, oneFound] = convertData(data, sortOrder, hasSearchText, searchText, containsEntrypoint)
-        let sampleSum = null
-        if (metadata && 'samples_sum' in metadata) {
-            sampleSum = metadata['samples_sum']
+        const [tree, oneFound] = convertData(data, sortOrder, hasSearchText, searchText)
+
+        let typeList = []
+
+        for (let subTree of Object.values(tree['children'])) {
+
+            subTree['id'] = 'root'
+
+            let { children, ...rest } = subTree
+
+            const nb_children = subTree.children.length 
+
+            let typeObject = {...rest, 'nb': nb_children, 'children': []}
+
+            const nb_pages = Math.ceil(nb_children / max_items_per_page)
+
+            for (let i = 0; i < nb_pages; i++) {
+                const childrenPage = children.slice(i * max_items_per_page, (i + 1) * max_items_per_page)
+                let treePage = { ...rest, 'children': childrenPage }
+
+                if (nb_pages >= 2) {
+                    treePage['name'] += " Page " + (i+1)
+                }
+
+                let worst_match_type = 0
+                for (const child of childrenPage) {
+                    if(child.match_type > worst_match_type) {
+                        worst_match_type = child.match_type
+                    }
+                }
+                treePage.match_type = worst_match_type
+
+                const { elements: renderedTreeItems, expandedList: sub_expanded_list } = renderTreeItems(treePage, oneFound, resultBlockSize, handleContextMenu)
+                const expandedList = ["root"].concat(sub_expanded_list)
+
+                if(i == 0) {
+                    typeObject['label'] = renderedTreeItems.props.label
+                    typeObject['label'] = typeObject['label'].replace(/Page \d/g, "")
+                    typeObject['sx'] = renderedTreeItems.props.sx
+                }
+
+                typeObject['children'].push({ renderedTreeItems, expandedList })
+            }
+
+            typeList.push(typeObject)
+
         }
-        const { elements: renderedTreeItems, expandedList: sub_expanded_list } = renderTreeItems(tree, oneFound, sampleSum, resultBlockSize, handleContextMenu)
-        const expandedList = ["root"].concat(sub_expanded_list)
 
-        return { renderedTreeItems, expandedList }
-    }, [data, sortOrder, searchText, containsEntrypoint, resultBlockSize])
+        return typeList
+    }, [data, sortOrder, searchText, resultBlockSize])
 
-    return resultTreeObject
+    return resultTreeObjectList
 
 }
 
-const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleContextMenu, level = 0, isPrevExpandedFound = false, lastExpanded = 0, lastExpandedRoot = 0) => {
+const renderTreeItems = (parent, oneFound, resultBlockSize, handleContextMenu, level = 0, isPrevExpandedFound = false, lastExpanded = 0, lastExpandedRoot = 0) => {
 
     if (parent) {
         level += 1
@@ -39,7 +80,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         let expandedList = []
 
         let props = {
-            key: parent.id, nodeId, label: genName(parent, level, sampleSum),
+            key: parent.id, nodeId, label: genName(parent, level),
             onContextMenu: (event) => { handleContextMenu(event, parent) }
         }
 
@@ -109,12 +150,8 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
         const genChilds = () => {
             if (Array.isArray(parent.children)) {
                 return parent.children.map((child) => {
-                    let subSamplesSum = sampleSum
-                    if (isSubRoot && sampleSum) {
-                        subSamplesSum = sampleSum[parent.name]
-                    }
 
-                    const { elements, expandedList: sub_expanded_list } = renderTreeItems(child, oneFound, subSamplesSum, resultBlockSize, handleContextMenu,
+                    const { elements, expandedList: sub_expanded_list } = renderTreeItems(child, oneFound, resultBlockSize, handleContextMenu,
                         level, isExpandedFound, lastExpanded, lastExpandedRoot)
                     expandedList = expandedList.concat(sub_expanded_list)
                     return elements
@@ -138,15 +175,7 @@ const renderTreeItems = (parent, oneFound, sampleSum, resultBlockSize, handleCon
     }
 }
 
-const sample_types = {
-    "RUNNING": 0,
-    "LOCK": 0,
-    "DISK_IO": 0,
-    "WAIT": 0,
-    "NET_IO": 0
-}
-
-const genName = (node, level, sampleSum = null) => {
+const genName = (node, level) => {
     let nameInfo = { 'name': node.name, 'hasParenthesis': false }
 
     if ('displayName' in node) {
@@ -155,8 +184,8 @@ const genName = (node, level, sampleSum = null) => {
     }
 
     nameInfo = addInfoToLabel(nameInfo, node, 'top_match', 'Top Match')
-    
-    if(level === 2) {
+
+    if (level === 1) {
         nameInfo = addInfoToLabel(nameInfo, node, 'match_type', 'Worst Match Type', matchTypeLabeler)
     } else {
         nameInfo = addInfoToLabel(nameInfo, node, 'match_type', 'Match Type', matchTypeLabeler)
@@ -165,50 +194,12 @@ const genName = (node, level, sampleSum = null) => {
     nameInfo = addInfoToLabel(nameInfo, node, 'total_frames', 'Frames')
     nameInfo = addInfoToLabel(nameInfo, node, 'total_traces', 'Traces')
     nameInfo = addInfoToLabel(nameInfo, node, 'expected_match', 'Expected Match')
-    nameInfo = addSamplesToLabel(nameInfo, node, sampleSum)
 
     if (nameInfo.hasParenthesis) {
         nameInfo.name += ' ) '
     }
 
     return nameInfo.name
-}
-
-const addSamplesToLabel = (nameInfo, node, sampleSum = null) => {
-
-    const samples = node.samples
-    if (samples) {
-        nameInfo = addSampleGroupToLabel(nameInfo, samples, sampleSum)
-    }
-
-    const original_samples = node.original_samples
-    if (original_samples) {
-
-        if (nameInfo.hasParenthesis) {
-            nameInfo.name += ' ) '
-            nameInfo.hasParenthesis = false
-        } else {
-            nameInfo.name += ' ( ) '
-        }
-
-        nameInfo.name += ' of '
-        nameInfo = addSampleGroupToLabel(nameInfo, original_samples, sampleSum)
-    }
-
-    return nameInfo
-
-}
-
-const addSampleGroupToLabel = (nameInfo, samples, sampleSum = null) => {
-
-    if (samples) {
-        for (const key of Object.keys(sample_types)) {
-            nameInfo = addInfoToLabel(nameInfo, samples, key, key, tagLabeler, sampleSum)
-        }
-    }
-
-    return nameInfo
-
 }
 
 const matchTypeLabeler = (nameInfo, label, value, percent) => {
@@ -225,7 +216,7 @@ const addonLabeler = (nameInfo, label, value, percent) => {
     return nameInfo
 }
 
-const addInfoToLabel = (nameInfo, source, key, label, labeler = tagLabeler, sampleSum = null, acceptZero = false) => {
+const addInfoToLabel = (nameInfo, source, key, label, labeler = tagLabeler, acceptZero = false) => {
     if (key in source) {
         ;
     } else {
@@ -250,10 +241,6 @@ const addInfoToLabel = (nameInfo, source, key, label, labeler = tagLabeler, samp
             nameInfo.name += ' ('
         }
 
-        if (sampleSum && sampleSum[key]) {
-            value = parseFloat(value / sampleSum[key] * 100).toFixed(2)
-            percent = '%'
-        }
         nameInfo = labeler(nameInfo, label, value, percent)
     }
 

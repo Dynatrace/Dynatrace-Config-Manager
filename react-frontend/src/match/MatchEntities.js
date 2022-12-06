@@ -8,7 +8,7 @@ import MatchTypeLegend from './MatchTypeLegend';
 
 export default function MatchEntities() {
 
-    const { setAnalysisResult, analysisResultComponent } = useTreeResult(MATCH_TYPE, undefined)
+    const { setAnalysisResult, analysisResultComponent } = useTreeResult(MATCH_TYPE)
 
     return (
         <Paper elevation={0}>

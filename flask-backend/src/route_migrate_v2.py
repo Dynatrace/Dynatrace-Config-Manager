@@ -18,12 +18,14 @@ def migrate_settings_2_0():
     entity_filter = flask_utils.get_arg_json('entity_filter',
                                              process_utils.ALL_BASIC_ENTITY_LIST)
     active_rules = flask_utils.get_arg_json('active_rules')
+    forced_schema_id = flask_utils.get_arg('forced_schema_id')
+    forced_key_id = flask_utils.get_arg('forced_key_id')
     context_params = flask_utils.get_arg_json('context_params')
     use_environment_cache = flask_utils.get_arg_bool('use_environment_cache', False)
     pre_migration = flask_utils.get_arg_bool('pre_migration', True)
 
     run_info = process_utils.get_run_info(
-        tenant_key_main, tenant_key_target, context_params, entity_filter, use_environment_cache=use_environment_cache)
+        tenant_key_main, tenant_key_target, context_params, entity_filter, use_environment_cache=use_environment_cache, forced_schema_id=forced_schema_id, forced_key_id=forced_key_id)
 
     def call_process():
         result = process_migrate_config.migrate_config(

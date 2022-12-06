@@ -3,6 +3,8 @@ from weight import Weight
 import compare
 import process_utils
 
+max_entities_per_index_value = 50
+
 match_rules_catalog = {
     '0': {
         'name': 'Entity Id',
@@ -99,14 +101,10 @@ def get_entities_dict(run_info, active_rules, context_params):
 
 def process_entities_match(run_info, all_tenant_entity_dict, active_rules, context_params):
 
-    index_dict = index_all_tenant_entity_dict(
-        all_tenant_entity_dict, run_info)
-
     tenant_key_target = run_info['tenant_key_target']
     tenant_key_main = run_info['tenant_key_main']
 
     matched_entities_dict = process_match_rules(run_info,
-                                                index_dict[tenant_key_target], index_dict[tenant_key_main],
                                                 all_tenant_entity_dict[tenant_key_target][
                                                     'selected_entities'], all_tenant_entity_dict[tenant_key_main]['selected_entities'],
                                                 active_rules, context_params)
@@ -169,6 +167,7 @@ def convert_matched_to_tree(entities_dict):
 
     entities_dict = convert_object_to_tree(entities_dict)
 
+    entities_dict['name'] = "Matched Entities"
     result = {'data': entities_dict}
 
     return result
@@ -304,92 +303,255 @@ def get_match_type_self(match_entity_list_target, entity_id_main, best_matches):
     return match_type
 
 
-def process_match_rules(run_info, index_dict_target, index_dict_main,
+def process_match_rules(run_info,
                         tenant_entity_dict_target, tenant_entity_dict_main,
                         active_rules, context_params):
 
     matched_entities_dict = init_matched_entities(tenant_entity_dict_main)
 
-    for entity_type in index_dict_main:
+    sorted_active_match_rules = get_sorted_active_match_rules(
+        run_info, active_rules)
 
-        if entity_type in tenant_entity_dict_target:
-            pass
-        else:
-            continue
+    for entity_type, entity_type_dict_main in tenant_entity_dict_main.items():
 
-        for match_key, match_config in match_rules_catalog.items():
+        matched_entities_dict = process_match_entity_type(run_info, matched_entities_dict, entity_type,
+                                                          entity_type_dict_main, tenant_entity_dict_main,
+                                                          tenant_entity_dict_target,
+                                                          sorted_active_match_rules, context_params)
 
-            if (active_rules is None
-               or match_key in active_rules):
+    return matched_entities_dict
+
+
+def process_match_entity_type(run_info, matched_entities_dict, entity_type,
+                              entity_type_dict_main, tenant_entity_dict_main,
+                              tenant_entity_dict_target,
+                              sorted_active_match_rules, context_params):
+
+    index_dict_target = {}
+
+    if (entity_type in tenant_entity_dict_target):
+
+        entity_type_dict_target = tenant_entity_dict_target[entity_type]
+        index_dict_target = index_type_entity_dict(sorted_active_match_rules,
+                                                   entity_type_dict_target)
+
+    else:
+
+        return matched_entities_dict
+
+    previous_weight_type_value = None
+
+    for entity_id_main, entity_main in entity_type_dict_main.items():
+
+        kept_weighted_entity_match_dict = {}
+        first_match_layer = True
+        current_weighted_entity_match_dict = {}
+        current_max_weight = 0
+
+        for match_key, match_config in sorted_active_match_rules.items():
+
+            current_weight_type_value = match_config['weight_type_value']
+            current_weight_value = match_config['weight_value']
+
+            if (previous_weight_type_value is None):
                 pass
-            else:
-                continue
+            elif (previous_weight_type_value != current_weight_type_value):
 
-            if (run_info['self_match'] == True
-               and 'self_match_disabled' in match_config
-               and match_config['self_match_disabled'] == True):
-                continue
+                kept_weighted_entity_match_dict = process_weight_type_change(first_match_layer, entity_id_main, current_max_weight, current_weight_type_value,
+                                                                             current_weighted_entity_match_dict, kept_weighted_entity_match_dict)
+
+                current_weighted_entity_match_dict = {}
+                if (len(kept_weighted_entity_match_dict.keys()) >= 1):
+                    first_match_layer = False
+
+                current_max_weight = 0
+
+                if (len(kept_weighted_entity_match_dict.keys()) == 1):
+                    break
+
+            previous_weight_type_value = current_weight_type_value
 
             if (match_config['action'] == 'index'):
-                matched_entities_dict = match_index(matched_entities_dict, match_key, match_config, index_dict_target,
-                                                    index_dict_main, entity_type, tenant_entity_dict_target, tenant_entity_dict_main)
+
+                entity_value_main = get_json_value_from_path(
+                    entity_main, match_config['path'])
+
+                if (entity_value_main is None
+                   or entity_value_main == ""):
+                    continue
+
+                entity_value_main_list = []
+
+                if (type(entity_value_main) is list):
+                    entity_value_main_list = entity_value_main
+                else:
+                    entity_value_main_list = [entity_value_main]
+
+                for value in entity_value_main_list:
+
+                    entity_id_dict_target = None
+                    try:
+                        entity_id_dict_target = index_dict_target[match_key][value]
+                    except KeyError:
+                        continue
+                    
+
+                    if (entity_id_dict_target is None):
+                        pass
+                    elif(entity_id_dict_target['disabled'] == True):
+                        pass
+                    elif (len(entity_id_dict_target['entities']) > 0):
+
+                        entity_id_list_target = list(
+                            entity_id_dict_target['entities'].keys())
+
+                        for entity_id_target in entity_id_list_target:
+
+                            current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
+                                first_match_layer, current_max_weight, entity_id_main, entity_id_target,
+                                match_key, current_weight_value, value,
+                                current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
+                                forced_match=False)
+
             elif (match_config['action'] == 'provided_id'):
-                matched_entities_dict = match_provided_id(run_info, matched_entities_dict, match_key, match_config,
-                                                          entity_type, tenant_entity_dict_target, tenant_entity_dict_main, context_params)
+
+                for entity_id_target, entity_id_forced_main in context_params['provided_id'].items():
+
+                    if (entity_id_forced_main == entity_id_main):
+
+                        if (entity_id_forced_main in entity_type_dict_main
+                                and entity_id_target in entity_type_dict_target):
+
+                            value = entity_id_target
+
+                            current_weighted_entity_match_dict, current_max_weight = add_current_weighted_entity(
+                                first_match_layer, current_max_weight, entity_id_main, entity_id_target,
+                                match_key, current_weight_value, value,
+                                current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
+                                forced_match=True)
+
+            kept_weighted_entity_match_dict = process_weight_type_change(
+                first_match_layer, entity_id_main, current_max_weight, current_weight_type_value,
+                current_weighted_entity_match_dict, kept_weighted_entity_match_dict)
+
+            for entity_id_target, kept_entity_matched_dict in kept_weighted_entity_match_dict.items():
+
+                for match_rule_type in kept_entity_matched_dict:
+
+                    for match_rule in match_rule_type['match_rules']:
+
+                        forced_match = False
+                        if ('forced_match' in match_rule
+                           and match_rule['forced_match'] == True):
+                            forced_match = True
+
+                        matched_entities_dict[entity_type][entity_id_main]['match_entity_list'] = add_matched_entity(
+                            entity_id_target, matched_entities_dict[entity_type][
+                                entity_id_main]['match_entity_list'],
+                            entity_type_dict_target, match_config, match_rule['match_key'], match_rule['value'], forced_match)
 
     return matched_entities_dict
 
 
-def match_index(matched_entities_dict, match_key, match_config, index_dict_target, index_dict_main, entity_type, tenant_entity_dict_target, tenant_entity_dict_main):
+def add_current_weighted_entity(first_match_layer, current_max_weight, entity_id_main, entity_id_target,
+                                match_key, current_weight_value, value,
+                                current_weighted_entity_match_dict, kept_weighted_entity_match_dict,
+                                forced_match=False):
 
-    dict_items_match_key = None
-    try:
-        dict_items_match_key = index_dict_main[entity_type][match_key].items(
-        )
-    except KeyError:
-        return matched_entities_dict
-
-    for entity_value_main, entity_id_list_main in dict_items_match_key:
-
-        entity_id_list_target = None
-        try:
-            entity_id_list_target = index_dict_target[entity_type][match_key][entity_value_main]
-        except KeyError:
-            continue
-
-        if (entity_id_list_target is None):
-            pass
-
-        else:
-            matched_entities_dict[entity_type] = add_match(matched_entities_dict[entity_type], entity_value_main,
-                                                           entity_id_list_main, entity_id_list_target, match_key, match_config, tenant_entity_dict_target[entity_type], tenant_entity_dict_main[entity_type])
-
-    return matched_entities_dict
-
-
-def match_provided_id(run_info, matched_entities_dict, match_key, match_config,
-                      entity_type, tenant_entity_dict_target, tenant_entity_dict_main, context_params):
-
-    if (run_info['forced_match']):
+    if (first_match_layer):
+        pass
+    elif (entity_id_target in kept_weighted_entity_match_dict):
+        pass
+    elif (entity_id_target == entity_id_main):
         pass
     else:
-        return matched_entities_dict
+        return current_weighted_entity_match_dict, current_max_weight
 
-    for entity_id_target, entity_id_main in context_params['provided_id'].items():
+    if (entity_id_target in current_weighted_entity_match_dict):
+        pass
+    else:
+        current_weighted_entity_match_dict[entity_id_target] = {
+            'weight': 0, 'match_rules': []}
 
-        for entity_type, tenant_type_entity_dict_main in tenant_entity_dict_main.items():
+    current_weighted_entity_match_dict[entity_id_target]['weight'] += current_weight_value
+    current_weighted_entity_match_dict[entity_id_target]['match_rules'].append(
+        {'match_key': match_key, 'value': value, 'forced_match': forced_match})
 
-            if (entity_id_main in tenant_type_entity_dict_main
-               and entity_type in tenant_entity_dict_target
-               and entity_id_target in tenant_entity_dict_target[entity_type]):
+    if (current_weighted_entity_match_dict[entity_id_target]['weight'] > current_max_weight):
+        current_max_weight = current_weighted_entity_match_dict[
+            entity_id_target]['weight']
 
-                matched_entity_dict_main = matched_entities_dict[
-                    entity_type][entity_id_main]['match_entity_list']
+    return current_weighted_entity_match_dict, current_max_weight
 
-                matched_entities_dict[entity_type][entity_id_main]['match_entity_list'] = add_matched_entity(
-                    entity_id_target, matched_entity_dict_main, tenant_entity_dict_target[entity_type], match_config, match_key, tenant_type_entity_dict_main[entity_id_main], forced_match=True)
 
-    return matched_entities_dict
+def process_weight_type_change(first_match_layer, entity_id_main, max_weight, current_weight_type_value,
+                               current_weighted_entity_match_dict, kept_weighted_entity_match_dict):
+
+    if (len(current_weighted_entity_match_dict.keys()) >= 1):
+        pass
+    else:
+        return kept_weighted_entity_match_dict
+
+    kept_weighted_entity_match_dict_new = {}
+
+    for entity_id_matched_target, entity_matched_dict in current_weighted_entity_match_dict.items():
+
+        if (entity_id_matched_target == entity_id_main
+                or entity_matched_dict['weight'] >= max_weight):
+            pass
+        else:
+            continue
+
+        if (entity_id_matched_target in kept_weighted_entity_match_dict):
+            kept_weighted_entity_match_dict_new[entity_id_matched_target] = kept_weighted_entity_match_dict[entity_id_matched_target]
+        else:
+            if (len(kept_weighted_entity_match_dict.keys()) > max_entities_per_index_value):
+                if (entity_id_matched_target == entity_id_main):
+                    pass
+                else:
+                    print("ERROR: TOO MANY MATCHES FOR: ", entity_id_main,
+                          "DROPPING ENTITY: ", entity_id_matched_target)
+                    print("TODO: Display ERROR in the UI")
+                    continue
+
+            kept_weighted_entity_match_dict_new[entity_id_matched_target] = []
+
+        entity_matched_dict['weight_type_value'] = current_weight_type_value
+        kept_weighted_entity_match_dict_new[entity_id_matched_target].append(
+            entity_matched_dict)
+
+    return kept_weighted_entity_match_dict_new
+
+
+def get_sorted_active_match_rules(run_info, active_rules):
+
+    active_match_rules = {}
+    for match_key, match_config in match_rules_catalog.items():
+
+        if (run_info['self_match'] == True
+            and 'self_match_disabled' in match_config
+                and match_config['self_match_disabled'] == True):
+
+            continue
+
+        elif (run_info['forced_match'] == False
+              and match_config['action'] == 'provided_id'):
+
+            continue
+
+        elif (active_rules is None
+                or match_key in active_rules):
+
+            active_match_rules[match_key] = match_config
+
+        else:
+
+            continue
+
+    sorted_active_match_rules = dict(
+        sorted(active_match_rules.items(), key=lambda item: item[1]['weight_type_value'], reverse=True))
+
+    return sorted_active_match_rules
 
 
 def init_matched_entities(tenant_entity_dict_main):
@@ -409,24 +571,6 @@ def init_matched_entities(tenant_entity_dict_main):
                     'displayName': entity_dict['displayName'], 'lastSeenTms': entity_dict['lastSeenTms'], 'match_entity_list': {}}
 
     return matched_entities_dict
-
-
-def add_match(matched_entities_type_dict, entity_value_main, entities_main, entities_target, match_key, match_config, tenant_type_entity_dict_target, tenant_type_entity_dict_main):
-
-    for entity_id_main in entities_main.keys():
-
-        matched_entity_dict_main = matched_entities_type_dict[
-            entity_id_main]['match_entity_list']
-
-        all_keys = list(entities_target.keys())
-        if(len(all_keys) > 10):
-            print("AAAAA Too many matches: ", match_key, entity_id_main, len(all_keys), all_keys)
-
-        for entity_id_target in entities_target.keys():
-            matched_entities_type_dict[entity_id_main]['match_entity_list'] = add_matched_entity(
-                entity_id_target, matched_entity_dict_main, tenant_type_entity_dict_target, match_config, match_key, entity_value_main)
-
-    return matched_entities_type_dict
 
 
 def add_matched_entity(entity_id_target, matched_entity_dict_main, tenant_type_entity_dict_target, match_config, match_key, entity_value_main, forced_match=False):
@@ -470,41 +614,20 @@ def add_matched_entity(entity_id_target, matched_entity_dict_main, tenant_type_e
     return matched_entity_dict_main
 
 
-def index_all_tenant_entity_dict(all_tenant_entity_dict, run_info):
+def index_type_entity_dict(sorted_active_match_rules, entity_type_dict):
 
     index_dict = {}
 
-    for tenant_dict in run_info['tenant_param_dict'].values():
-        tenant_key = tenant_dict['tenant_key']
-        index_dict[tenant_key] = index_tenant_entity_dict(
-            all_tenant_entity_dict[tenant_key]['selected_entities'])
+    for entity_id, entity in entity_type_dict.items():
 
-    return index_dict
+        for match_key, match_config in sorted_active_match_rules.items():
 
+            if (match_config['action'] == 'index'):
 
-def index_tenant_entity_dict(tenant_entity_dict):
-
-    index_dict = {}
-
-    for type, entity_dict in tenant_entity_dict.items():
-
-        if (type in index_dict):
-            pass
-        else:
-            index_dict[type] = {}
-
-        index_type_dict = index_dict[type]
-
-        for entity_id, entity in entity_dict.items():
-
-            for match_key, match_config in match_rules_catalog.items():
-
-                if (match_config['action'] == 'index'):
-
-                    value = get_json_value_from_path(
-                        entity, match_config['path'])
-                    add_value_to_index(
-                        index_type_dict, match_key, value, entity_id)
+                value = get_json_value_from_path(
+                    entity, match_config['path'])
+                add_value_to_index(
+                    index_dict, match_key, value, entity_id)
 
     return index_dict
 
@@ -554,9 +677,18 @@ def add_single_value_to_index(index_type_dict, index_key, value, entity_id):
     if (value in index):
         pass
     else:
-        index[value] = {}
+        index[value] = {"disabled": False, "entities": {}}
 
-    index[value][entity_id] = True
+    if (index[value]["disabled"] == True):
+        return
+
+    index[value]["entities"][entity_id] = True
+
+    if (len(index[value]["entities"].keys()) > 50):
+        print("ERROR: Entity Matching - Disabling index to avoid performance issues: ", entity_id, value, len(index[value]["entities"].keys()),
+              "\n", "TODO: Rewrite Matching to avoid this issue")
+        index[value]["disabled"] = True
+        index[value]["entities"] = {}
 
 
 class LoadEntities:

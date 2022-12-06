@@ -271,7 +271,7 @@ def sort_schemas(all_config_dict, error):
         value_schema_dict[schema_id] = 0.0
 
         for config_dict in all_config_dict[schema_id].values():
-            
+
             value_schema_dict[schema_id] += get_sort_value(config_dict, error)
 
     return dict_to_sorted_list(value_schema_dict)
@@ -298,17 +298,16 @@ def get_sort_value(config_dict, error):
             value += 0.0001
         else:
             value += 1.0
-    
+
     return round(value, 4)
-    
+
 
 def dict_to_sorted_list(sorted_dict):
-    
+
     sorted_dict = dict(
         sorted(sorted_dict.items(), key=lambda item: item[1], reverse=True))
 
     return list(sorted_dict.keys())
-    
 
 
 def format_to_table(config_dict, result_table, key_id_incr_dict):
@@ -428,6 +427,12 @@ def format_to_table(config_dict, result_table, key_id_incr_dict):
     else:
         result_table['entities'][decorated_entity_type][row_key]['data'][column_key] = {
             'status': status_label}
+
+    if (is_unique_entity):
+        pass
+    else:
+        result_table['entities'][decorated_entity_type][row_key]['data'][column_key][
+            'schemaId'] = schema_id
 
     if (key_id == ''):
         pass
@@ -711,7 +716,13 @@ def add_configs(config_dict, action, entity_type, schema_id, key_id, config_tena
         config_dict[schema_id] = {}
 
     if (current_config_id in config_dict[schema_id]):
-        pass
+        if (entity_id_dict is None):
+            pass
+        else:
+            if ('multi_matched' in error_id_list):
+                pass
+            else:
+                error_id_list.append('multi_matched')
     else:
         config_dict[schema_id][current_config_id] = {
             'status': [], 'error': False, 'action': action}
@@ -744,8 +755,8 @@ def add_configs(config_dict, action, entity_type, schema_id, key_id, config_tena
             config_dict[schema_id][current_config_id]['status'] = add_status_to_list(
                 config_dict[schema_id][current_config_id]['status'], 'scope_isn_t_entity')
 
-            print("ERROR: Scope isn't the entity: ", tenant_config_dict['configs'][object_id]
-                  ['scope'], tenant_config_dict['configs'][object_id]['schemaId'], error_id_list)
+            # print("ERROR: Scope isn't the entity: ", tenant_config_dict['configs'][object_id]
+            #      ['scope'], tenant_config_dict['configs'][object_id]['schemaId'], error_id_list)
 
         if (object_id in tenant_config_dict['config_entity_index']):
             config_dict[schema_id][current_config_id]['entity_list'] = list(
@@ -770,6 +781,8 @@ def add_status_to_list(status_list, status):
 
 def index_matched_entities(same_entity_id_index, matched_entities_dict):
 
+    duplicate_source_target_dict = {}
+
     for entity_type in matched_entities_dict.keys():
 
         for entity_id_main in matched_entities_dict[entity_type].keys():
@@ -778,11 +791,24 @@ def index_matched_entities(same_entity_id_index, matched_entities_dict):
 
                 if ('only_top_match' in matched_entities_dict[entity_type][entity_id_main]['match_entity_list'][matched_entity_id]
                    or 'forced_match' in matched_entities_dict[entity_type][entity_id_main]['match_entity_list'][matched_entity_id]):
-                    
-                    # TODO Add code to resolve multiple entities matching each other
-                    if (matched_entity_id in same_entity_id_index):
-                        print("TODO: Manage Override!!!", matched_entity_id, same_entity_id_index[matched_entity_id], (
-                            entity_type, entity_id_main))
+
+                    if (matched_entity_id in duplicate_source_target_dict):
+                        first_main_found_for_target_entity_id = duplicate_source_target_dict[
+                            matched_entity_id]
+
+                        # TODO Add some code to handle these multi source entity to single target entity
+                        # Give a clue to the users about this problem happening, not only a console log
+                        print("Duplicate Entity Match (multiple sources for 1 target entity): ",
+                              "Target: ", matched_entity_id, "      Main: ", entity_id_main,
+                              "\n", "                       ",
+                              "Target: ", matched_entity_id, "First Main: ", first_main_found_for_target_entity_id)
+
+                        if (first_main_found_for_target_entity_id in same_entity_id_index):
+                            del same_entity_id_index[first_main_found_for_target_entity_id]
+
+                        continue
+                    else:
+                        duplicate_source_target_dict[matched_entity_id] = entity_id_main
 
                     same_entity_id_index[entity_id_main] = (
                         entity_type, matched_entity_id)

@@ -2,18 +2,10 @@ import * as React from 'react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import TreeView from '@mui/lab/TreeView'
-import SortOrderOption from '../options/SortOrderOption'
-import { Box, FormControl } from '@mui/material'
-import { useDebouncedTextField } from '../text/DebouncedInputHook'
-import { useResultTree } from './ResultTreeHook'
-import { useResultItemMenu } from './ResultItemMenuHook'
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material'
 
-export default function ResultTree({ data, defaultSortOrder, initialFilterText, setOpenDrawer, containsEntrypoint=false }) {
+export default function ResultTree({ renderedTreeItems, expandedList }) {
 
-    const { text: searchText, debouncedTextField } = useDebouncedTextField(initialFilterText)
-    const [sortOrder, setSortOrder] = React.useState(defaultSortOrder)
-    const { handleContextMenu } = useResultItemMenu(setOpenDrawer, data)
-    const { renderedTreeItems, expandedList } = useResultTree(data, sortOrder, searchText, handleContextMenu, containsEntrypoint)
     const [expanded, setExpanded] = React.useState([])
 
     React.useEffect(() => {
@@ -26,33 +18,38 @@ export default function ResultTree({ data, defaultSortOrder, initialFilterText, 
             setExpanded(nodeIds)
         }
 
+        const nb = renderedTreeItems.props.children.props.children.length
+        const label = nb + " x " + renderedTreeItems.props.label
+        const sx = renderedTreeItems.props.sx
+        
         return (
-            <TreeView
-                aria-label="rich object"
-                defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpandIcon={<ChevronRightIcon />}
-                expanded={expanded}
-                onNodeToggle={onNodeToggle}
-                sx={{ flexGrow: 1, overflowY: 'auto' }}
-            >
-                {renderedTreeItems}
-            </TreeView>
+            // unmountOnExit: Only render the details when the accordion is expanded
+            <Accordion defaultExpanded={false} TransitionProps={{ unmountOnExit: true }} >
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id={label}
+                >
+                    <Typography sx={sx}>{label}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Box sx={{ ml: 2 }}>
+                        <TreeView
+                            aria-label="rich object"
+                            defaultCollapseIcon={<ExpandMoreIcon />}
+                            defaultExpandIcon={<ChevronRightIcon />}
+                            expanded={expanded}
+                            onNodeToggle={onNodeToggle}
+                            sx={{ flexGrow: 1, overflowY: 'auto' }}
+                        >
+                            {renderedTreeItems}
+                        </TreeView>
+                    </Box>
+                </AccordionDetails>
+            </Accordion>
+
         )
     }, [renderedTreeItems, expanded, setExpanded])
 
-    const resultTreeComponent = React.useMemo(() => {
 
-        return (
-            <Box sx={{ ml: 2 }}>
-                <SortOrderOption {...{ sortOrder, setSortOrder }} />
-                <FormControl fullWidth>
-                    {debouncedTextField}
-                </FormControl>
-                {treeViewComponent}
-            </Box>
-            )
-        
-    }, [sortOrder, setSortOrder, debouncedTextField, treeViewComponent])
-
-    return resultTreeComponent
+    return treeViewComponent
 }

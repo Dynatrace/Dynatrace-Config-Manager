@@ -54,7 +54,7 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
     return run_info['schemas_definitions_dict'][get_tenant_id(run_info, is_target_tenant)]
 
 
-def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None, use_environment_cache=None):
+def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None, use_environment_cache=None, forced_schema_id=None, forced_key_id=None):
     run_info = {}
 
     run_info = set_run_tags(
@@ -64,12 +64,12 @@ def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity
     run_info['tenant_key_main'] = tenant_key_main
     run_info['tenant_key_target'] = tenant_key_target
     run_info = set_analysis_filter(
-        run_info, entity_filter, time_from, time_to, use_environment_cache)
+        run_info, entity_filter, time_from, time_to, use_environment_cache, forced_schema_id, forced_key_id)
 
     return run_info
 
 
-def set_analysis_filter(run_info, entity_filter, time_from, time_to, use_environment_cache):
+def set_analysis_filter(run_info, entity_filter, time_from, time_to, use_environment_cache, forced_schema_id, forced_key_id):
     if (run_info['unique_entity']):
         entity_filter = UNIQUE_ENTITY_LIST
 
@@ -80,6 +80,9 @@ def set_analysis_filter(run_info, entity_filter, time_from, time_to, use_environ
         run_info['use_environment_cache'] = True
     else:
         run_info['use_environment_cache'] = use_environment_cache
+
+    run_info['forced_schema_id'] = forced_schema_id
+    run_info['forced_key_id'] = forced_key_id
 
     return run_info
 
@@ -98,12 +101,13 @@ def set_run_tags(run_info, tenant_key_main, tenant_key_target, context_params):
 
     return run_info
 
+
 def add_aggregate_error(run_info, error):
-    if('aggregate_error' in run_info):
+    if ('aggregate_error' in run_info):
         pass
     else:
         run_info['aggregate_error'] = []
-        
+
     run_info['aggregate_error'].append(str(error))
 
 

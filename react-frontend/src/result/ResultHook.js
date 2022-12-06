@@ -7,7 +7,7 @@ import ExtractedTable from '../extraction/ExtractedTable';
 import { useResultItemMenu } from './ResultItemMenuHook';
 import { useResult } from '../context/ResultContext';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ResultTree from './ResultTree';
+import ResultTreeGroup from './ResultTreeGroup';
 import { MATCH_TYPE } from '../options/SortOrderOption';
 
 const error_color = 'error.dark'
@@ -124,7 +124,7 @@ export const useMigrationResultHook = () => {
 
             const unmatchedTreeList = []
             unmatchedTreeList.push(
-                <ResultTree data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
+                <ResultTreeGroup data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
             )
 
             const unmatchedComponent = genAccordion("ERROR: UNMATCHED Entities that were part of the extraction (May need to ajust Rules using the Match Tab)", unmatchedTreeList)
