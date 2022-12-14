@@ -10,7 +10,7 @@ def get(config, api, url_trail):
 
     call_url = config['url'] + api + url_trail
 
-    response = requests.request("GET", call_url, headers=config['headers'], verify=config['verifySSL'])
+    response = requests.request("GET", call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
     if(response.status_code == 404):
         pass
     else:
@@ -24,7 +24,7 @@ def _post_put(config, api, url_trail, payload, method):
     call_url = config['url'] + api + url_trail
 
     response = requests.request(
-        method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'])
+        method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'], proxies=config['proxies'])
 
     if(response.status_code == 404):
         pass

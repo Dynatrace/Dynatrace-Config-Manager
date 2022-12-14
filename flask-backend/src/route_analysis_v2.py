@@ -5,8 +5,10 @@ import handler_api
 import flask_utils
 import process_match_entities
 from process_analysis import ScopeTypeAnalysis, KeyAnalysis
+from process_match_entities import EntitiesDumpJSON, EntityTypeDumpJSON
 import process_utils
 import response_utils
+import entity_v2
 
 blueprint_route_analysis_v2 = Blueprint(
     'blueprint_route_analysis_v2', __name__)
@@ -39,7 +41,8 @@ def match_entities_v2():
                                              process_utils.ALL_BASIC_ENTITY_LIST)
     active_rules = flask_utils.get_arg_json('active_rules')
     context_params = flask_utils.get_arg_json('context_params')
-    use_environment_cache = flask_utils.get_arg_bool('use_environment_cache', False)
+    use_environment_cache = flask_utils.get_arg_bool(
+        'use_environment_cache', False)
 
     run_info = process_utils.get_run_info(
         tenant_key_main, tenant_key_target, context_params, entity_filter, time_from, time_to, use_environment_cache)
@@ -51,3 +54,33 @@ def match_entities_v2():
         return result
 
     return response_utils.call_and_get_response(call_process, run_info)
+
+
+@blueprint_route_analysis_v2.route('/analyze_entities_v2', methods=['POST'])
+@cross_origin(origin='*')
+def analyze_entities_v2():
+    tenant_key = flask_utils.get_arg('tenant_key', '4')
+
+    def call_process():
+        analysis_object = EntitiesDumpJSON()
+
+        done = handler_api.analyze(
+            tenant_key, entity_v2.extract_function, analysis_object)
+        return done
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_analysis_v2.route('/analyze_entity_types_v2', methods=['POST'])
+@cross_origin(origin='*')
+def analyze_entity_types_v2():
+    tenant_key = flask_utils.get_arg('tenant_key', '4')
+
+    def call_process():
+        analysis_object = EntityTypeDumpJSON()
+
+        done = handler_api.analyze(
+            tenant_key, entity_v2.extract_entity_types, analysis_object)
+        return done
+
+    return response_utils.call_and_get_response(call_process)

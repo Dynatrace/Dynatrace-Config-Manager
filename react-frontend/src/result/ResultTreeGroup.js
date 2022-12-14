@@ -16,6 +16,7 @@ export default function ResultTreeGroup({ data, defaultSortOrder, initialFilterT
 
     const resultTreeList = React.useMemo(() => {
         let treeList = []
+
         for (const typeGroup of resultTreeObjectList) {
 
             let typePageList = []

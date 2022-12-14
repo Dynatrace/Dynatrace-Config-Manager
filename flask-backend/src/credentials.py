@@ -125,11 +125,24 @@ def extract_config(tenant_key, tenant_data, headers):
         "Referer": "url",
     }
 
-    config['verifySSL'] = True
     if ('disableSSLVerification' in tenant_data
        and tenant_data['disableSSLVerification'] == True):
-        
+
         config['verifySSL'] = False
+    else:
+        config['verifySSL'] = True
+
+    if ('disableSystemProxies' in tenant_data
+       and tenant_data['disableSystemProxies'] == True):
+        config['proxies'] = {
+            "http": "",
+            "https": "",
+        }
+    else:
+        config['proxies'] = {
+            "http": None,
+            "https": None,
+        }
 
     for key, config_key in config_keys.items():
         if (config_key in tenant_data):
