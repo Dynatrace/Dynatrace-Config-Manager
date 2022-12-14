@@ -41,7 +41,6 @@ method_token_map = {
 
 }
 
-
 def get(config, api, url_trail, query_dict={}):
 
     method = method_get
@@ -49,7 +48,8 @@ def get(config, api, url_trail, query_dict={}):
     url_trail = _append_query_string(url_trail, query_dict)
     call_url = config['url'] + api + url_trail
 
-    response = requests.request(method, call_url, headers=config['headers'], verify=config['verifySSL'])
+    response = requests.request(
+        method, call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
     _handle_response(response, method, api)
 
     return response
@@ -60,7 +60,8 @@ def delete(config, api, url_trail):
 
     call_url = config['url'] + api + url_trail
 
-    response = requests.request(method, call_url, headers=config['headers'], verify=config['verifySSL'])
+    response = requests.request(
+        method, call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
     _handle_response(response, method, api)
 
     return response
@@ -77,19 +78,19 @@ def put(config, api, url_trail, payload):
 def _call_method(method, config, api, url_trail, payload):
 
     call_url = config['url'] + api + url_trail
-    
+
     response = requests.request(
-        method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'])
+        method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'], proxies=config['proxies'])
     _handle_response(response, method, api)
 
     return response
 
 
 def _handle_response(response, method, api):
-    
-    if(response.status_code >= 400):
-         print("Error", response.status_code, ": ", response.text)
-    
+
+    if (response.status_code >= 400):
+        print("Error", response.status_code, ": ", response.text)
+
     if (response.status_code == 401):
         requiredTokenScope = api_token_map[api]["prefix"]
         requiredTokenScope += method_token_map[method]
@@ -120,7 +121,16 @@ def get_json(config, api, url_trail, query_dict={}):
 
     response = get(config, api, url_trail, query_dict)
     result = response.text
-    response_object = json.loads(result)
+
+    try:
+        response_object = json.loads(result)
+    except json.JSONDecodeError as err:
+        print("Call Result is an invalid JSON: ",
+              "\n", err)
+        print("Response: ", response,
+            "\n", "Response Headers: ", response.headers,
+            "\n", "Response Content: ", response.content)
+        raise err
 
     return response_object
 

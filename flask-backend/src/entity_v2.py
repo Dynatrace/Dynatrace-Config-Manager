@@ -2,6 +2,7 @@ import api_v2
 import handler_api
 import process_utils
 
+
 def extract_function(config, use_cache, cache_only, analysis_object, context_params=None, run_info=None):
 
     _ = extract_entities_list(
@@ -11,18 +12,26 @@ def extract_function(config, use_cache, cache_only, analysis_object, context_par
 
 
 def extract_specific_scope(config, use_cache, cache_only, analysis_object, scope, run_info=None):
-    
+
     scope_list = [{"scope": scope}]
-    
-    if(scope in process_utils.UNIQUE_ENTITY_LIST):
+
+    if (scope in process_utils.UNIQUE_ENTITY_LIST):
         return None
-    
+
     handler_api.extract_pages_from_input_list(
         config, scope_list,
         'entities_list', api_v2.entities, scope_query_dict_extractor,
         use_cache, cache_only, analysis_object)
 
     return None
+
+
+def extract_entity_types(config, use_cache, cache_only, analysis_object=None, input_params=None, run_info=None, post_processing_function=None):
+
+    handler_api.extract_pages_from_input_list(
+        config, None,
+        'entity_types', api_v2.entity_types, page_size_query_dict_extractor,
+        use_cache, cache_only, analysis_object, post_processing_function)
 
 
 def extract_entities_list(config, use_cache, cache_only, analysis_object=None):
@@ -34,17 +43,11 @@ def extract_entities_list(config, use_cache, cache_only, analysis_object=None):
             'entities_list', api_v2.entities, type_query_dict_extractor,
             use_cache, cache_only, analysis_object)
 
-    def get_entity_types():
+    use_cache_false = False
+    no_analysis = None
 
-        use_cache_false = False
-        no_analysis = None
-
-        handler_api.extract_pages_from_input_list(
-            config, None,
-            'entity_types', api_v2.entity_types, page_size_query_dict_extractor,
-            use_cache_false, cache_only, no_analysis, get_entity_list_from_types)
-
-    get_entity_types()
+    extract_entity_types(config, use_cache_false, cache_only,
+                     no_analysis, post_processing_function=get_entity_list_from_types)
 
 
 def type_query_dict_extractor(item):
@@ -58,20 +61,22 @@ def type_query_dict_extractor(item):
     query_dict['from'] = 'now-2w'
 
     # query_dict['from'] = 'now-1y' #Default is now-3d
-    
+
     url_trail = None
 
     return item_id, query_dict, url_trail
+
 
 def page_size_query_dict_extractor(item):
 
     item_id = None
     query_dict = {}
     query_dict['pageSize'] = '500'
-    
+
     url_trail = None
 
     return item_id, query_dict, url_trail
+
 
 def scope_query_dict_extractor(item):
 
@@ -82,7 +87,7 @@ def scope_query_dict_extractor(item):
     query_dict['pageSize'] = '1000'
     query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
     query_dict['from'] = 'now-6M'
-    
+
     url_trail = None
 
     return scope, query_dict, url_trail

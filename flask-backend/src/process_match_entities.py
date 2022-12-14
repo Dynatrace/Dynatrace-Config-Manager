@@ -766,3 +766,97 @@ class LoadEntities:
 
     def get_results(self):
         return self.results
+
+
+dump_entity_type_list = ['HOST', 'APPLICATION', 'CUSTOM_APPLICATION',
+                                 'HTTP_CHECK', 'SYNTHETIC_LOCATION', 'MOBILE_APPLICATION',
+                                 'KUBERNETES_CLUSTER', "AWS_AVAILABILITY_ZONE", "AZURE_REGION",
+                                 "GCP_ZONE", "GEOLOC_SITE", "OPENSTACK_REGION", "VMWARE_DATACENTER"]
+
+
+class EntitiesDumpJSON:
+
+    def __init__(self):
+
+        self.results = {}
+        self.results['entities'] = {}
+        self.allowed_entity_type_list = dump_entity_type_list
+
+    def analyze(self, entities_data):
+
+        if ('errorCode' in entities_data):
+            print("Error for ", entities_data)
+
+        else:
+            self.add_entities(entities_data['entities'])
+
+    def add_entities(self, entity_list):
+
+        for entity in entity_list:
+
+            if (entity['type'] in self.allowed_entity_type_list):
+
+                self.add_selected_entity(entity)
+
+    def add_selected_entity(self, entity):
+
+        type = entity['type']
+        entity_id = entity['entityId']
+        
+        if('fromRelationships' in entity):
+            for key in entity['fromRelationships'].keys():
+                entity['fromRelationships'][key] = []
+        if('toRelationships' in entity):
+            for key in entity['toRelationships'].keys():
+                if(key != "isSiteOf"):
+                    entity['toRelationships'][key] = []
+        
+        entity['tags'] = []
+        entity['properties'] = {}
+
+        if (type in self.results['entities']):
+            pass
+
+        else:
+            self.results['entities'][type] = {}
+
+        self.results['entities'][type][entity_id] = entity
+
+    def get_results(self):
+        return self.results['entities']
+
+
+class EntityTypeDumpJSON:
+
+    def __init__(self):
+
+        self.results = {}
+        self.results['entity_types'] = {}
+        self.allowed_entity_type_list = dump_entity_type_list
+
+    def analyze(self, entity_types_data):
+
+        if ('errorCode' in entity_types_data):
+            print("Error for ", entity_types_data)
+
+        else:
+            self.add_entity_types(entity_types_data['types'])
+
+    def add_entity_types(self, entity_type_list):
+
+        for entity_type in entity_type_list:
+            print(entity_type['type'])
+
+            if (entity_type['type'] in self.allowed_entity_type_list):
+                print(entity_type['type'], self.allowed_entity_type_list)
+
+                self.add_selected_entity(entity_type)
+
+    def add_selected_entity(self, entity):
+
+        type = entity['type']
+
+        self.results['entity_types'][type] = entity
+
+    def get_results(self):
+        return self.results['entity_types']
