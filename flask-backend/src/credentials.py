@@ -139,10 +139,7 @@ def extract_config(tenant_key, tenant_data, headers):
             "https": "",
         }
     else:
-        config['proxies'] = {
-            "http": None,
-            "https": None,
-        }
+        config['proxies'] = None
 
     for key, config_key in config_keys.items():
         if (config_key in tenant_data):
