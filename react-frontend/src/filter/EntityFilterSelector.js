@@ -1,15 +1,14 @@
 import * as React from 'react';
 import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { useEntityFilter, useEntityFilterKey, useEntityFilterList } from '../context/EntityFilterContext';
-import { Box, Button, Paper } from '@mui/material';
+import { useEntityFilterKey, useEntityFilterList } from '../context/EntityFilterContext';
+import { MenuItem, Paper } from '@mui/material';
+import { getEntityFilterLabel } from './useFilterOnLabel';
 
 export default function EntityFilterSelector() {
 
     const { entityFilterKey, setEntityFilterKey } = useEntityFilterKey()
-    const { entityFilter } = useEntityFilter(entityFilterKey)
     const { entityFilterList } = useEntityFilterList()
 
     const handleChangeEntityFilterKey = React.useMemo(() => {
@@ -43,45 +42,18 @@ export default function EntityFilterSelector() {
         )
     }, [entityFilterKey, entityFilterItems, handleChangeEntityFilterKey])
 
-    const linkToEntityFilterUI = React.useMemo(() => {
-        if (entityFilter && entityFilter.url && entityFilter.url !== "") {
-            return (
-                <Box>
-                    <Button href={entityFilter ? entityFilter.url : ""} target="_blank" rel=" noopener noreferrer">
-                        Go To EntityFilter UI
-                    </Button>
-                </Box >
-            )
-        } else {
-            return null
-        }
-    }, [entityFilter])
-
     return (
         <Paper>
             <FormControl fullWidth>
                 <InputLabel id="entityFilter-select-label">EntityFilter</InputLabel>
                 {selector}
             </FormControl>
-            {linkToEntityFilterUI}
         </Paper>
     )
 }
 
 const genEntityFilterItem = (entityFilter) => {
-    let label = entityFilter.label
-    if (!label || label === "") {
-        label = "New EntityFilter"
-    }
-    let url = entityFilter.url
-
-    if (url && entityFilter.url !== "") {
-        url = " ( " + url + " ) "
-    } else {
-        url = ""
-    }
-    label = entityFilter.key + ": " + label + url
     return (
-        <MenuItem value={entityFilter.key} key={"menuItem" + entityFilter.key}>{label}</MenuItem>
+        <MenuItem value={entityFilter.key} key={"menuItem" + entityFilter.key}>{getEntityFilterLabel(entityFilter)}</MenuItem>
     )
 }

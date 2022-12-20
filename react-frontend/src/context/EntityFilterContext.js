@@ -18,7 +18,12 @@ const attributes = {
     'forcedMatchSchemaId': {},
     'forcedMatchKeyIdChecked': { 'default': false },
     'forcedMatchKeyId': {},
-    'useEnvironmentCache': { 'default': true },
+    'forcedKeepActionChecked': { 'default': false },
+    'forcedKeepAddChecked': { 'default': true },
+    'forcedKeepDeleteChecked': { 'default': true },
+    'forcedKeepUpdateChecked': { 'default': true },
+    'forcedKeepIdenticalChecked': { 'default': true },
+    'useEnvironmentCache': { 'default': false },
     'applyMigrationChecked': { 'default': false },
 }
 

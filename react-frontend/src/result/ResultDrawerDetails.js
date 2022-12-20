@@ -139,6 +139,7 @@ export default function ResultDrawerDetails() {
 
                 const { from, to, schemaId } = keyValues
                 let keyId = null
+                const statusLabel = actionnableStatusMap[keyValues['status']]
 
                 let entityFilter = getDefaultEntityFilter()
                 entityFilter['forcedMatchChecked'] = true
@@ -147,7 +148,7 @@ export default function ResultDrawerDetails() {
                 entityFilter['forcedMatchTarget'] = to
                 entityFilter['forcedMatchSchemaIdChecked'] = true
                 entityFilter['forcedMatchSchemaId'] = schemaId
-
+                entityFilter['useEnvironmentCache'] = true
                 if ('key_id' in keyValues) {
                     entityFilter['forcedMatchKeyIdChecked'] = true
                     keyId = keyValues['key_id']
@@ -155,12 +156,17 @@ export default function ResultDrawerDetails() {
                 }
                 entityFilter['applyMigrationChecked'] = true
 
+                entityFilter['forcedKeepActionChecked'] = true
+                entityFilter.forcedKeepAddChecked = statusLabel === "Add"
+                entityFilter.forcedKeepDeleteChecked = statusLabel === "Delete"
+                entityFilter.forcedKeepUpdateChecked = statusLabel === "Update"
+                entityFilter.forcedKeepIdenticalChecked = statusLabel === "Identical"
+
                 let tempKeyId = keyId
                 if (keyId == null) {
                     tempKeyId = ""
                 }
 
-                const statusLabel = actionnableStatusMap[keyValues['status']]
 
                 disableButtonAfterCompletion = (data) => {
                     if (data == null) {

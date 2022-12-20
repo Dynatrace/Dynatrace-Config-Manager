@@ -803,16 +803,19 @@ class EntitiesDumpJSON:
         type = entity['type']
         entity_id = entity['entityId']
         
+        # Clean unused entity properties, some exceptions for Hosts (we want to display these jsons) 
         if('fromRelationships' in entity):
             for key in entity['fromRelationships'].keys():
                 entity['fromRelationships'][key] = []
         if('toRelationships' in entity):
             for key in entity['toRelationships'].keys():
-                if(key != "isSiteOf"):
+                if(key != "isSiteOf" and key != "isClusterOfHost"):
                     entity['toRelationships'][key] = []
-        
-        entity['tags'] = []
-        entity['properties'] = {}
+                    
+        if(type != 'HOST'):
+            
+            entity['tags'] = []
+            entity['properties'] = {}
 
         if (type in self.results['entities']):
             pass

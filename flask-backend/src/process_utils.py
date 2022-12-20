@@ -54,7 +54,9 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
     return run_info['schemas_definitions_dict'][get_tenant_id(run_info, is_target_tenant)]
 
 
-def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None, use_environment_cache=None, forced_schema_id=None, forced_key_id=None):
+def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None, 
+                 use_environment_cache=None, forced_schema_id=None, forced_key_id=None,
+                 forced_keep_action_only=None):
     run_info = {}
 
     run_info = set_run_tags(
@@ -65,6 +67,7 @@ def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity
     run_info['tenant_key_target'] = tenant_key_target
     run_info = set_analysis_filter(
         run_info, entity_filter, time_from, time_to, use_environment_cache, forced_schema_id, forced_key_id)
+    run_info['forced_keep_action_only'] = forced_keep_action_only
 
     return run_info
 
@@ -127,6 +130,17 @@ def add_aggregate_error(run_info, error):
 
     run_info['aggregate_error'].append(str(error))
 
+
+def is_filtered_out_action(run_info, action):
+    if(run_info['forced_keep_action_only'] is None):
+        return False
+    
+    if(action in run_info['forced_keep_action_only']):
+        if(run_info['forced_keep_action_only'][action] == True):
+            return False
+    
+    return True
+        
 
 def get_tenant_param_dict(tenant_key_main, tenant_key_target, run_info, context_params=None):
 

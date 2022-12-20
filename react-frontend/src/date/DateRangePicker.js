@@ -1,4 +1,4 @@
-import { Checkbox, FormControlLabel, Paper, TextField } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, Paper, TextField } from '@mui/material';
 import * as React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -62,11 +62,15 @@ export default function DateRangePicker({ label }) {
 
     return (
         <React.Fragment>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <FormControlLabel control={<Checkbox checked={entityFilter.dateRangeChecked}
-                    onChange={handleChangDateRangeChecked} />} label={label} />
-                {dateTimePickerComponents}
-            </LocalizationProvider>
+            <Box sx={{ mt: 1 }} border={1}>
+                <Box sx={{ mx: 2 }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <FormControlLabel control={<Checkbox checked={entityFilter.dateRangeChecked}
+                            onChange={handleChangDateRangeChecked} />} label={label} />
+                        {dateTimePickerComponents}
+                    </LocalizationProvider>
+                </Box>
+            </Box>
         </React.Fragment>
     );
 }
