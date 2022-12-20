@@ -70,7 +70,8 @@ export default function ForcedMatchInput({ label }) {
         } else {
             return null
         }
-    }, [entityFilter])
+    }, [entityFilter, setEntityFilterForcedMatchEntityChecked, setEntityFilterForcedMatchMain, setEntityFilterForcedMatchTarget,
+        setEntityFilterUseEnvironmentCache])
 
     return (
         <Box sx={{ mt: 1 }} border={1}>

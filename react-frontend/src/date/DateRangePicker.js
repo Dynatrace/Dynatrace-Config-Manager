@@ -25,7 +25,7 @@ export default function DateRangePicker({ label }) {
             props.helperText = "Empty timeframe"
         }
         return props
-    }, [entityFilter.startTimestamp, entityFilter.endTimestamp])
+    }, [entityFilter])
 
     const dateTimePickerComponents = React.useMemo(() => {
 
@@ -57,8 +57,7 @@ export default function DateRangePicker({ label }) {
         } else {
             return null
         }
-    }, [entityFilter.dateRangeChecked, entityFilter.startTimestamp, entityFilter.endTimestamp,
-        error])
+    }, [entityFilter, error, setEntityFilterStartTimestamp, setEntityFilterEndTimestamp ])
 
     return (
         <React.Fragment>

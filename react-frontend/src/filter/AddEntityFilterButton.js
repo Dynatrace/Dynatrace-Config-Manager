@@ -2,7 +2,7 @@ import * as React from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import IconButton from '@mui/material/IconButton';
 import { Typography } from '@mui/material';
-import { TENANT_KEY_TYPE_MAIN, useEntityFilterKey, useEntityFilterList } from '../context/EntityFilterContext';
+import { useEntityFilterKey, useEntityFilterList } from '../context/EntityFilterContext';
 
 export default function AddEntityFilterButton() {
 

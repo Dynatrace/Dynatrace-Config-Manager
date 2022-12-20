@@ -123,7 +123,9 @@ export default function FilterInput({ label }) {
                 </FormControl>
             </React.Fragment >
         )
-    }, [entityFilter])
+    }, [entityFilter, setEntityFilterForcedKeepActionChecked, setEntityFilterForcedKeepAddChecked, setEntityFilterForcedKeepDeleteChecked, setEntityFilterForcedKeepIdenticalChecked, 
+        setEntityFilterForcedKeepUpdateChecked, setEntityFilterForcedMatchKeyId, setEntityFilterForcedMatchKeyIdChecked, 
+        setEntityFilterForcedMatchSchemaId, setEntityFilterForcedMatchSchemaIdChecked])
 
     return (
         <Box sx={{ mt: 1 }} border={1}>
