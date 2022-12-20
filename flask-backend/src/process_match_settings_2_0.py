@@ -3,7 +3,6 @@ import settings_2_0
 import json
 import re
 import process_utils
-import process_analysis
 
 
 def match_config(run_info):
@@ -35,6 +34,7 @@ class LoadConfig(dict):
         self['multi_matched_schemas'] = {}
         self['key_not_found_schemas'] = {}
         self['multi_matched_objects'] = {}
+        self['multi_matched_key_id_object'] = {}
         self['management_zone_objects'] = {}
         self['configs'] = {}
         self['entities'] = {}
@@ -222,7 +222,13 @@ class LoadConfig(dict):
                 object_id)
 
             if (len(self[index_type][type][schema_id][entity_id][main_key_value]) > 1):
-                self['multi_matched_schemas'][schema_id] = True
+                print("Schema has multiple identical key_ids: ",
+                      schema_id, entity_id, main_key_value, object_id)
+                #self['multi_matched_schemas'][schema_id] = True
+                self['multi_matched_key_id_object'][object_id] = True
+                if (len(self[index_type][type][schema_id][entity_id][main_key_value]) == 2):
+                    previous_object_id = self[index_type][type][schema_id][entity_id][main_key_value][0]
+                    self['multi_matched_key_id_object'][previous_object_id] = True
 
     def add_config_entity_index(self, object_id, entity_id):
 

@@ -80,8 +80,6 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
 
                 if (entityFilter.forcedMatchChecked) {
 
-                    let isForcedMatch = false
-
                     if (entityFilter.forcedMatchEntityChecked === true
                         && entityFilter.forcedMatchMain
                         && entityFilter.forcedMatchMain !== ""
@@ -98,36 +96,38 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
                             }
                         })
 
-                        isForcedMatch = true
-                    }
-
-                    if (entityFilter.forcedMatchSchemaIdChecked === true
-                        && entityFilter.forcedMatchSchemaId) {
-
-                        completedSearchParams['forced_schema_id'] = entityFilter.forcedMatchSchemaId
-
-                        isForcedMatch = true
-                    }
-
-                    if (entityFilter.forcedMatchKeyIdChecked
-                        && entityFilter.forcedMatchKeyId) {
-
-                        completedSearchParams['forced_key_id'] = entityFilter.forcedMatchKeyId
-
-                        isForcedMatch = true
-                    }
-
-                    if (isForcedMatch) {
                         completedSearchParams['use_environment_cache'] = entityFilter.useEnvironmentCache
                     }
+                }
 
+                if (entityFilter.forcedMatchSchemaIdChecked === true
+                    && entityFilter.forcedMatchSchemaId) {
+
+                    completedSearchParams['forced_schema_id'] = entityFilter.forcedMatchSchemaId
+                }
+
+                if (entityFilter.forcedMatchKeyIdChecked
+                    && entityFilter.forcedMatchKeyId) {
+
+                    completedSearchParams['forced_key_id'] = entityFilter.forcedMatchKeyId
+                }
+
+                if (entityFilter.forcedKeepActionChecked) {
+                    const forcedKeepAction = {}
+                    console.log(entityFilter)
+                    forcedKeepAction['Add'] = entityFilter.forcedKeepAddChecked
+                    forcedKeepAction['Delete'] = entityFilter.forcedKeepDeleteChecked
+                    forcedKeepAction['Update'] = entityFilter.forcedKeepUpdateChecked
+                    forcedKeepAction['Identical'] = entityFilter.forcedKeepIdenticalChecked
+                    console.log(entityFilter.forcedKeepIdenticalChecked)
+                    completedSearchParams['forced_keep_action_only'] = JSON.stringify(forcedKeepAction)
                 }
 
                 if (entityFilter.applyMigrationChecked) {
-                    if(setEntityFilterApplyMigrationChecked) {
+                    if (setEntityFilterApplyMigrationChecked) {
                         setEntityFilterApplyMigrationChecked(false)
                     }
-                    if(setEntityFilterUseEnvironmentCache) {
+                    if (setEntityFilterUseEnvironmentCache) {
                         setEntityFilterUseEnvironmentCache(false)
                     }
                     completedSearchParams['pre_migration'] = false

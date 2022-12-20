@@ -94,7 +94,9 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
 
     updated_entity_data = copy.deepcopy(
         all_tenant_entity_values[tenant_key_main]['data'])
-
+    
+    entity_accepted = False
+    
     settings_key = entity_copy_configs[entity_type]['settings_key']
     for copy_property, default_value in entity_copy_configs[entity_type]['settings_and_default_value'].items():
         is_in_main = False
@@ -121,19 +123,20 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
 
             tenant_config_dict = create_tenant_config_dict(
                 entity_id_target, all_tenant_entity_values, tenant_key_target, settings_key, copy_property)
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, '', 'target', entity_id_target,
+            compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, action, entity_type, copy_property, '', 'target', entity_id_target,
                                                                      [entity_id_target], tenant_config_dict, entity_id_dict, identical)
 
-            tenant_config_dict = create_tenant_config_dict(
-                entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, action, entity_type, copy_property, '', 'main', entity_id_main,
-                                                                     [entity_id_main], tenant_config_dict, entity_id_dict, identical)
+            if(entity_accepted == True):
+                tenant_config_dict = create_tenant_config_dict(
+                    entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
+                compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, action, entity_type, copy_property, '', 'main', entity_id_main,
+                                                                        [entity_id_main], tenant_config_dict, identical=identical)
 
         elif (is_in_main):
 
             tenant_config_dict = create_tenant_config_dict(
                 entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
-            compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_ADD, entity_type, copy_property, '', 'main', entity_id_main,
+            compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, process_migrate_config.ACTION_ADD, entity_type, copy_property, '', 'main', entity_id_main,
                                                                      [entity_id_main], tenant_config_dict, entity_id_dict)
 
             updated_entity_data[settings_key][
@@ -148,14 +151,14 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
             if (is_deeply_different):
                 tenant_config_dict = create_tenant_config_dict(
                     entity_id_target, all_tenant_entity_values, tenant_key_target, settings_key, copy_property)
-                compare_config_dict = process_migrate_config.add_configs(compare_config_dict, process_migrate_config.ACTION_DELETE, entity_type, copy_property, '', 'target', entity_id_target,
+                compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, process_migrate_config.ACTION_DELETE, entity_type, copy_property, '', 'target', entity_id_target,
                                                                          [entity_id_target], tenant_config_dict, entity_id_dict)
 
                 updated_entity_data[settings_key][copy_property] = default_value
 
     if (pre_migration == True):
         pass
-    else:
+    elif(entity_accepted == True):
         update_response = update_entity(
             tenant_key_target, all_tenant_entity_values[tenant_key_target]['entity_id'], updated_entity_data)
         print(update_response)
@@ -171,6 +174,7 @@ def create_tenant_config_dict(entity_id, all_tenant_entity_values, tenant_key, s
 
     return {
         'multi_matched_objects': {},
+        'multi_matched_key_id_object': {},
         'management_zone_objects': {},
         'configs': {
             entity_id: all_tenant_entity_values[tenant_key]['data'][settings_key][copy_property]
