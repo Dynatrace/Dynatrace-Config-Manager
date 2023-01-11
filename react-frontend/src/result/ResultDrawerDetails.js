@@ -124,6 +124,7 @@ export default function ResultDrawerDetails() {
             'D': 'Delete',
             'U': 'Update',
             'A': 'Add',
+            'P': 'Preemptive Add',
         }
 
         let isActionCompleted = false
