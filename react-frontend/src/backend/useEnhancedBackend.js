@@ -114,13 +114,16 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
 
                 if (entityFilter.forcedKeepActionChecked) {
                     const forcedKeepAction = {}
-                    console.log(entityFilter)
                     forcedKeepAction['Add'] = entityFilter.forcedKeepAddChecked
                     forcedKeepAction['Delete'] = entityFilter.forcedKeepDeleteChecked
                     forcedKeepAction['Update'] = entityFilter.forcedKeepUpdateChecked
                     forcedKeepAction['Identical'] = entityFilter.forcedKeepIdenticalChecked
-                    console.log(entityFilter.forcedKeepIdenticalChecked)
+                    forcedKeepAction['Preemptive'] = entityFilter.forcedKeepPreemptiveChecked
                     completedSearchParams['forced_keep_action_only'] = JSON.stringify(forcedKeepAction)
+                }
+
+                if (entityFilter.preemptiveConfigCopy === true) {
+                    completedSearchParams['preemptive_config_copy'] = entityFilter.preemptiveConfigCopy
                 }
 
                 if (entityFilter.applyMigrationChecked) {

@@ -146,9 +146,15 @@ export function useTenantList() {
         });
     }
 
-    const addTenant = () => {
+    const addTenant = (inputTenantData=null) => {
         const newTenantId = maxId + 1
-        const action = { type: "updateTenant", key: newTenantId, tenant: getDefaultTenant() }
+        let tenantData = undefined
+        if(inputTenantData) {
+            tenantData = inputTenantData
+        } else {
+            tenantData = getDefaultTenant()
+        }
+        const action = { type: "updateTenant", key: newTenantId, tenant: tenantData }
         contextDispatch(action)
         return newTenantId
     }

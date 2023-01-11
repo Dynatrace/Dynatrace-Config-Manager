@@ -4,6 +4,7 @@ import AddTenantButton from './AddTenantButton';
 import TenantMigrationSelector from './TenantMigrationSelector';
 import { Grid } from '@mui/material';
 import { useMigrationGridConfig } from '../migrationGrid/useMigrationGridConfig';
+import CopyTenantButton from './CopyTenantButton';
 
 export default function CredentialPanel() {
     const gridConfigList = useMigrationGridConfig()
@@ -18,6 +19,7 @@ export default function CredentialPanel() {
                 <React.Fragment>
                     <Grid item xs={5}>
                         <AddTenantButton tenantType={keyType} />
+                        <CopyTenantButton tenantType={keyType} />
                         <TenantConfig tenantType={keyType} />
                     </Grid>
                     <Grid item xs={1} />

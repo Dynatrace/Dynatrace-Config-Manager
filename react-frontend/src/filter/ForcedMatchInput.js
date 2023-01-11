@@ -1,8 +1,14 @@
-import { Box, Checkbox, FormControl, FormControlLabel, Grid, Paper, TextField } from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, Grid, Paper, TextField, Typography } from '@mui/material';
 import * as React from 'react';
 import { useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
+import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
+
+const error_color = 'error.dark'
 
 export default function ForcedMatchInput({ label }) {
+
+    const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
+    const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
 
     const { entityFilterKey } = useEntityFilterKey()
     const { entityFilter, setEntityFilterForcedMatchChecked,
@@ -14,7 +20,7 @@ export default function ForcedMatchInput({ label }) {
     }
 
     const forcedMatchComponents = React.useMemo(() => {
-
+        
         const handleChangeForcedMatchEntityChecked = (event) => {
             setEntityFilterForcedMatchEntityChecked(event.target.checked)
         }
@@ -34,7 +40,8 @@ export default function ForcedMatchInput({ label }) {
                 if (entityFilter.forcedKeepAddChecked
                     || entityFilter.forcedKeepDeleteChecked
                     || entityFilter.forcedKeepUpdateChecked
-                    || entityFilter.forcedKeepIdenticalChecked) {
+                    || entityFilter.forcedKeepIdenticalChecked
+                    || entityFilter.forcedKeepPreemptiveChecked) {
 
                 } else {
                     // show error label
@@ -73,6 +80,16 @@ export default function ForcedMatchInput({ label }) {
     }, [entityFilter, setEntityFilterForcedMatchEntityChecked, setEntityFilterForcedMatchMain, setEntityFilterForcedMatchTarget,
         setEntityFilterUseEnvironmentCache])
 
+    const forcedMatchErrorLabel = React.useMemo(() => {
+        if(tenantKeyMain === tenantKeyTarget) {
+            return (
+                <Typography sx={{ color: error_color }}>Warning: Forced Match will work on the same tenant, but you need to define 2 different tenant credentials (which can be a copy of each other)</Typography>
+            )
+        } else {
+            return null
+        }
+    }, [tenantKeyMain, tenantKeyTarget])
+
     return (
         <Box sx={{ mt: 1 }} border={1}>
             <Box sx={{ mx: 2 }}>
@@ -80,6 +97,7 @@ export default function ForcedMatchInput({ label }) {
                     <Box>
                         <FormControlLabel control={<Checkbox checked={entityFilter.forcedMatchChecked}
                             onChange={handleChangForcedMatchChecked} />} label={label} />
+                            {forcedMatchErrorLabel}
                     </Box>
                     <Box>
                         {forcedMatchComponents}

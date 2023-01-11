@@ -756,7 +756,8 @@ class LoadEntities:
         else:
             self.results['selected_entities'][type] = {}
 
-        self.results['selected_entities'][type][entity_id] = entity
+        self.results['selected_entities'][type][entity_id] = cleanEntity(
+            entity)
 
     def add_entity(self, entity):
 
@@ -802,20 +803,6 @@ class EntitiesDumpJSON:
 
         type = entity['type']
         entity_id = entity['entityId']
-        
-        # Clean unused entity properties, some exceptions for Hosts (we want to display these jsons) 
-        if('fromRelationships' in entity):
-            for key in entity['fromRelationships'].keys():
-                entity['fromRelationships'][key] = []
-        if('toRelationships' in entity):
-            for key in entity['toRelationships'].keys():
-                if(key != "isSiteOf" and key != "isClusterOfHost"):
-                    entity['toRelationships'][key] = []
-                    
-        if(type != 'HOST'):
-            
-            entity['tags'] = []
-            entity['properties'] = {}
 
         if (type in self.results['entities']):
             pass
@@ -823,10 +810,29 @@ class EntitiesDumpJSON:
         else:
             self.results['entities'][type] = {}
 
-        self.results['entities'][type][entity_id] = entity
+        self.results['entities'][type][entity_id] = cleanEntity(entity)
 
     def get_results(self):
         return self.results['entities']
+
+
+def cleanEntity(entity):
+
+    # Clean unused entity properties, some exceptions for Hosts (we want to display these jsons)
+    if ('fromRelationships' in entity):
+        for key in entity['fromRelationships'].keys():
+            entity['fromRelationships'][key] = []
+    if ('toRelationships' in entity):
+        for key in entity['toRelationships'].keys():
+            if (key != "isSiteOf" and key != "isClusterOfHost"):
+                entity['toRelationships'][key] = []
+
+    if (type != 'HOST'):
+
+        entity['tags'] = []
+        entity['properties'] = {}
+
+    return entity
 
 
 class EntityTypeDumpJSON:
