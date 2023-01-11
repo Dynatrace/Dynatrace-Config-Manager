@@ -155,12 +155,14 @@ export default function ResultDrawerDetails() {
                     entityFilter['forcedMatchKeyId'] = keyId
                 }
                 entityFilter['applyMigrationChecked'] = true
+                entityFilter['preemptiveConfigCopy'] = statusLabel === "Preemptive"
 
                 entityFilter['forcedKeepActionChecked'] = true
                 entityFilter.forcedKeepAddChecked = statusLabel === "Add"
                 entityFilter.forcedKeepDeleteChecked = statusLabel === "Delete"
                 entityFilter.forcedKeepUpdateChecked = statusLabel === "Update"
                 entityFilter.forcedKeepIdenticalChecked = statusLabel === "Identical"
+                entityFilter.forcedKeepPreemptiveChecked = statusLabel === "Preemptive"
 
                 let tempKeyId = keyId
                 if (keyId == null) {

@@ -10,7 +10,7 @@ export default function FilterInput({ label }) {
         setEntityFilterForcedMatchKeyIdChecked, setEntityFilterForcedMatchKeyId,
         setEntityFilterForcedKeepActionChecked, setEntityFilterForcedKeepAddChecked,
         setEntityFilterForcedKeepDeleteChecked, setEntityFilterForcedKeepUpdateChecked,
-        setEntityFilterForcedKeepIdenticalChecked,
+        setEntityFilterForcedKeepIdenticalChecked, setEntityFilterForcedKeepPreemptiveChecked,
     } = useEntityFilter(entityFilterKey)
 
     const forcedMatchComponents = React.useMemo(() => {
@@ -33,6 +33,9 @@ export default function FilterInput({ label }) {
         const handleChangeForcedKeepAddChecked = (event) => {
             setEntityFilterForcedKeepAddChecked(event.target.checked)
         }
+        const handleChangeForcedKeepPreemptiveChecked = (event) => {
+            setEntityFilterForcedKeepPreemptiveChecked(event.target.checked)
+        }
         const handleChangeForcedKeepDeleteChecked = (event) => {
             setEntityFilterForcedKeepDeleteChecked(event.target.checked)
         }
@@ -48,7 +51,8 @@ export default function FilterInput({ label }) {
             if (entityFilter.forcedKeepAddChecked
                 || entityFilter.forcedKeepDeleteChecked
                 || entityFilter.forcedKeepUpdateChecked
-                || entityFilter.forcedKeepIdenticalChecked) {
+                || entityFilter.forcedKeepIdenticalChecked
+                || entityFilter.forcedKeepPreemptiveChecked) {
 
             } else {
                 forcedKeepActionError = true
@@ -116,6 +120,12 @@ export default function FilterInput({ label }) {
                                         onChange={handleChangeForcedKeepIdenticalChecked}
                                         disabled={!entityFilter.forcedKeepActionChecked} />}
                                         label={"Identical"} />
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <FormControlLabel control={<Checkbox id="entity-filter-forcedKeepPreemptiveChecked" checked={entityFilter.forcedKeepPreemptiveChecked}
+                                        onChange={handleChangeForcedKeepPreemptiveChecked}
+                                        disabled={!entityFilter.forcedKeepActionChecked} />}
+                                        label={"Preemptive"} />
                                 </Grid>
                             </Grid>
                         </Grid>

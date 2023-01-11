@@ -23,8 +23,10 @@ const attributes = {
     'forcedKeepDeleteChecked': { 'default': true },
     'forcedKeepUpdateChecked': { 'default': true },
     'forcedKeepIdenticalChecked': { 'default': true },
+    'forcedKeepPreemptiveChecked': { 'default': true },
     'useEnvironmentCache': { 'default': false },
     'applyMigrationChecked': { 'default': false },
+    'preemptiveConfigCopy': { 'default': false },
 }
 
 export function getDefaultEntityFilter() {
