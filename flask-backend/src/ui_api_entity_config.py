@@ -129,7 +129,7 @@ def do_copy_entity(run_info, result_table=None, pre_migration=True):
             if(entity_accepted == True):
                 tenant_config_dict = create_tenant_config_dict(
                     entity_id_main, all_tenant_entity_values, tenant_key_main, settings_key, copy_property)
-                compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, action, entity_type, copy_property, '', 'main', entity_id_main,
+                compare_config_dict, entity_accepted = process_migrate_config.add_configs(run_info, compare_config_dict, action, entity_type, copy_property, '', 'main', entity_id_target,
                                                                         [entity_id_main], tenant_config_dict, identical=identical)
 
         elif (is_in_main):

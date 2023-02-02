@@ -49,7 +49,7 @@ def pull_analysis(tenant_key, extract_function, analysis_object, use_cache, cach
 
     analysis_result = None
 
-    if(analysis_object is not None):
+    if (analysis_object is not None):
         analysis_result = analysis_object.get_results()
 
     return output_data, analysis_result
@@ -60,7 +60,7 @@ def extract_pages_from_input_list(config, input_list, label, api_endpoint,
                                   use_cache, cache_only, analysis_object,
                                   post_process_function=None):
 
-    if(input_list is None):
+    if (input_list is None):
         input_list = [{'itemId': 0}]
 
     for item in input_list:
@@ -71,7 +71,7 @@ def extract_pages_from_input_list(config, input_list, label, api_endpoint,
             label, api_endpoint, item_id_query_dict_extractor, item, page_id,
             analysis_object, post_process_function)
 
-        while(page_dict and 'nextPageKey' in page_dict):
+        while (page_dict and 'nextPageKey' in page_dict):
             page_id += 1
             page_dict = extract_page_for_item(
                 config, use_cache, cache_only,
@@ -80,19 +80,21 @@ def extract_pages_from_input_list(config, input_list, label, api_endpoint,
 
     return None
 
+
 def add_to_str(trail, added_str):
-    if(added_str == None
+    if (added_str == None
        or added_str == ''):
         return trail
-    
-    if(trail == ''):
+
+    if (trail == ''):
         pass
     else:
         trail += '_'
-    
+
     trail += added_str
-    
+
     return trail
+
 
 def extract_page_for_item(config, use_cache, cache_only,
                           label, api_endpoint, item_id_query_dict_extractor, item, page_id,
@@ -111,15 +113,15 @@ def extract_page_for_item(config, use_cache, cache_only,
     log_label = label + ' ' + trail
 
     result_dict = None
-    
-    if(url_trail is None):
+
+    if (url_trail is None):
         url_trail = ""
 
     def extract_function():
-        
+
         query_dict = {}
 
-        if(page_id == 0):
+        if (page_id == 0):
             query_dict = init_query_dict
         else:
             query_dict['nextPageKey'] = nextPageKey
@@ -130,13 +132,13 @@ def extract_page_for_item(config, use_cache, cache_only,
     result_dict = cache.get_cached_data(
         use_cache, cache_only, cache_path, log_label, extract_function)
 
-    if(analysis_object is None
+    if (analysis_object is None
        or result_dict is None):
         pass
     else:
         analysis_object.analyze(result_dict)
 
-    if(result_dict is None
+    if (result_dict is None
        or post_process_function is None):
         pass
     else:

@@ -29,9 +29,9 @@ export default function EntityFilterSection() {
                     <EntityFilterSelector />
                     <AddEntityFilterButton />
                     <EntityFilterNameInput />
-                    <DateRangePicker label={"Migration Date Range"} />
+                    <DateRangePicker label={"Migration Date Range (Entities first seen in the target tenant between these dates)"} />
                     <FilterInput label={"Filters"} />
-                    <ForcedMatchInput label={"Forced Match Mapping"} />
+                    <ForcedMatchInput label={"Forced Match Mapping (will not use extracted data, but LIVE API calls)"} />
                 </AccordionDetails>
             </Accordion>
         </React.Fragment>

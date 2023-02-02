@@ -33,7 +33,7 @@ class AnalysisFilter():
         if (self.is_target_tenant == True):
             self.time_filter_type = 'firstSeenTms'
         else:
-            self.time_filter_type = 'lastSeenTms'
+            self.time_filter_type = None
 
     def is_type_selected(self, entity):
 

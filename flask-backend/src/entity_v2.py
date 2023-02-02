@@ -47,7 +47,7 @@ def extract_entities_list(config, use_cache, cache_only, analysis_object=None):
     no_analysis = None
 
     extract_entity_types(config, use_cache_false, cache_only,
-                     no_analysis, post_processing_function=get_entity_list_from_types)
+                         no_analysis, post_processing_function=get_entity_list_from_types)
 
 
 def type_query_dict_extractor(item):
@@ -57,7 +57,10 @@ def type_query_dict_extractor(item):
     query_dict = {}
     query_dict['entitySelector'] = 'type("' + item_id + '")'
     query_dict['pageSize'] = '1000'
-    query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+tags,+managementZones,+toRelationships,+fromRelationships,+icon,+properties'
+    if (item_id == "HOST"):
+        query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+properties,+toRelationships.isSiteOf,+toRelationships.isClusterOfHost'
+    else:
+        query_dict['fields'] = '+lastSeenTms,+firstSeenTms,+properties'
     query_dict['from'] = 'now-2w'
 
     # query_dict['from'] = 'now-1y' #Default is now-3d
