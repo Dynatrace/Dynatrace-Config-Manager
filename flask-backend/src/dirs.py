@@ -11,11 +11,11 @@ MAX_LENGTH_WINDOWS = 240
 def get_file_path(dir_path, filename, file_extension='.json'):
     # On Windows, semi-colons are restricted
     filename = filename.replace(':', '_')
-    path = os.path.join(dir_path, filename + file_extension)
+    path = forward_slash_join(dir_path, filename + file_extension)
 
     if (is_path_too_long(path)):
         filename = get_filename_hash(filename)
-        path = os.path.join(dir_path, filename + file_extension)
+        path = forward_slash_join(dir_path, filename + file_extension)
 
         if (is_path_too_long):
             raise OverflowError(
@@ -31,6 +31,10 @@ def get_filename_hash(filename):
     return filename
 
 
+def get_forward_slash_cwd():
+    return to_forward_slash(os.getcwd())
+
+
 def is_path_too_long(path):
     escaped_path = path.encode('unicode_escape')
     return len(escaped_path) > MAX_LENGTH_WINDOWS
@@ -38,59 +42,51 @@ def is_path_too_long(path):
 
 def get_monaco_exec_dir():
     return prep_dir(
-        os.path.join(
-            os.getcwd(), '..', 'monaco'))
+        get_forward_slash_cwd(), '..', 'monaco')
 
 
 def get_data_dir():
     return prep_dir(
-        os.path.join(
-            os.getcwd(), '..', 'data'))
+        get_forward_slash_cwd(), '..', 'data')
 
 
 def get_tenant_list_dir():
     return prep_dir(
-        os.path.join(
-            get_data_dir(), 'tenant'))
+        get_data_dir(), 'tenant')
 
 
 def get_options_dir():
     return prep_dir(
-        os.path.join(
-            get_data_dir(), 'options'))
+        get_data_dir(), 'options')
 
 
 def get_tenant_data_dir():
     return prep_dir(
-        os.path.join(
-            get_data_dir(), 'tenant_data'))
+        get_data_dir(), 'tenant_data')
 
 
 def get_tenant_data_cache_dir(config):
     return prep_dir(
-        os.path.join(
-            get_tenant_data_dir(), config['tenant_key']))
+        get_tenant_data_dir(), config['tenant_key'])
 
 
 def get_tenant_data_cache_sub_dir(config, sub_dir):
     return prep_dir(
-        os.path.join(
-            get_tenant_data_cache_dir(config), sub_dir))
+        get_tenant_data_cache_dir(config), sub_dir)
 
 
 def get_log_list_dir():
     return prep_dir(
-        os.path.join(
-            get_data_dir(), 'log_list'))
+        get_data_dir(), 'log_list')
 
 
 def get_log_data_dir(config):
     return prep_dir(
-        os.path.join(
-            get_log_list_dir(config), 'log_data'))
+        get_log_list_dir(config), 'log_data')
 
 
-def prep_dir(path):
+def prep_dir(path, *paths):
+    path = forward_slash_join(path, *paths)
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
     return path
@@ -100,3 +96,12 @@ def list_files_in_dir(path):
     files = [f for f in listdir(path) if isfile(join(path, f))]
 
     return files
+
+
+def forward_slash_join(path, *paths):
+    path = os.path.join(path, *paths)
+    return to_forward_slash(path)
+
+
+def to_forward_slash(path):
+    return path.replace("\\", "/")

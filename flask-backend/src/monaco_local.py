@@ -1,10 +1,12 @@
+import dirs
 import json
 import monaco_cli
 import os
 
 
 def get_path_entities_local(config):
-    return os.path.join(monaco_cli.get_path_entities(config), 'project')
+    path = dirs.forward_slash_join(monaco_cli.get_path_entities(config), monaco_cli.project_name)
+    return path
 
 
 def analyze_entities(config, analysis_object):
@@ -26,8 +28,12 @@ def run_on_all_sub_files(path, analysis_object, file_extension=".json"):
 
 def analyse_cached_json(analysis_object, sub_file):
     cached_data = None
-    with open(sub_file, 'r', encoding='UTF-8') as f:
-        cached_data = json.load(f)
+    try:
+        with open(sub_file, 'r', encoding='UTF-8') as f:
+            cached_data = json.load(f)
+    except FileNotFoundError as e:
+        print("File name probably too long, try moving the tool closer to the root of the drive.")
+        raise e
 
     if (analysis_object is None
             or cached_data is None):

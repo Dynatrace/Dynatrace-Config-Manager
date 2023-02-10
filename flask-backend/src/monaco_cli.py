@@ -7,10 +7,11 @@ import subprocess
 import tenant
 
 token_name = "MONACO_TENANT_TOKEN"
+project_name = "p"
 
 
 def get_path_entities(config):
-    return dirs.get_tenant_data_cache_sub_dir(config, "entities_monaco")
+    return dirs.get_tenant_data_cache_sub_dir(config, "ent_mon")
 
 
 def get_path_finished_file_entities(config):
@@ -38,12 +39,12 @@ def extract_entities(run_info, tenant_key):
 
     command = "monaco-windows-amd64.exe"
     options = ["download", "entities", "direct", tenant_data['url'],
-               token_name, '-o', path_entities, '-f']
+               token_name, '-o', path_entities, '-f', '-p', project_name]
 
     try:
         monaco_exec_dir = dirs.get_monaco_exec_dir()
         print("Download entities using Monaco, see ",
-              os.path.join(monaco_exec_dir, ".logs"))
+              dirs.forward_slash_join(monaco_exec_dir, ".logs"))
         call_result = subprocess.run(
             [command] + options, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=True, env=my_env, cwd=monaco_exec_dir)
     except subprocess.CalledProcessError as error:
@@ -77,7 +78,12 @@ def delete_old_cache(config, path_entities):
     if (is_previous_finished):
 
         print("Deleting old Monaco cache: ", path_entities)
-        shutil.rmtree(path_entities)
+        try:
+            shutil.rmtree(path_entities)
+        except FileNotFoundError as e:
+            print(
+                "File name probably too long, try moving the tool closer to the root of the drive.")
+            raise e
     else:
 
         non_monaco_cache_path = dirs.get_tenant_data_cache_sub_dir(
