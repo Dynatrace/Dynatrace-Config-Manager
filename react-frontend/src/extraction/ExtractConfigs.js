@@ -10,7 +10,9 @@ export default function ExtractConfigs({tenantType=TENANT_KEY_TYPE_MAIN}) {
 
     return (
         <React.Fragment>
-            <ExtractButton handleChange={setExtractedData} api={EXTRACT_SETTINGS_2_0} label="Extract Config V2" tenantType={tenantType}/>
+            <ExtractButton handleChange={setExtractedData} api={EXTRACT_SETTINGS_2_0} 
+            label="Extract Config V2"
+            tenantType={tenantType}/>
             <ExtractedTable data={extractedData}/>
         </React.Fragment>
     );

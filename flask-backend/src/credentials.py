@@ -125,6 +125,14 @@ def extract_config(tenant_key, tenant_data, headers):
         "Referer": "url",
     }
 
+    if ('monacoConcurrentRequests' in tenant_data
+        and type(tenant_data['monacoConcurrentRequests']) == type(0)
+            and tenant_data['monacoConcurrentRequests'] > 0):
+
+        config['monaco_concurrent_requests'] = tenant_data['monacoConcurrentRequests']
+    else:
+        config['monaco_concurrent_requests'] = 10
+
     if ('disableSSLVerification' in tenant_data
        and tenant_data['disableSSLVerification'] == True):
 

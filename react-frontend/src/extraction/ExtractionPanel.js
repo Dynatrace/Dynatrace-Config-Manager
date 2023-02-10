@@ -2,9 +2,9 @@ import { Grid } from '@mui/material';
 import * as React from 'react';
 import TenantMigrationSelector from '../credentials/TenantMigrationSelector';
 import { useMigrationGridConfig } from '../migrationGrid/useMigrationGridConfig';
-import ExecutionOptions from '../options/ExecutionOptions';
 import ExtractConfigs from './ExtractConfigs';
 import ExtractEntities from './ExtractEntities';
+import MonacoRequestsInfo from './MonacoRequestsInfo';
 
 export default function ExtractionPanel() {
     const gridConfigList = useMigrationGridConfig()
@@ -18,9 +18,9 @@ export default function ExtractionPanel() {
             gridComponentList.push(
                 <React.Fragment>
                     <Grid item xs={5} id={keyType}>
-                        <ExecutionOptions />
                         <ExtractConfigs tenantType={keyType} />
                         <ExtractEntities tenantType={keyType} />
+                        <MonacoRequestsInfo tenantType={keyType} />
                     </Grid>
                     <Grid item xs={1} />
                 </React.Fragment>

@@ -732,8 +732,11 @@ class LoadEntities:
         if ('errorCode' in entities_data):
             print("Error for ", entities_data)
 
-        else:
+        elif ('entities' in entities_data):
             self.add_entities(entities_data['entities'])
+        # Flat Monaco json arrays
+        else:
+            self.add_entities(entities_data)
 
     def add_entities(self, entity_list):
 

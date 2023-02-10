@@ -1,24 +1,38 @@
 import * as React from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Box, Typography } from '@mui/material';
-import { TENANT_KEY_TYPE_MAIN, useTenantKey } from '../context/TenantListContext';
+import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from '../context/TenantListContext';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { backendPost } from '../backend/backend';
-import { useExecutionOptionsStateValue } from '../context/ExecutionContext';
+import { useConfirmAction } from '../migrate/ConfirmHook';
+import ConfirmAction from '../action/ConfirmAction';
+import { genTenantLabel } from '../credentials/TenantSelector';
+import { useProgress } from '../progress/ProgressHook';
 
-export default function ExtractButton({ handleChange, api, label, tenantType = TENANT_KEY_TYPE_MAIN }) {
+export default function ExtractButton({ handleChange, api, label,
+    descLabel = "This action will OVERWRITE your last extraction, if any.",
+    tenantType = TENANT_KEY_TYPE_MAIN }) {
 
     const { tenantKey } = useTenantKey(tenantType)
-    const { useCache } = useExecutionOptionsStateValue()
+    const { tenant: tenantTarget } = useTenant(tenantKey)
+    const { setLoading, progressComponent } = useProgress()
+
+    const tenantLabel = React.useMemo(() => {
+        return genTenantLabel({ ...tenantTarget, 'key': tenantKey }, "Target")
+    }, [tenantTarget, tenantKey])
+
+    const { open, handleClickOpen, handleClose } = useConfirmAction()
 
     const handleExtract = () => {
-        const searchParams = { 'tenant_key': tenantKey, 'use_cache': useCache }
+        const searchParams = { 'tenant_key': tenantKey, 'use_cache': false }
         handleChange(null)
 
+        setLoading(true)
         backendPost(api, null, searchParams,
             promise =>
                 promise
                     .then(response => {
+                        setLoading(false)
                         return response.json()
                     })
                     .then(data => {
@@ -27,12 +41,30 @@ export default function ExtractButton({ handleChange, api, label, tenantType = T
         )
     }
 
-    return (
-        <Box sx={{ my: 1 }}>
-            <IconButton onClick={handleExtract} color='primary'>
-                <PlayCircleOutlineIcon fontSize='large' />
+    const button = React.useMemo(() => {
+
+        const props = { fontSize: 'large' }
+        let buttonIcon = null
+
+        if (progressComponent) {
+            buttonIcon = progressComponent
+        } else {
+            buttonIcon = (<PlayCircleOutlineIcon {...props} />)
+        }
+
+        return (
+            <IconButton onClick={handleClickOpen} color='primary'>
+                {buttonIcon}
                 <Typography>{label}</Typography>
             </IconButton>
+        )
+    }, [label, handleClickOpen, progressComponent])
+
+    return (
+        <Box sx={{ my: 1 }}>
+            {button}
+            <ConfirmAction open={open} handleClose={handleClose} label={label}
+                descLabel={descLabel} tenantLabel={tenantLabel} handlePost={handleExtract} />
         </Box>
     );
 }

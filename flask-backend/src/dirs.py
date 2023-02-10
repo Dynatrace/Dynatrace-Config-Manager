@@ -7,29 +7,40 @@ import hashlib
 # Setting limit to 240 characters
 MAX_LENGTH_WINDOWS = 240
 
+
 def get_file_path(dir_path, filename, file_extension='.json'):
     # On Windows, semi-colons are restricted
     filename = filename.replace(':', '_')
     path = os.path.join(dir_path, filename + file_extension)
-    
-    if(is_path_too_long(path)):
+
+    if (is_path_too_long(path)):
         filename = get_filename_hash(filename)
         path = os.path.join(dir_path, filename + file_extension)
-        
-        if(is_path_too_long):
-            raise OverflowError("Path exceeds maximum length (Windows protection)")
-    
+
+        if (is_path_too_long):
+            raise OverflowError(
+                "Path exceeds maximum length (Windows protection)")
+
     return path
+
 
 def get_filename_hash(filename):
     escaped_filename = filename.encode('unicode_escape')
     filename = str(int(hashlib.md5(escaped_filename).hexdigest(), 16))
-    
+
     return filename
+
 
 def is_path_too_long(path):
     escaped_path = path.encode('unicode_escape')
     return len(escaped_path) > MAX_LENGTH_WINDOWS
+
+
+def get_monaco_exec_dir():
+    return prep_dir(
+        os.path.join(
+            os.getcwd(), '..', 'monaco'))
+
 
 def get_data_dir():
     return prep_dir(

@@ -1,26 +1,30 @@
 import * as React from 'react';
 import IconButton from '@mui/material/IconButton';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_TARGET, useTenant, useTenantKey } from '../context/TenantListContext';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import BackupIcon from '@mui/icons-material/Backup';
 import { genTenantLabel } from '../credentials/TenantSelector';
+import ConfirmAction from '../action/ConfirmAction';
+import { useConfirmAction } from './ConfirmHook';
 
-export default function MigrateButton({ label, handlePost, open, handleClickOpen, handleClose, confirm = false, disabled = false }) {
+export default function MigrateButton({ label, handlePost, confirm = false, disabled = false }) {
 
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenant: tenantTarget } = useTenant(tenantKeyTarget)
+    const { open, handleClickOpen, handleClose } = useConfirmAction()
+
     const tenantLabel = React.useMemo(() => {
         return genTenantLabel({ ...tenantTarget, 'key': tenantKeyTarget }, "Target")
-    }, [tenantTarget])
+    }, [tenantTarget, tenantKeyTarget])
 
     const handleClickAction = React.useMemo(() => {
-        if (confirm == true) {
+        if (confirm === true) {
             return handleClickOpen
         } else {
             return handlePost
         }
-    }, [confirm, handlePost])
+    }, [confirm, handlePost, handleClickOpen])
 
     const button = React.useMemo(() => {
 
@@ -42,41 +46,22 @@ export default function MigrateButton({ label, handlePost, open, handleClickOpen
                 <Typography sx={{ ml: 1 }}>{label}</Typography>
             </IconButton>
         )
-    }, [confirm, label, handleClickAction])
+    }, [confirm, label, handleClickAction, disabled])
 
     const confirmDialog = React.useMemo(() => {
 
         if (confirm === true) {
+            const descLabel = "This will send API Requests, updating your tenant's configuration."
             return (
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                >
-                    <DialogTitle id="alert-dialog-title">
-                        {label + "?"}
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            This will send API Requests, updating your tenant's configuration.
-                        </DialogContentText>
-                        <DialogContentText id="alert-dialog-description">
-                            {tenantLabel}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleClose}>Cancel</Button>
-                        <Button onClick={handlePost} autoFocus>
-                            Proceed
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                <ConfirmAction open={open} handleClose={handleClose} label={label}
+                    descLabel={descLabel} tenantLabel={tenantLabel} handlePost={handlePost} />
             )
         }
 
         return null
 
 
-    }, [confirm, handleClose, handlePost])
+    }, [confirm, handleClose, handlePost, label, open, tenantLabel])
 
     return (
         <Box sx={{ my: 1 }}>

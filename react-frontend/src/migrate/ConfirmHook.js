@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export const useConfirmMigrate = () => {
+export const useConfirmAction = () => {
 
     const [open, setOpen] = React.useState(false)
 

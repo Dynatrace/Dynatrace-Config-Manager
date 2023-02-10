@@ -7,9 +7,15 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from "../context/TenantListContext";
 
+export const DEFAULT_MONACO_CONCURRENT_REQUESTS = 10
+
 export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
     const { tenantKey } = useTenantKey(tenantType)
-    const { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantNotes } = useTenant(tenantKey)
+    const {
+        tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey,
+        setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification,
+        setTenantDisableSystemProxies, setTenantNotes
+    } = useTenant(tenantKey)
 
     const tenantUrlDisplay = React.useMemo(() => {
         if (!tenant.url || tenant.url === "") {
@@ -18,6 +24,14 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
             return tenant.url
         }
     }, [tenant.url])
+
+    const tenantMonacoConcurrentRequests = React.useMemo(() => {
+        if (!tenant.monacoConcurrentRequests || tenant.monacoConcurrentRequests === "" || tenant.monacoConcurrentRequests === 0) {
+            return DEFAULT_MONACO_CONCURRENT_REQUESTS
+        } else {
+            return tenant.monacoConcurrentRequests
+        }
+    }, [tenant.monacoConcurrentRequests])
 
     const pasteHeaders = () => {
         navigator.clipboard.readText()
@@ -65,6 +79,10 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         setTenantAPIKey(event.target.value)
     }
 
+    const handleChangeMonacoConcurrentRequests = (event) => {
+        setTenantMonacoConcurrentRequests(event.target.value)
+    }
+
     const handleChangeDisableSSLVerification = (event) => {
         setTenantDisableSSLVerification(event.target.checked)
     }
@@ -108,6 +126,18 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                         <IconButton onClick={clearAPIKey}>
                             <ClearIcon />
                         </IconButton>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"tenant-monacoConcurrentRequests-field" + tenantKey}
+                                type="number"
+                                variant="standard"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                label="Number of Concurrent Requests for Monaco cli calls to tenant" value={tenantMonacoConcurrentRequests}
+                                onChange={handleChangeMonacoConcurrentRequests} />
+                        </FormControl>
                     </React.Fragment>
                 </Box>
             </Box>
