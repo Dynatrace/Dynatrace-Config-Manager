@@ -6,6 +6,7 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from "../context/TenantListContext";
+import TestConnectionButton from "./TestConnectionButton";
 
 export const DEFAULT_MONACO_CONCURRENT_REQUESTS = 10
 
@@ -126,6 +127,9 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                         <IconButton onClick={clearAPIKey}>
                             <ClearIcon />
                         </IconButton>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <TestConnectionButton tenantKey={tenantKey} />
                     </React.Fragment>
                     <React.Fragment>
                         <FormControl fullWidth>

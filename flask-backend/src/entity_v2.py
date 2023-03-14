@@ -1,22 +1,23 @@
 import api_v2
 import handler_api
-import monaco_cli
-import monaco_local
+import monaco_cli_download
+import monaco_local_entity
 import process_utils
 
 
 def extract_function(config, use_cache, cache_only, analysis_object, context_params=None, run_info=None):
 
-    use_monaco_cache = monaco_cli.is_finished_entities(config)
+    use_monaco_cache = monaco_cli_download.is_finished_entities(config=config)
 
     if (cache_only == True and use_monaco_cache == False):
         _ = extract_entities_list(
             config, use_cache, cache_only, analysis_object)
     else:
         if (cache_only):
-            return monaco_local.analyze_entities(config, analysis_object)
+            return monaco_local_entity.analyze_entities(config, analysis_object)
         else:
-            monaco_cli.extract_entities(run_info, config['tenant_key'])
+            monaco_cli_download.extract_entities(
+                run_info, config['tenant_key'])
 
     return None
 
