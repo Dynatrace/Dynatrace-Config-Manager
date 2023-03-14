@@ -3,6 +3,8 @@ import dirs
 import monaco_cli
 import monaco_cli_download
 import monaco_local_entity
+import os
+import shutil
 import tenant
 import yaml
 import subprocess
@@ -30,6 +32,8 @@ def match_entities(run_info, tenant_key_target, tenant_key_main=None):
 
     config_target = credentials.get_api_call_credentials(tenant_key_target)
     config_main = credentials.get_api_call_credentials(tenant_key_main)
+
+    delete_old_cache(config_target)
 
     match_yaml_path = save_match_yaml(config_target, config_main)
 
@@ -72,6 +76,13 @@ def match_entities(run_info, tenant_key_target, tenant_key_main=None):
 
     return result
 
+def delete_old_cache(config):
+
+    monaco_cache_path = get_path_match_entities(config)
+
+    if (os.path.exists(monaco_cache_path) and os.path.isdir(monaco_cache_path)):
+        print("Deleting expired Monaco Match cache: ", monaco_cache_path)
+        shutil.rmtree(monaco_cache_path)
 
 def save_match_yaml(config_target, config_main):
 
@@ -123,8 +134,9 @@ def try_monaco_match(run_info, tenant_key_main, tenant_key_target):
     run_legacy_match = True
 
     if (run_info['preemptive_config_copy'] == False
-        and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_main)
-            and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_target)):
+            and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_main) == True
+            and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_target) == True):
+
         must_rerun = False
 
         if is_finished_match_entities(tenant_key_target, tenant_key_main):
@@ -158,5 +170,8 @@ def try_monaco_match(run_info, tenant_key_main, tenant_key_target):
                     print("Attempt to run Monaco Match failed, will run legacy Match")
             else:
                 print("Attempt to run Monaco Match failed, will run legacy Match")
+
+    if (run_legacy_match == True):
+        print("Will use Legacy Matching")
 
     return run_legacy_match, matched_entities_dict, entities_dict
