@@ -83,4 +83,6 @@ def is_finished_entities(config=None, tenant_key=None):
     if (config == None):
         config = credentials.get_api_call_credentials(tenant_key)
 
-    return monaco_cli.is_finished(get_path_entities(config))
+    is_finished, _ = monaco_cli.is_finished(get_path_entities(config))
+
+    return is_finished
