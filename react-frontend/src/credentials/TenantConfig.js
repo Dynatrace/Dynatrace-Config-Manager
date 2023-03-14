@@ -102,9 +102,6 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                 <Typography>Required credentials:</Typography>
                 <Box sx={{ ml: 2 }}>
                     <React.Fragment>
-                        <TestConnectionButton tenantKey={tenantKey} />
-                    </React.Fragment>
-                    <React.Fragment>
                         <FormControl fullWidth>
                             <TextField id={"tenant-text-field" + tenantKey} variant="standard"
                                 label="Tenant Label" value={tenant.label} onChange={handleChangeLabel} />
@@ -130,6 +127,9 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                         <IconButton onClick={clearAPIKey}>
                             <ClearIcon />
                         </IconButton>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <TestConnectionButton tenantKey={tenantKey} />
                     </React.Fragment>
                     <React.Fragment>
                         <FormControl fullWidth>
