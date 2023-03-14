@@ -1,4 +1,5 @@
 import compare
+import monaco_cli_match
 import process_match_entities
 import process_match_settings_2_0
 import process_utils
@@ -18,11 +19,10 @@ ACTION_PREEMPTIVE = 'Preemptive'
 
 def migrate_config(run_info, tenant_key_main, tenant_key_target, active_rules, context_params, pre_migration=True):
 
-    matched_entities_dict, entities_dict = process_match_entities.get_entities_dict(
-        run_info, active_rules, context_params)
+    matched_entities_dict, entities_dict = get_match_dict(
+        run_info, tenant_key_main, tenant_key_target, active_rules, context_params)
 
-    all_tenant_config_dict = get_config_dict(
-        run_info)
+    all_tenant_config_dict = get_config_dict(run_info)
 
     result_table = copy_configs_safe_same_entity_id(
         run_info, context_params, pre_migration, tenant_key_target,
@@ -36,6 +36,17 @@ def migrate_config(run_info, tenant_key_main, tenant_key_target, active_rules, c
     flat_result_table = flatten_results(result_table)
 
     return flat_result_table
+
+
+def get_match_dict(run_info, tenant_key_main, tenant_key_target, active_rules, context_params):
+    run_legacy_match, matched_entities_dict, entities_dict = monaco_cli_match.try_monaco_match(
+        run_info, tenant_key_main, tenant_key_target)
+
+    if (run_legacy_match):
+        matched_entities_dict, entities_dict = process_match_entities.get_entities_dict(
+            run_info, active_rules, context_params)
+
+    return matched_entities_dict, entities_dict
 
 
 def get_config_dict(run_info):
@@ -67,16 +78,16 @@ def copy_configs_safe_same_entity_id(run_info, context_params, pre_migration, te
         _, preemptive_ids = process_missing_entity_ids(
             {}, run_info, config_dict_main, same_entity_id_index_main_to_target, entities_dict, matched_entities_dict)
 
-        compare_config_dict = compare_entities(run_info, preemptive_ids, schemas_definitions_dict_main,
-                                               schemas_definitions_dict_target, config_dict_main, config_dict_target)
+        compare_config_dict = compare_config_per_entity(run_info, preemptive_ids, schemas_definitions_dict_main,
+                                                        schemas_definitions_dict_target, config_dict_main, config_dict_target)
 
         execute_all_configs(run_info, tenant_key_target,
                             compare_config_dict, pre_migration)
 
     else:
 
-        compare_config_dict = compare_entities(run_info, same_entity_id_index_main_to_target, schemas_definitions_dict_main,
-                                               schemas_definitions_dict_target, config_dict_main, config_dict_target)
+        compare_config_dict = compare_config_per_entity(run_info, same_entity_id_index_main_to_target, schemas_definitions_dict_main,
+                                                        schemas_definitions_dict_target, config_dict_main, config_dict_target)
 
         execute_all_configs(run_info, tenant_key_target,
                             compare_config_dict, pre_migration)
@@ -133,7 +144,7 @@ def process_missing_entity_ids(result_table, run_info, config_dict_main, same_en
             entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids = validate_entity_missing(
                 tenant_key_main, tenant_key_target, missing_entity_id,
                 same_entity_id_index_main_to_target, entities_dict, matched_entities_dict,
-                entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids)
+                entity_match_missing_dict, entity_match_unmatched_dict, run_info['preemptive_config_copy'] == True, preemptive_ids)
 
     if (add_all_missing_entities):
         for missing_entity_dict in config_dict_main['entities'].values():
@@ -141,7 +152,7 @@ def process_missing_entity_ids(result_table, run_info, config_dict_main, same_en
                 entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids = validate_entity_missing(
                     tenant_key_main, tenant_key_target, missing_entity_id,
                     same_entity_id_index_main_to_target, entities_dict, matched_entities_dict,
-                    entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids)
+                    entity_match_missing_dict, entity_match_unmatched_dict, run_info['preemptive_config_copy'] == True, preemptive_ids)
 
     if (entity_match_missing_dict == {}):
         pass
@@ -159,7 +170,7 @@ def process_missing_entity_ids(result_table, run_info, config_dict_main, same_en
 
 def validate_entity_missing(tenant_key_main, tenant_key_target, missing_entity_id,
                             same_entity_id_index_main_to_target, entities_dict, matched_entities_dict,
-                            entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids):
+                            entity_match_missing_dict, entity_match_unmatched_dict, doProcessPreemptive, preemptive_ids):
 
     if (missing_entity_id in same_entity_id_index_main_to_target):
         pass
@@ -181,17 +192,22 @@ def validate_entity_missing(tenant_key_main, tenant_key_target, missing_entity_i
                 entity_match_unmatched_dict[missing_entity_type][missing_entity_id] = matched_entities_dict[
                     missing_entity_type][missing_entity_id]
 
-                preemptive_ids = add_preemptive_id(
-                    tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
+                if doProcessPreemptive:
+                    preemptive_ids = add_preemptive_id(
+                        tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
 
             else:
                 entity_match_missing_dict[missing_entity_id] = ""
-                preemptive_ids = add_preemptive_id(
-                    tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
+
+                if doProcessPreemptive:
+                    preemptive_ids = add_preemptive_id(
+                        tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
         else:
             entity_match_missing_dict[missing_entity_id] = ""
-            preemptive_ids = add_preemptive_id(
-                tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
+
+            if doProcessPreemptive:
+                preemptive_ids = add_preemptive_id(
+                    tenant_key_target, entities_dict, missing_entity_type, missing_entity_id, preemptive_ids)
 
     return entity_match_missing_dict, entity_match_unmatched_dict, preemptive_ids
 
@@ -207,7 +223,7 @@ def add_preemptive_id(tenant_key_target, entities_dict, missing_entity_type, mis
     return preemptive_ids
 
 
-def compare_entities(run_info, same_entity_id_index_main_to_target, schemas_definitions_dict_main, schemas_definitions_dict_target, config_dict_main, config_dict_target):
+def compare_config_per_entity(run_info, same_entity_id_index_main_to_target, schemas_definitions_dict_main, schemas_definitions_dict_target, config_dict_main, config_dict_target):
     compare_config_dict = {}
 
     for entity_id_main, entity_keys_target in same_entity_id_index_main_to_target.items():
@@ -758,7 +774,7 @@ def add_configs(run_info, config_dict, action, entity_type, schema_id, key_id, c
     if ('multi_matched_key_id' in error_id_list):
         pass
     else:
-        
+
         if (object_id in tenant_config_dict['multi_matched_key_id_object']):
             error_id_list.append('multi_matched_key_id')
 
