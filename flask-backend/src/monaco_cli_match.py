@@ -76,6 +76,7 @@ def match_entities(run_info, tenant_key_target, tenant_key_main=None):
 
     return result
 
+
 def delete_old_cache(config):
 
     monaco_cache_path = get_path_match_entities(config)
@@ -83,6 +84,7 @@ def delete_old_cache(config):
     if (os.path.exists(monaco_cache_path) and os.path.isdir(monaco_cache_path)):
         print("Deleting expired Monaco Match cache: ", monaco_cache_path)
         shutil.rmtree(monaco_cache_path)
+
 
 def save_match_yaml(config_target, config_main):
 
@@ -133,8 +135,12 @@ def try_monaco_match(run_info, tenant_key_main, tenant_key_target):
     entities_dict = {}
     run_legacy_match = True
 
-    if (run_info['preemptive_config_copy'] == False
-            and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_main) == True
+    if (run_info['preemptive_config_copy'] == True
+            or run_info['forced_match'] == True):
+
+        return run_legacy_match, matched_entities_dict, entities_dict
+
+    if (monaco_cli_download.is_finished_entities(tenant_key=tenant_key_main) == True
             and monaco_cli_download.is_finished_entities(tenant_key=tenant_key_target) == True):
 
         must_rerun = False
@@ -170,8 +176,5 @@ def try_monaco_match(run_info, tenant_key_main, tenant_key_target):
                     print("Attempt to run Monaco Match failed, will run legacy Match")
             else:
                 print("Attempt to run Monaco Match failed, will run legacy Match")
-
-    if (run_legacy_match == True):
-        print("Will use Legacy Matching")
 
     return run_legacy_match, matched_entities_dict, entities_dict
