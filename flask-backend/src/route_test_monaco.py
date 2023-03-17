@@ -68,6 +68,8 @@ def monaco_test_compare_match_sources():
     entity_filter = flask_utils.get_arg_json('entity_filter',
                                              process_utils.ALL_BASIC_ENTITY_LIST)
     active_rules = flask_utils.get_arg_json('active_rules')
+    forced_entity_id_main = flask_utils.get_arg('forced_entity_id_main')
+    forced_entity_id_target = flask_utils.get_arg('forced_entity_id_target')
     forced_schema_id = flask_utils.get_arg('forced_schema_id')
     forced_key_id = flask_utils.get_arg('forced_key_id')
     forced_keep_action_only = flask_utils.get_arg_json(
@@ -81,8 +83,8 @@ def monaco_test_compare_match_sources():
 
     run_info = process_utils.get_run_info(
         tenant_key_main, tenant_key_target, context_params, entity_filter, use_environment_cache=use_environment_cache,
-        forced_schema_id=forced_schema_id, forced_key_id=forced_key_id, forced_keep_action_only=forced_keep_action_only,
-        preemptive_config_copy=preemptive_config_copy)
+        forced_entity_idforced_entity_id_main=forced_entity_id_main, forced_entity_id_target=forced_entity_id_target, forced_schema_id=forced_schema_id, forced_key_id=forced_key_id,
+        forced_keep_action_only=forced_keep_action_only, preemptive_config_copy=preemptive_config_copy)
 
     def call_process():
         matched_entities_dict_legacy, _ = process_match_entities.get_entities_dict(
