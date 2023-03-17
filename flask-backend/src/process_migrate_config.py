@@ -43,6 +43,7 @@ def get_match_dict(run_info, tenant_key_main, tenant_key_target, active_rules, c
         run_info, tenant_key_main, tenant_key_target)
 
     if (run_legacy_match):
+        print("Using Legacy Matching")
         matched_entities_dict, entities_dict = process_match_entities.get_entities_dict(
             run_info, active_rules, context_params)
 
