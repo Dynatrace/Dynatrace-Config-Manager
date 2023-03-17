@@ -42,6 +42,12 @@ class LoadConfig(dict):
         self['forced_key_id'] = run_info['forced_key_id']
 
         analysis_filter = run_info['analysis_filter']
+        if (analysis_filter.is_target_tenant == True):
+            self['forced_entity_id'] = run_info['forced_entity_id_target']
+        else:
+            self['forced_entity_id'] = run_info['forced_entity_id_main']
+
+        analysis_filter = run_info['analysis_filter']
         self['schemas_definitions_dict'] = process_utils.get_tenant_schemas_definitions_dict(
             run_info, analysis_filter.is_target_tenant)
 
@@ -75,11 +81,12 @@ class LoadConfig(dict):
 
         for conf_object in config_data['items']:
 
+            entityId = conf_object['scope']
             schema_id = conf_object['schemaId']
             main_key_value = self.get_main_key_value(conf_object)
             object_id = conf_object['objectId']
 
-            if (self.is_forced_filtered_out(schema_id, main_key_value)):
+            if (self.is_forced_filtered_out(entityId, schema_id, main_key_value)):
                 continue
 
             object_string = json.dumps(conf_object)
@@ -89,7 +96,14 @@ class LoadConfig(dict):
 
             self.extract_management_zone(object_id, object_string)
 
-    def is_forced_filtered_out(self, schema_id, main_key_value):
+    def is_forced_filtered_out(self, entity_id, schema_id, main_key_value):
+
+        if (self['forced_entity_id'] is None):
+            pass
+        elif (self['forced_entity_id'] == entity_id):
+            pass
+        else:
+            return True
 
         if (self['forced_schema_id'] is None):
             pass
@@ -224,7 +238,7 @@ class LoadConfig(dict):
             if (len(self[index_type][type][schema_id][entity_id][main_key_value]) > 1):
                 print("Schema has multiple identical key_ids: ",
                       schema_id, entity_id, main_key_value, object_id)
-                #self['multi_matched_schemas'][schema_id] = True
+                # self['multi_matched_schemas'][schema_id] = True
                 self['multi_matched_key_id_object'][object_id] = True
                 if (len(self[index_type][type][schema_id][entity_id][main_key_value]) == 2):
                     previous_object_id = self[index_type][type][schema_id][entity_id][main_key_value][0]

@@ -18,19 +18,23 @@ def migrate_settings_2_0():
     entity_filter = flask_utils.get_arg_json('entity_filter',
                                              process_utils.ALL_BASIC_ENTITY_LIST)
     active_rules = flask_utils.get_arg_json('active_rules')
+    forced_entity_id_main = flask_utils.get_arg('forced_entity_id_main')
+    forced_entity_id_target = flask_utils.get_arg('forced_entity_id_target')
     forced_schema_id = flask_utils.get_arg('forced_schema_id')
     forced_key_id = flask_utils.get_arg('forced_key_id')
-    forced_keep_action_only = flask_utils.get_arg_json('forced_keep_action_only')
+    forced_keep_action_only = flask_utils.get_arg_json(
+        'forced_keep_action_only')
     context_params = flask_utils.get_arg_json('context_params')
     use_environment_cache = flask_utils.get_arg_bool(
         'use_environment_cache', False)
-    preemptive_config_copy = flask_utils.get_arg_bool('preemptive_config_copy', False)
+    preemptive_config_copy = flask_utils.get_arg_bool(
+        'preemptive_config_copy', False)
     pre_migration = flask_utils.get_arg_bool('pre_migration', True)
 
     run_info = process_utils.get_run_info(
         tenant_key_main, tenant_key_target, context_params, entity_filter, use_environment_cache=use_environment_cache,
-        forced_schema_id=forced_schema_id, forced_key_id=forced_key_id, forced_keep_action_only=forced_keep_action_only, 
-        preemptive_config_copy=preemptive_config_copy)
+        forced_entity_id_main=forced_entity_id_main, forced_entity_id_target=forced_entity_id_target, forced_schema_id=forced_schema_id, forced_key_id=forced_key_id,
+        forced_keep_action_only=forced_keep_action_only, preemptive_config_copy=preemptive_config_copy)
 
     def call_process():
         result = process_migrate_config.migrate_config(

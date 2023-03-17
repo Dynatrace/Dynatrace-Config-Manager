@@ -21,6 +21,10 @@ export const genEntityFilterEnhancedLabel = (entityFilter) => {
             'label': "Date Range"
         },
         {
+            'enabled': entityFilter.forcedMatchEntityIdChecked,
+            'label': "Entity Id"
+        },
+        {
             'enabled': entityFilter.forcedMatchSchemaIdChecked,
             'label': "Schema Id"
         },
