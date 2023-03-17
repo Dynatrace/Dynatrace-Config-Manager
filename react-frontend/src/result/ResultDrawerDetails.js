@@ -8,7 +8,7 @@ import ReactJsonViewCompare from 'react-json-view-compare';
 import { useResult } from '../context/ResultContext';
 import { defaultColumnArray, keyColumns } from '../extraction/ExtractedTable';
 import { Box, Typography } from '@mui/material';
-import { getDefaultEntityFilter } from '../context/EntityFilterContext';
+import { getDefaultEntityFilter, useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
 import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
 
 export default function ResultDrawerDetails() {
@@ -16,6 +16,8 @@ export default function ResultDrawerDetails() {
     const { contextNode, setContextNode } = useContextMenuState()
     const resultKey = useContextResultKey(contextNode)
     const { result } = useResult(resultKey)
+    const { entityFilterKey } = useEntityFilterKey()
+    const { entityFilter: baseEntityFilter } = useEntityFilter(entityFilterKey)
     const [actionCompleted, setActionCompleted] = React.useState({})
 
     const detailsComponent = useMemo(() => {
@@ -144,9 +146,18 @@ export default function ResultDrawerDetails() {
 
                 let entityFilter = getDefaultEntityFilter()
                 entityFilter['forcedMatchChecked'] = true
-                entityFilter['forcedMatchEntityChecked'] = true
-                entityFilter['forcedMatchMain'] = from
-                entityFilter['forcedMatchTarget'] = to
+                if (baseEntityFilter.forcedMatchChecked
+                    && baseEntityFilter.forcedMatchEntityChecked) {
+                    entityFilter['forcedMatchEntityIdChecked'] = false
+                    entityFilter['forcedMatchEntityChecked'] = true
+                    entityFilter['forcedMatchMain'] = from
+                    entityFilter['forcedMatchTarget'] = to
+                } else {
+                    entityFilter['forcedMatchEntityChecked'] = false
+                    entityFilter['forcedMatchEntityIdChecked'] = true
+                    entityFilter['forcedMatchEntityIdMain'] = from
+                    entityFilter['forcedMatchEntityIdTarget'] = to
+                }
                 entityFilter['forcedMatchSchemaIdChecked'] = true
                 entityFilter['forcedMatchSchemaId'] = schemaId
                 entityFilter['useEnvironmentCache'] = true

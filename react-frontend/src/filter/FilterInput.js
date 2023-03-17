@@ -6,6 +6,7 @@ export default function FilterInput({ label }) {
 
     const { entityFilterKey } = useEntityFilterKey()
     const { entityFilter,
+        setEntityFilterForcedMatchEntityIdChecked, setEntityFilterForcedMatchEntityIdMain, setEntityFilterForcedMatchEntityIdTarget,
         setEntityFilterForcedMatchSchemaIdChecked, setEntityFilterForcedMatchSchemaId,
         setEntityFilterForcedMatchKeyIdChecked, setEntityFilterForcedMatchKeyId,
         setEntityFilterForcedKeepActionChecked, setEntityFilterForcedKeepAddChecked,
@@ -15,6 +16,15 @@ export default function FilterInput({ label }) {
 
     const forcedMatchComponents = React.useMemo(() => {
 
+        const handleChangeForcedMatchEntityIdChecked = (event) => {
+            setEntityFilterForcedMatchEntityIdChecked(event.target.checked)
+        }
+        const handleChangeForcedMatchEntityIdMain = (event) => {
+            setEntityFilterForcedMatchEntityIdMain(event.target.value)
+        }
+        const handleChangeForcedMatchEntityIdTarget = (event) => {
+            setEntityFilterForcedMatchEntityIdTarget(event.target.value)
+        }
         const handleChangeForcedMatchSchemaIdChecked = (event) => {
             setEntityFilterForcedMatchSchemaIdChecked(event.target.checked)
         }
@@ -61,6 +71,26 @@ export default function FilterInput({ label }) {
 
         return (
             <React.Fragment>
+            <Grid container>
+                <Grid item xs={2}>
+                    <FormControlLabel control={<Checkbox checked={entityFilter.forcedMatchEntityIdChecked} onChange={handleChangeForcedMatchEntityIdChecked} />}
+                        label={"EntityId:"} />
+                </Grid>
+                <Grid item xs={5}>
+                    <FormControl fullWidth>
+                        <TextField id="entity-filter-forced-match-main-text-field" variant="standard"
+                            label="Entity Id Filter Main" value={entityFilter.forcedMatchEntityIdMain} onChange={handleChangeForcedMatchEntityIdMain}
+                            disabled={!entityFilter.forcedMatchEntityIdChecked} />
+                    </FormControl>
+                </Grid>
+                <Grid item xs={5}>
+                    <FormControl fullWidth>
+                        <TextField id="entity-filter-forced-match-main-text-field" variant="standard"
+                            label="Entity Id Filter Target" value={entityFilter.forcedMatchEntityIdTarget} onChange={handleChangeForcedMatchEntityIdTarget}
+                            disabled={!entityFilter.forcedMatchEntityIdChecked} />
+                    </FormControl>
+                </Grid>
+            </Grid>
                 <Grid container>
                     <Grid item xs={2}>
                         <FormControlLabel control={<Checkbox checked={entityFilter.forcedMatchSchemaIdChecked} onChange={handleChangeForcedMatchSchemaIdChecked} />}
@@ -69,7 +99,7 @@ export default function FilterInput({ label }) {
                     <Grid item xs={5}>
                         <FormControl fullWidth>
                             <TextField id="entity-filter-forced-match-main-text-field" variant="standard"
-                                label="Forced Match SchemaId" value={entityFilter.forcedMatchSchemaId} onChange={handleChangeForcedMatchSchemaId}
+                                label="SchemaId Filter" value={entityFilter.forcedMatchSchemaId} onChange={handleChangeForcedMatchSchemaId}
                                 disabled={!entityFilter.forcedMatchSchemaIdChecked} />
                         </FormControl>
                     </Grid>
@@ -82,7 +112,7 @@ export default function FilterInput({ label }) {
                     <Grid item xs={5}>
                         <FormControl fullWidth>
                             <TextField id="entity-filter-forced-match-main-text-field" variant="standard"
-                                label="Forced Match KeyId" value={entityFilter.forcedMatchKeyId} onChange={handleChangeForcedMatchKeyId}
+                                label="KeyId Filter" value={entityFilter.forcedMatchKeyId} onChange={handleChangeForcedMatchKeyId}
                                 disabled={!entityFilter.forcedMatchKeyIdChecked} />
                         </FormControl>
                     </Grid>

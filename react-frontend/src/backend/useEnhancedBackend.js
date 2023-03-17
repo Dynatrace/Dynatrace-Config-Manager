@@ -100,6 +100,17 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
                     }
                 }
 
+                if (entityFilter.forcedMatchEntityIdChecked === true) {
+                    if (entityFilter.forcedMatchEntityIdMain
+                        && entityFilter.forcedMatchEntityIdMain !== '') {
+                        completedSearchParams['forced_entity_id_main'] = entityFilter.forcedMatchEntityIdMain
+                    }
+                    if (entityFilter.forcedMatchEntityIdTarget
+                        && entityFilter.forcedMatchEntityIdTarget !== '') {
+                        completedSearchParams['forced_entity_id_target'] = entityFilter.forcedMatchEntityIdTarget
+                    }
+                }
+
                 if (entityFilter.forcedMatchSchemaIdChecked === true
                     && entityFilter.forcedMatchSchemaId) {
 
