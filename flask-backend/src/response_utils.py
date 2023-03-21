@@ -18,9 +18,16 @@ def call_and_get_response(call_process, run_info=None):
             if ('aggregate_error' in run_info
                     and len(run_info['aggregate_error']) >= 1):
                 result['aggregate_error'] = run_info['aggregate_error']
-                
-            if('return_status' in run_info):
+
+            if ('aggregate_error_response' in run_info
+                    and len(run_info['aggregate_error_response']) >= 1):
+                result['aggregate_error_response'] = run_info['aggregate_error_response']
+
+            if ('return_status' in run_info):
                 return_status = run_info['return_status']
+
+            if ('warnings' in run_info):
+                result['warnings'] = run_info['warnings']
 
     except (UIForwartException, OverflowError) as err:
         result = {"error": str(err)}

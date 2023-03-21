@@ -5,6 +5,7 @@ import monaco_cli_download
 import monaco_local_entity
 import os
 import shutil
+import process_utils
 import tenant
 import yaml
 import subprocess
@@ -52,7 +53,7 @@ def match_entities(run_info, tenant_key_target, tenant_key_main=None):
     except subprocess.CalledProcessError as error:
         print(
             f"The command {error.cmd} failed with error code {error.returncode}")
-        run_info['aggregate_error'] = f"The command {error.cmd} failed with error code {error.returncode}"
+        process_utils.add_aggregate_error(run_info, f"The command {error.cmd} failed with error code {error.returncode}")
         run_info['return_status'] = 400
         return result
 

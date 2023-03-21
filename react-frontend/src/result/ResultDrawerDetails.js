@@ -10,6 +10,7 @@ import { defaultColumnArray, keyColumns } from '../extraction/ExtractedTable';
 import { Box, Typography } from '@mui/material';
 import { getDefaultEntityFilter, useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
 import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
+import ReactJson from 'react-json-view'
 
 export default function ResultDrawerDetails() {
 
@@ -214,6 +215,10 @@ export default function ResultDrawerDetails() {
                             newActionCOmpleted = false
                             newActionCompleted[from][to][schemaId][tempKeyId]['aggregate_error'] = data['aggregate_error']
                         }
+                        if ('aggregate_error_response' in data) {
+                            newActionCOmpleted = false
+                            newActionCompleted[from][to][schemaId][tempKeyId]['aggregate_error_response'] = data['aggregate_error_response']
+                        }
                         newActionCompleted[from][to][schemaId][tempKeyId]['isActionCompleted'] = newActionCOmpleted
                         setActionCompleted(newActionCompleted)
                     }
@@ -234,6 +239,21 @@ export default function ResultDrawerDetails() {
                         updateObjectList.push(
                             <Typography sx={{ ml: 3 }} color="error.light">{actionCompleted[from][to][schemaId][tempKeyId]['aggregate_error']}</Typography>
                         )
+                    } else if ('aggregate_error_response' in actionCompleted[from][to][schemaId][tempKeyId]) {
+                        updateObjectList.push(
+                            <Typography sx={{ ml: 3 }} color="error.light" variant="h5">{actionCompletedLabel + " failed with message: "}</Typography>
+                        )
+                        for (const agg_err_str of Object.values(actionCompleted[from][to][schemaId][tempKeyId]['aggregate_error_response'])) {
+                            
+                            const agg_err = JSON.parse(agg_err_str)
+                            console.log(agg_err)
+                            updateObjectList.push(
+                                <Typography sx={{ ml: 3 }} color="error.light">{agg_err.err_msg}</Typography>
+                            )
+                            updateObjectList.push(
+                                <ReactJson src={JSON.parse(agg_err.err_resp)} />
+                            )
+                        }
                     } else {
                         updateObjectList.push(
                             <Typography sx={{ ml: 3 }} color="success.light" variant="h4">{actionCompletedLabel + " executed!"}</Typography>

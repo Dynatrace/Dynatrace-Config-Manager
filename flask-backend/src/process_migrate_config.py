@@ -8,7 +8,7 @@ import api_v2
 import json
 import ui_api_entity_config
 import entity_utils
-from exception import AggregateExceptions
+from exception import SettingsValidationError
 
 ACTION_ADD = 'Add'
 ACTION_DELETE = 'Delete'
@@ -262,9 +262,12 @@ def execute_all_configs(run_info, tenant_key_target, config_dict, pre_migration)
                         action_function(api_config, config_id,
                                         config_dict, pre_migration)
 
-                    except AggregateExceptions as err:
+                    except SettingsValidationError as err:
                         process_utils.add_config_aggregate_error(
                             run_info, config_dict, err)
+                    except err:
+                        process_utils.add_aggregate_error(
+                            run_info, process_utils.build_config_aggregate_error_msg(config_dict, err))
 
 
 def format_all_to_table(compare_config_dict, result_table=None):
@@ -532,7 +535,7 @@ def delete_config(api_config, config_id, config_dict, pre_migration):
         pass
     else:
         response = api_v2.delete(
-            api_config, api_v2.settings_objects, url_trail)
+            api_config, api_v2.settings_objects, url_trail, skip_404=False)
 
         print(response)
 
@@ -549,7 +552,7 @@ def add_config(api_config, config_id, config_dict, pre_migration):
         pass
     else:
         response = api_v2.post(
-            api_config, api_v2.settings_objects, url_trail, json.dumps([payload]))
+            api_config, api_v2.settings_objects, url_trail, json.dumps([payload]), skip_404=False)
 
         print(response)
 
@@ -566,7 +569,7 @@ def update_config(api_config, config_id, config_dict, pre_migration):
         pass
     else:
         response = api_v2.put(
-            api_config, api_v2.settings_objects, url_trail, json.dumps(payload))
+            api_config, api_v2.settings_objects, url_trail, json.dumps(payload), skip_404=False)
 
         print(response)
 
@@ -576,6 +579,9 @@ def gen_target_payload(config_dict, config_tenant_type):
     config_dict_replaced = replace_entities(config_dict, config_tenant_type)
     payload = {"schemaId": config_dict[config_tenant_type]["schemaId"],
                "scope": config_dict_replaced["scope"], "value": config_dict_replaced["value"]}
+
+    if ("schemaVersion" in config_dict[config_tenant_type]):
+        payload["schemaVersion"] = config_dict[config_tenant_type]["schemaVersion"]
 
     return payload
 
@@ -679,7 +685,8 @@ def compare_config(run_info, entity_type, schemas_definitions_dict_main, schemas
 
             if (schema_id in schemas_definitions_dict_main['ordered_schemas']
                     or schema_id in schemas_definitions_dict_target['ordered_schemas']):
-                error_id_list.append('multi_ordered')
+                process_utils.set_warning_message(
+                    run_info, 'Ordered Settings will be handled, but they will NOT be reordered to reflect the source tenant order. In most cases, the order doesn\'t matter and copying them will deliver good results.')
 
             if (schema_id in config_dict_main['key_not_found_schemas']
                     or schema_id in config_dict_target['key_not_found_schemas']):
@@ -761,23 +768,19 @@ def add_configs(run_info, config_dict, action, entity_type, schema_id, key_id, c
     # Base Code to match config per entity & multi entity per config
     if ('multi_matched' in error_id_list):
         pass
-    else:
+    elif (object_id in tenant_config_dict['multi_matched_objects']):
+        error_id_list.append('multi_matched')
 
-        if (object_id in tenant_config_dict['multi_matched_objects']):
-            error_id_list.append('multi_matched')
-
-        elif (len(config_list) > 1):
-            print(
-                "TODO: Deal with multi config per entity & multi entity per config",
-                "\n", schema_id, config_list, entity_id_dict)
-            error_id_list.append('multi_matched')
+    elif (len(config_list) > 1):
+        print(
+            "TODO: Deal with multi config per entity & multi entity per config",
+            "\n", schema_id, config_list, entity_id_dict)
+        error_id_list.append('multi_matched')
 
     if ('multi_matched_key_id' in error_id_list):
         pass
-    else:
-
-        if (object_id in tenant_config_dict['multi_matched_key_id_object']):
-            error_id_list.append('multi_matched_key_id')
+    elif (object_id in tenant_config_dict['multi_matched_key_id_object']):
+        error_id_list.append('multi_matched_key_id')
 
     if (object_id in tenant_config_dict['management_zone_objects']):
         error_id_list.append('management_zone')
