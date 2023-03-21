@@ -686,7 +686,7 @@ def compare_config(run_info, entity_type, schemas_definitions_dict_main, schemas
             if (schema_id in schemas_definitions_dict_main['ordered_schemas']
                     or schema_id in schemas_definitions_dict_target['ordered_schemas']):
                 process_utils.set_warning_message(
-                    run_info, 'Ordered Settings will be handled, but they will not be reordered to reflect the source tenant order. In most cases, the order doesn\'t matter and copying them will deliver good results.')
+                    run_info, 'Ordered Settings will be handled, but they will NOT be reordered to reflect the source tenant order. In most cases, the order doesn\'t matter and copying them will deliver good results.')
 
             if (schema_id in config_dict_main['key_not_found_schemas']
                     or schema_id in config_dict_target['key_not_found_schemas']):
