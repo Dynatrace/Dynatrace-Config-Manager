@@ -2,6 +2,7 @@ import credentials
 import dirs
 import os
 import monaco_cli
+import process_utils
 import shutil
 import subprocess
 import tenant
@@ -39,7 +40,8 @@ def extract_entities(run_info, tenant_key):
     except subprocess.CalledProcessError as error:
         print(
             f"The command {error.cmd} failed with error code {error.returncode}")
-        run_info['aggregate_error'] = f"The command {error.cmd} failed with error code {error.returncode}"
+        process_utils.add_aggregate_error(
+            run_info, f"The command {error.cmd} failed with error code {error.returncode}")
         run_info['return_status'] = 400
         return result
 

@@ -1,6 +1,7 @@
 import dirs
-import os
 import json
+import os
+import process_utils
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
@@ -20,7 +21,7 @@ def gen_monaco_env(config, tenant_data):
 
 
 def handle_subprocess_error(run_info, result, command, options, stdout, stderr, log_label):
-    run_info['aggregate_error'] = f"The command {command}{options} did not fail, but did not finish"
+    process_utils.add_aggregate_error(run_info, f"The command {command}{options} did not fail, but did not finish")
     if (stdout != ""):
         result['stdout'] = stdout
     if (stderr != ""):

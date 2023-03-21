@@ -54,7 +54,7 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
     return run_info['schemas_definitions_dict'][get_tenant_id(run_info, is_target_tenant)]
 
 
-def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None, 
+def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None,
                  use_environment_cache=None, forced_entity_id_main=None, forced_entity_id_target=None, forced_schema_id=None, forced_key_id=None,
                  forced_keep_action_only=None, preemptive_config_copy=False):
     run_info = {}
@@ -108,9 +108,10 @@ def set_run_tags(run_info, tenant_key_main, tenant_key_target, context_params):
     return run_info
 
 
-def add_config_aggregate_error(run_info, config_dict, error):
+def build_config_aggregate_error_msg(config_dict, error):
+
     err_msg = str(error)
-    err_msg += " Additional Info on the error: "
+    err_msg += ": "
 
     for key in ['schema_id', 'type', 'entity_id_dict', 'key_id']:
 
@@ -121,8 +122,18 @@ def add_config_aggregate_error(run_info, config_dict, error):
             else:
                 err_msg = err_msg + ' ' + key + \
                     ': ' + str(config_dict[key]) + ','
-                    
-    add_aggregate_error(run_info, err_msg)
+
+    return err_msg
+
+
+def add_config_aggregate_error(run_info, config_dict, error):
+
+    err_object = {
+        'err_msg': build_config_aggregate_error_msg(config_dict, error),
+        'err_resp': error.response_text
+    }
+
+    add_aggregate_error_response(run_info, err_object)
 
 
 def add_aggregate_error(run_info, error):
@@ -134,16 +145,38 @@ def add_aggregate_error(run_info, error):
     run_info['aggregate_error'].append(str(error))
 
 
+def add_aggregate_error_response(run_info, error):
+    if ('aggregate_error_response' in run_info):
+        pass
+    else:
+        run_info['aggregate_error_response'] = []
+
+    print("ADD: ", error)
+    run_info['aggregate_error_response'].append(json.dumps(error))
+
+
+def set_warning_message(run_info, message):
+    if ('warnings' in run_info):
+        pass
+    else:
+        run_info['warnings'] = []
+
+    if (message in run_info['warnings']):
+        pass
+    else:
+        run_info['warnings'].append(message)
+
+
 def is_filtered_out_action(run_info, action):
-    if(run_info['forced_keep_action_only'] is None):
+    if (run_info['forced_keep_action_only'] is None):
         return False
-    
-    if(action in run_info['forced_keep_action_only']):
-        if(run_info['forced_keep_action_only'][action] == True):
+
+    if (action in run_info['forced_keep_action_only']):
+        if (run_info['forced_keep_action_only'][action] == True):
             return False
-    
+
     return True
-        
+
 
 def get_tenant_param_dict(tenant_key_main, tenant_key_target, run_info, context_params=None):
 

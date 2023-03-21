@@ -65,7 +65,7 @@ def schema_id_query_dict_extractor(item):
 
     query_dict = {}
     query_dict['schemaIds'] = item_id
-    query_dict['fields'] = "objectId,scope,schemaId,value"
+    query_dict['fields'] = "objectId,scope,schemaId,value,schemaVersion"
 
     url_trail = None
 
@@ -78,7 +78,7 @@ def scope_query_dict_extractor(item):
 
     query_dict = {}
     query_dict['scopes'] = scope
-    query_dict['fields'] = "objectId,scope,schemaId,value"
+    query_dict['fields'] = "objectId,scope,schemaId,value,schemaVersion"
 
     url_trail = None
 

@@ -41,7 +41,7 @@ method_token_map = {
 
 }
 
-def get(config, api, url_trail, query_dict={}):
+def get(config, api, url_trail, query_dict={}, skip_404=True):
 
     method = method_get
 
@@ -50,43 +50,43 @@ def get(config, api, url_trail, query_dict={}):
 
     response = requests.request(
         method, call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
-    _handle_response(response, method, api)
+    _handle_response(response, method, api, skip_404)
 
     return response
 
 
-def delete(config, api, url_trail):
+def delete(config, api, url_trail, skip_404=True):
     method = method_delete
 
     call_url = config['url'] + api + url_trail
 
     response = requests.request(
         method, call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
-    _handle_response(response, method, api)
+    _handle_response(response, method, api, skip_404)
 
     return response
 
 
-def post(config, api, url_trail, payload):
-    return _call_method(method_post, config, api, url_trail, payload)
+def post(config, api, url_trail, payload, skip_404=True):
+    return _call_method(method_post, config, api, url_trail, payload, skip_404)
 
 
-def put(config, api, url_trail, payload):
-    return _call_method(method_put, config, api, url_trail, payload)
+def put(config, api, url_trail, payload, skip_404=True):
+    return _call_method(method_put, config, api, url_trail, payload, skip_404)
 
 
-def _call_method(method, config, api, url_trail, payload):
+def _call_method(method, config, api, url_trail, payload, skip_404=True):
 
     call_url = config['url'] + api + url_trail
 
     response = requests.request(
         method, call_url, headers=config['headers'], data=payload, verify=config['verifySSL'], proxies=config['proxies'])
-    _handle_response(response, method, api)
+    _handle_response(response, method, api, skip_404)
 
     return response
 
 
-def _handle_response(response, method, api):
+def _handle_response(response, method, api, skip_404=True):
 
     if (response.status_code >= 400):
         print("Error", response.status_code, ": ", response.text)
@@ -97,13 +97,17 @@ def _handle_response(response, method, api):
         raise TokenNotAuthorized(
             "Token not authorized for required scope: " + requiredTokenScope)
     elif (response.status_code == 404):
-        pass
+        if(skip_404 == True):
+            pass
+        else:
+            raise SettingsValidationError(response.text, 
+                "API Validation error")
     elif (response.status_code == 400):
-        raise SettingsValidationError(
-            "Settings 2.0 Validation error: ", response.text)
+        raise SettingsValidationError(response.text, 
+            "API Validation error")
     elif (response.status_code == 403):
-        raise SettingsValidationError(
-            "Token missing the required scope for Settings 2.0 object: ", response.text)
+        raise SettingsValidationError(response.text, 
+            "Token missing the required scope for API object")
     else:
         response.raise_for_status()
 
@@ -117,9 +121,9 @@ def _append_query_string(url_trail, query_dict):
     return url_trail
 
 
-def get_json(config, api, url_trail, query_dict={}):
+def get_json(config, api, url_trail, query_dict={}, skip_404=True):
 
-    response = get(config, api, url_trail, query_dict)
+    response = get(config, api, url_trail, query_dict, skip_404)
     result = response.text
 
     try:
@@ -135,9 +139,9 @@ def get_json(config, api, url_trail, query_dict={}):
     return response_object
 
 
-def post_json(config, api, url_trail, payload):
+def post_json(config, api, url_trail, payload, skip_404=True):
 
-    response = post(config, api, url_trail, payload)
+    response = post(config, api, url_trail, payload, skip_404)
     response_object = json.loads(response.text)
 
     return response_object

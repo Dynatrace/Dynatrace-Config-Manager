@@ -9,8 +9,10 @@ import { useResult } from '../context/ResultContext';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ResultTreeGroup from './ResultTreeGroup';
 import { MATCH_TYPE } from '../options/SortOrderOption';
+import ReactJson from 'react-json-view';
 
 const error_color = 'error.dark'
+const warning_color = 'secondary.dark'
 
 export const useResultHook = (resultKey) => {
 
@@ -97,6 +99,47 @@ export const useMigrationResultHook = () => {
                 )
                 components.push(
                     <Typography sx={{ color: error_color, ml: 2 }} style={{ whiteSpace: 'pre-line' }}>{message}</Typography>
+                )
+            }
+        }
+
+
+        console.log("TEST!!")
+
+        if (extractedData
+            && 'aggregate_error_response' in extractedData) {
+            console.log("TEST!!")
+
+            components.push(
+                <Typography sx={{ color: error_color, mt: 1 }}>API Call Errors: </Typography>
+            )
+            let messageNumber = 0
+            for (const message of extractedData['aggregate_error_response']) {
+                messageNumber++
+                const agg_err = JSON.parse(message)
+                components.push(genAccordion(
+                    "Message #" + messageNumber + ":" + agg_err.err_msg,
+                    ([<ReactJson src={JSON.parse(agg_err.err_resp)} />])
+                ))
+            }
+        }
+
+        if (extractedData
+            && 'warnings' in extractedData) {
+
+            components.push(
+                <Typography sx={{ color: warning_color, mt: 1 }}>Warnings: </Typography>
+            )
+            let messageNumber = 0
+            for (const message of extractedData['warnings']) {
+                messageNumber++
+                if (extractedData['warnings'].length > 1) {
+                    components.push(
+                        <Typography sx={{ color: warning_color, mt: 0.5, ml: 1 }} style={{ whiteSpace: 'pre-line' }}>Message #{messageNumber}:</Typography>
+                    )
+                }
+                components.push(
+                    <Typography sx={{ color: warning_color, ml: 2 }} style={{ whiteSpace: 'pre-line' }}>{message}</Typography>
                 )
             }
         }
