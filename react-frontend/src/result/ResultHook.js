@@ -103,12 +103,8 @@ export const useMigrationResultHook = () => {
             }
         }
 
-
-        console.log("TEST!!")
-
         if (extractedData
             && 'aggregate_error_response' in extractedData) {
-            console.log("TEST!!")
 
             components.push(
                 <Typography sx={{ color: error_color, mt: 1 }}>API Call Errors: </Typography>

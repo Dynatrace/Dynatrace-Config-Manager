@@ -44,6 +44,10 @@ def get_monaco_exec_dir():
     return prep_dir(
         get_forward_slash_cwd(), '..', 'monaco')
 
+def get_terraform_exec_dir():
+    return prep_dir(
+        get_forward_slash_cwd(), '..', 'terraform')
+
 
 def get_data_dir():
     return prep_dir(
@@ -105,3 +109,6 @@ def forward_slash_join(path, *paths):
 
 def to_forward_slash(path):
     return path.replace("\\", "/")
+
+def to_backward_slash(path):
+    return path.replace("/", "\\")

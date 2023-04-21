@@ -58,9 +58,29 @@ def load_matched_entities(tenant_key_target, tenant_key_main=None):
                 if (key_value == entities_metadata_key_value):
                     pass
                 else:
-                    return True, {}, {}
+                    print("Must Rerun, reason: ", tenant_type, key_value, entities_metadata_key_value)
+                    return True, ({}, {})
 
-    return False, results['matched_entities'], results['entities_dict']
+    return False, (results['matched_entities'], results['entities_dict'])
+
+
+def load_matched_configs(tenant_key_target, tenant_key_main=None):
+
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+    path_UI_payload = monaco_cli_match.get_path_match_configs_UI_payload(
+        config_target)
+
+    path_UI_payload_file = dirs.get_file_path(path_UI_payload, "payload")
+    
+    cached_data = None
+
+    try:
+        cached_data = get_cached_data(path_UI_payload_file, '.json')
+    except FileNotFoundError as e:
+        return True, (cached_data)
+
+    return False, (cached_data)
 
 
 def run_on_all_sub_files(path, analysis_object, file_extension=".json"):
@@ -77,7 +97,18 @@ def run_on_all_sub_files(path, analysis_object, file_extension=".json"):
 
 
 def analyse_cached_file(analysis_object, sub_file, file_extension):
+    cached_data = get_cached_data(sub_file, file_extension)
+
+    if (analysis_object is None
+            or cached_data is None):
+        pass
+    else:
+        analysis_object.analyze(cached_data)
+
+
+def get_cached_data(sub_file, file_extension):
     cached_data = None
+
     try:
         with open(sub_file, 'r', encoding='UTF-8') as f:
             if (file_extension == '.json'):
@@ -89,11 +120,7 @@ def analyse_cached_file(analysis_object, sub_file, file_extension):
         print("File name probably too long, try moving the tool closer to the root of the drive.")
         raise e
 
-    if (analysis_object is None
-            or cached_data is None):
-        pass
-    else:
-        analysis_object.analyze(cached_data)
+    return cached_data
 
 
 class LoadMatchedEntities:

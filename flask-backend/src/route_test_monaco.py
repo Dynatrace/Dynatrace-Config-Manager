@@ -29,6 +29,22 @@ def monaco_test_extract_entities():
     return response_utils.call_and_get_response(call_process, run_info)
 
 
+@blueprint_route_monaco.route('/monaco_test_extract_configs', methods=['GET'])
+@cross_origin(origin='*')
+def monaco_test_extract_configs():
+
+    tenant_key = flask_utils.get_arg('tenant_key', '0')
+    run_info = {'aggregate_error': [], 'return_status': 200}
+    print(run_info)
+
+    def call_process():
+        monaco_list = monaco_cli_download.extract_configs(
+            run_info, tenant_key)
+        return monaco_list
+
+    return response_utils.call_and_get_response(call_process, run_info)
+
+
 @blueprint_route_monaco.route('/monaco_test_match_entities', methods=['GET'])
 @cross_origin(origin='*')
 def monaco_test_match_entities():
@@ -39,6 +55,21 @@ def monaco_test_match_entities():
 
     def call_process():
         monaco_list = monaco_cli_match.match_entities(run_info, tenant_key)
+        return monaco_list
+
+    return response_utils.call_and_get_response(call_process, run_info)
+
+
+@blueprint_route_monaco.route('/monaco_test_match_configs', methods=['GET'])
+@cross_origin(origin='*')
+def monaco_test_match_configs():
+
+    tenant_key = flask_utils.get_arg('tenant_key', '0')
+    run_info = {'aggregate_error': [], 'return_status': 200}
+    print(run_info)
+
+    def call_process():
+        monaco_list = monaco_cli_match.match_configs(run_info, tenant_key)
         return monaco_list
 
     return response_utils.call_and_get_response(call_process, run_info)
@@ -92,7 +123,7 @@ def monaco_test_compare_match_sources():
         same_entity_id_index_main_to_target_legacy = process_migrate_config.index_entities_main_to_target(
             run_info, context_params, matched_entities_dict_legacy)
 
-        _, matched_entities_dict_monaco, _ = monaco_cli_match.try_monaco_match(
+        _, matched_entities_dict_monaco, _ = monaco_cli_match.try_monaco_match_entities(
             run_info, tenant_key_main, tenant_key_target)
         same_entity_id_index_main_to_target_monaco = process_migrate_config.index_entities_main_to_target(
             run_info, context_params, matched_entities_dict_monaco)

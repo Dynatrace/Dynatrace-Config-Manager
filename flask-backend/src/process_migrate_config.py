@@ -6,6 +6,7 @@ import process_utils
 import credentials
 import api_v2
 import json
+import terraform_cli
 import ui_api_entity_config
 import entity_utils
 from exception import SettingsValidationError
@@ -16,30 +17,36 @@ ACTION_UPDATE = 'Update'
 ACTION_IDENTICAL = 'Identical'
 ACTION_PREEMPTIVE = 'Preemptive'
 
+ACTION_MAP = {ACTION_DELETE: 'D', ACTION_ADD: 'A',
+              ACTION_UPDATE: 'U', ACTION_IDENTICAL: 'I', ACTION_PREEMPTIVE: 'P'}
+
 
 def migrate_config(run_info, tenant_key_main, tenant_key_target, active_rules, context_params, pre_migration=True):
 
-    matched_entities_dict, entities_dict = get_match_dict(
+    matched_entities_dict, entities_dict, entity_legacy_match = get_match_dict(
         run_info, tenant_key_main, tenant_key_target, active_rules, context_params)
 
-    all_tenant_config_dict = get_config_dict(run_info)
+    all_tenant_config_dict, is_legacy_config_match, flat_result_table = get_config_dict(
+        run_info, tenant_key_main, tenant_key_target, entity_legacy_match, pre_migration)
 
-    result_table = copy_configs_safe_same_entity_id(
-        run_info, context_params, pre_migration, tenant_key_target,
-        matched_entities_dict, entities_dict,
-        all_tenant_config_dict[tenant_key_main], all_tenant_config_dict[tenant_key_target])
+    if is_legacy_config_match:
 
-    if (run_info['forced_match']):
-        result_table = ui_api_entity_config.copy_entity(
-            run_info, result_table, pre_migration)
+        result_table = copy_configs_safe_same_entity_id(
+            run_info, context_params, pre_migration, tenant_key_target,
+            matched_entities_dict, entities_dict,
+            all_tenant_config_dict[tenant_key_main], all_tenant_config_dict[tenant_key_target])
 
-    flat_result_table = flatten_results(result_table)
+        if (run_info['forced_match']):
+            result_table = ui_api_entity_config.copy_entity(
+                run_info, result_table, pre_migration)
+
+        flat_result_table = flatten_results(result_table)
 
     return flat_result_table
 
 
 def get_match_dict(run_info, tenant_key_main, tenant_key_target, active_rules, context_params):
-    run_legacy_match, matched_entities_dict, entities_dict = monaco_cli_match.try_monaco_match(
+    run_legacy_match, matched_entities_dict, entities_dict = monaco_cli_match.try_monaco_match_entities(
         run_info, tenant_key_main, tenant_key_target)
 
     if (run_legacy_match):
@@ -47,19 +54,41 @@ def get_match_dict(run_info, tenant_key_main, tenant_key_target, active_rules, c
         matched_entities_dict, entities_dict = process_match_entities.get_entities_dict(
             run_info, active_rules, context_params)
 
-    return matched_entities_dict, entities_dict
+    return matched_entities_dict, entities_dict, run_legacy_match
 
 
-def get_config_dict(run_info):
+def get_config_dict(run_info, tenant_key_main, tenant_key_target, entity_legacy_match, pre_migration):
 
-    config_function = process_match_settings_2_0.match_config
+    all_tenant_config_dict = None
+    run_legacy_match = entity_legacy_match
+    flat_result_table = None
 
-    if (run_info['forced_match']):
-        config_function = process_match_settings_2_0.match_config_forced_live
+    if run_legacy_match:
+        pass
+    else:
+        run_legacy_match, flat_result_table = monaco_cli_match.try_monaco_match_configs(
+            run_info, tenant_key_main, tenant_key_target)
 
-    all_tenant_config_dict = config_function(run_info)
+    if run_legacy_match:
 
-    return all_tenant_config_dict
+        print("Using Legacy Matching")
+        config_function = process_match_settings_2_0.match_config
+
+        if (run_info['forced_match']):
+            config_function = process_match_settings_2_0.match_config_forced_live
+
+        if (run_info['forced_match']):
+            all_tenant_config_dict = config_function(run_info)
+        else:
+            print("TODO: Send Error to the UI")
+            print("Legacy Config Matching disabled for complete tenant matching")
+            run_legacy_match = False
+
+    else:
+        terraform_cli.create_terraform_repo(
+            run_info, pre_migration, tenant_key_target, tenant_key_main)
+
+    return all_tenant_config_dict, run_legacy_match, flat_result_table
 
 
 def copy_configs_safe_same_entity_id(run_info, context_params, pre_migration, tenant_key_target,

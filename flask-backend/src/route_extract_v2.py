@@ -11,15 +11,13 @@ import settings_2_0_schemas
 blueprint_route_extract_v2 = Blueprint('blueprint_route_extract_v2', __name__)
 
 
-@blueprint_route_extract_v2.route('/extract_settings_2_0', methods=['POST'])
+@blueprint_route_extract_v2.route('/extract_configs', methods=['POST'])
 @cross_origin(origin='*')
-def extract_settings_2_0():
+def extract_configs():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
     tenant_key = flask_utils.get_arg('tenant_key', '0')
 
     def call_process():
-        done = handler_api.pull(
-            tenant_key, settings_2_0_schemas.extract_function, use_cache)
         done = handler_api.pull(
             tenant_key, settings_2_0.extract_function, use_cache)
         return done
@@ -27,9 +25,9 @@ def extract_settings_2_0():
     return response_utils.call_and_get_response(call_process)
 
 
-@blueprint_route_extract_v2.route('/extract_settings_2_0_scope', methods=['POST'])
+@blueprint_route_extract_v2.route('/extract_configs_scope', methods=['POST'])
 @cross_origin(origin='*')
-def extract_settings_2_0_scope():
+def extract_configs_scope():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
     tenant_key = flask_utils.get_arg('tenant_key', '0')
     scope = flask_utils.get_arg('scope', 'HOST-4CF7798838A2AFA7')

@@ -15,7 +15,7 @@ export default function ApplyMigrationBox() {
 
             return (
                 <FormControlLabel control={<Checkbox checked={entityFilter.applyMigrationChecked}
-                    onChange={handleChangApplyMigrationChecked} />} label={"Apply Migration"} />
+                    onChange={handleChangApplyMigrationChecked} />} label={"Apply Migration (DEBUG: Show in vsCode)"} />
             )
     }, [entityFilter, setEntityFilterApplyMigrationChecked])
 
