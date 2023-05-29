@@ -117,7 +117,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                     <React.Fragment>
                         <FormControl fullWidth>
                             <TextField id={"api_key-text-field" + tenantKey} variant="standard" type="password"
-                                label="Access Token (API Key): Extract scopes: Read entities & Read settings Push scopes: Write settings" value={tenant.APIKey} onChange={handleChangeAPIKey} />
+                                label="Access Token (API Key): see documentation tab" value={tenant.APIKey} onChange={handleChangeAPIKey} />
                         </FormControl>
                     </React.Fragment>
                     <React.Fragment>

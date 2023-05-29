@@ -46,7 +46,7 @@ const tabConfig = [
   //genTabConfig("Match", <MatchPanel />),
   genTabConfig("Manage Configs", <MigratePanel />),
   //genTabConfig("Settings", <Setting />),
-  //genTabConfig("Documentation", <DocumPanel />),
+  genTabConfig("Documentation", <DocumPanel />),
 ]
 
 export default function BasicTabs() {
