@@ -8,7 +8,7 @@ import { genTenantLabel } from '../credentials/TenantSelector';
 import ConfirmAction from '../action/ConfirmAction';
 import { useConfirmAction } from './ConfirmHook';
 
-export default function MigrateButton({ label, handlePost, confirm = false, disabled = false }) {
+export default function MigrateButton({ label, handlePost, confirm = false, disabled = false, progressComponent = null }) {
 
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenant: tenantTarget } = useTenant(tenantKeyTarget)
@@ -40,13 +40,17 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
             color = 'primary'
         }
 
+        if (progressComponent) {
+            buttonIcon = progressComponent
+        }
+
         return (
             <IconButton onClick={handleClickAction} color={color} disabled={disabled}>
                 {buttonIcon}
                 <Typography sx={{ ml: 1 }}>{label}</Typography>
             </IconButton>
         )
-    }, [confirm, label, handleClickAction, disabled])
+    }, [confirm, label, handleClickAction, disabled, progressComponent])
 
     const confirmDialog = React.useMemo(() => {
 

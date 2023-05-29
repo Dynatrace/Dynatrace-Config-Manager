@@ -106,7 +106,7 @@ def analyse_cached_file(analysis_object, sub_file, file_extension):
         analysis_object.analyze(cached_data)
 
 
-def get_cached_data(sub_file, file_extension):
+def get_cached_data(sub_file, file_extension='.json', file_expected=True):
     cached_data = None
 
     try:
@@ -117,8 +117,9 @@ def get_cached_data(sub_file, file_extension):
                 cached_data = yaml.safe_load(f)
 
     except FileNotFoundError as e:
-        print("File name probably too long, try moving the tool closer to the root of the drive.")
-        raise e
+        if(file_expected):
+            print("File name probably too long, try moving the tool closer to the root of the drive.")
+            raise e
 
     return cached_data
 

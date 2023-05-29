@@ -42,9 +42,9 @@ const genTabConfig = (tabLabel, tabComponent) => {
 }
 const tabConfig = [
   genTabConfig("Credentials", <CredentialPanel />),
-  genTabConfig("Extraction", <ExtractionPanel />),
-  genTabConfig("Match", <MatchPanel />),
-  genTabConfig("Migrate", <MigratePanel />),
+  genTabConfig("Extract", <ExtractionPanel />),
+  //genTabConfig("Match", <MatchPanel />),
+  genTabConfig("Manage Configs", <MigratePanel />),
   //genTabConfig("Settings", <Setting />),
   //genTabConfig("Documentation", <DocumPanel />),
 ]

@@ -4,4 +4,5 @@ data
 flask-backend/dynatrace-terraform-provider/terraform-provider-dynatrace_v1.27.0.exe
 flask-backend/monaco/monaco-windows-amd64.exe.entities-only
 flask-backend/terraform/terraform-provider-dynatrace_v1.8.3.exe
+flask-backend/terraform/terraform-provider-dynatrace_v1.8.3.exe-old
 flask-backend/terraform/terraform.exe

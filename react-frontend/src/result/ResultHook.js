@@ -35,7 +35,7 @@ export const useResultHook = (resultKey) => {
     return { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer }
 }
 
-export const useMigrationResultHook = () => {
+export const useMigrationResultHook = (searchText) => {
 
     const resultKey = 'migration'
     const { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer } = useResultHook(resultKey)
@@ -44,6 +44,10 @@ export const useMigrationResultHook = () => {
     const tableComponents = React.useMemo(() => {
         let components = []
 
+
+        if (searchText !== "") {
+            components.push(<Typography sx={{ color: warning_color, mt: 2 }}>Searching for: {searchText}</Typography>)
+        }
 
         const genAccordion = (label, entityList) => {
 
@@ -206,7 +210,7 @@ export const useMigrationResultHook = () => {
                     <React.Fragment>
                         <Typography sx={{ mt: 1 }}>{type}: </Typography>
                         {schemaComponents}
-                        <ExtractedTable data={entityData} resultKey={resultKey} keyArray={['entities', type]} handleClickMenu={handleContextMenu} />
+                        <ExtractedTable data={entityData} resultKey={resultKey} keyArray={['entities', type]} handleClickMenu={handleContextMenu} searchText={searchText} />
                     </React.Fragment>
                 )
             }
@@ -215,7 +219,7 @@ export const useMigrationResultHook = () => {
 
         return components
 
-    }, [extractedData])
+    }, [extractedData, searchText])
 
     const resultComponents = React.useMemo(() => {
         if (!_.isEmpty(extractedData)) {

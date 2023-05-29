@@ -30,6 +30,16 @@ export function useEnhancedBackendSpecific(entityFilter) {
 
 }
 
+export function useEnhancedBackendTerraform(terraformParams, getActionId) {
+
+    const completeSearchParams = useCompleteSearchParamsTerraform(terraformParams, getActionId)
+
+    const enhancedBackendFunctions = useEnhancedBackendFunctions(completeSearchParams)
+
+    return enhancedBackendFunctions
+
+}
+
 export function useEnhancedBackendFunctions(completeSearchParams) {
 
     const enhancedBackendFunctions = useMemo(() => {
@@ -154,6 +164,37 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
 
         return completeSearchParamsFunction
     }, [entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache])
+
+    return completeSearchParams
+
+}
+
+function useCompleteSearchParamsTerraform(terraformParams, getActionId) {
+
+    const completeSearchParams = useMemo(() => {
+        const completeSearchParamsFunction = (api_method, searchParams) => {
+
+            let completedSearchParams = {}
+
+            if (searchParams) {
+                completedSearchParams = { ...searchParams }
+            }
+
+            if (terraformParams) {
+
+                completedSearchParams['terraform_params'] = JSON.stringify(terraformParams)
+
+            }
+
+            const action_id = getActionId()
+            completedSearchParams['action_id'] = action_id
+
+            return completedSearchParams
+
+        }
+
+        return completeSearchParamsFunction
+    }, [terraformParams, getActionId])
 
     return completeSearchParams
 

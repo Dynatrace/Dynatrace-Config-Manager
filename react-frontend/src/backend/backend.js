@@ -13,6 +13,9 @@ export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 
 export const MIGRATE_SETTINGS_2_0 = 'migrate_settings_2_0'
 
+export const TERRAFORM_PLAN_TARGET = 'terraform_plan_target'
+export const TERRAFORM_APPLY_TARGET = 'terraform_apply_target'
+
 
 export function backendGet(api_method, searchParams, thenFunction, catchFunction) {
 

@@ -235,12 +235,16 @@ def try_monaco_match_entities(run_info, tenant_key_main, tenant_key_target):
     return run_legacy_match, matched_entities_dict, entities_dict
 
 
-def try_monaco_match_configs(run_info, tenant_key_main, tenant_key_target):
+def try_monaco_match_configs(run_info, tenant_key_main, tenant_key_target, pre_migration):
     match_type = 'configs'
 
     print("Always re-run config matching (FOR DEBUG PURPOSES):")
     config_target = credentials.get_api_call_credentials(tenant_key_target)
-    delete_old_cache(config_target, match_type)
+    
+    if pre_migration:
+        pass
+    else:
+        delete_old_cache(config_target, match_type)
 
     run_legacy_match, result_tuple = try_monaco_match(
         run_info, match_type, tenant_key_main, tenant_key_target)

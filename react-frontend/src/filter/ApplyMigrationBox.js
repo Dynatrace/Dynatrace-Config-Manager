@@ -13,10 +13,16 @@ export default function ApplyMigrationBox() {
             setEntityFilterApplyMigrationChecked(event.target.checked)
         }
 
-            return (
-                <FormControlLabel control={<Checkbox checked={entityFilter.applyMigrationChecked}
-                    onChange={handleChangApplyMigrationChecked} />} label={"Apply Migration (DEBUG: Show in vsCode)"} />
-            )
+        return (
+            <FormControlLabel
+                label={"Rebuild terraform folder based on current extraction"}
+                control={
+                    <Checkbox
+                        checked={entityFilter.applyMigrationChecked}
+                        onChange={handleChangApplyMigrationChecked}
+                    />}
+            />
+        )
     }, [entityFilter, setEntityFilterApplyMigrationChecked])
 
     return (
