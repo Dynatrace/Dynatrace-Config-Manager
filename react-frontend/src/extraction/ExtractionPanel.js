@@ -33,7 +33,7 @@ export default function ExtractionPanel() {
     return (
         <React.Fragment>
             <TenantMigrationSelector />
-            <MigrateButtonControlled handleChange={() => { }} entityFilter={{ 'applyMigrationChecked': true }} label={"Wipe terraform folder and Create new files (do this when extractions are completed)"} confirm={true} />
+            <MigrateButtonControlled handleChange={() => { }} entityFilter={{ 'applyMigrationChecked': true }} label={"Post-Process extracted files, will delete current cache, do this when extractions are completed (Terraform cli)"} confirm={true} />
             <Grid container>
                 {extractionGridComponentList}
             </Grid>
