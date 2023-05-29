@@ -5,6 +5,7 @@ import { useMigrationGridConfig } from '../migrationGrid/useMigrationGridConfig'
 import ExtractConfigs from './ExtractConfigs';
 import ExtractEntities from './ExtractEntities';
 import MonacoRequestsInfo from './MonacoRequestsInfo';
+import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
 
 export default function ExtractionPanel() {
     const gridConfigList = useMigrationGridConfig()
@@ -32,6 +33,7 @@ export default function ExtractionPanel() {
     return (
         <React.Fragment>
             <TenantMigrationSelector />
+            <MigrateButtonControlled handleChange={() => { }} entityFilter={{ 'applyMigrationChecked': true }} label={"Post-Process extracted files, will delete current cache, do this when extractions are completed (Terraform cli)"} confirm={true} />
             <Grid container>
                 {extractionGridComponentList}
             </Grid>

@@ -42,6 +42,7 @@ const autoHiddenColumns = {
     'service_id': true,
     'unique': true,
     'data': true,
+    'stats': true,
 }
 
 export const keyColumns = [
@@ -53,7 +54,7 @@ export const keyColumns = [
 
 export const defaultColumnArray = ['data', '0']
 
-export default function ExtractedTable({ data, resultKey, keyArray, entityType, handleClickMenu }) {
+export default function ExtractedTable({ data, resultKey, keyArray, entityType, handleClickMenu, searchText }) {
 
     const [columns, rows] = React.useMemo(() => {
         if (!data || !data['items']) {
@@ -113,11 +114,36 @@ export default function ExtractedTable({ data, resultKey, keyArray, entityType, 
             if (keyArray) {
                 let columnArray = [...defaultColumnArray]
                 let rowArray = [...keyArray, 'items', idx]
-                row['ctxMenuBtn'] = { resultKey, 'rowArray': rowArray, 'columnArray': [...rowArray, ...columnArray]}
+                row['ctxMenuBtn'] = { resultKey, 'rowArray': rowArray, 'columnArray': [...rowArray, ...columnArray] }
             }
 
-            rows.push({ id, ...row })
-            id += 1
+            console.log(row)
+            let foundText = false
+
+            if (searchText === "") {
+                foundText = true
+            } else {
+                if ('schemaId' in row && row['schemaId'].includes(searchText)) {
+                    foundText = true
+                }
+                if ('data' in row) {
+                    for (const item of Object.values(row['data'])) {
+                        if ('entity_list' in item && item['entity_list'].includes(searchText)) {
+                            foundText = true
+                            break
+                        }
+                        if ('key_id' in item && item['key_id'].includes(searchText)) {
+                            foundText = true
+                            break
+                        }
+                    }
+                }
+            }
+
+            if (foundText) {
+                rows.push({ id, ...row })
+                id += 1
+            }
         }
 
         return [columns, rows]

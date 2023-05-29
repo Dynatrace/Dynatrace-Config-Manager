@@ -1,16 +1,29 @@
 
 import api_v2
 import handler_api
+import monaco_cli_download
+import monaco_local_entity
 import settings_2_0_schemas
 
 
 def extract_function(config, use_cache, cache_only, analysis_object, input_params=None, run_info=None):
 
-    schema_dict = settings_2_0_schemas.extract_schemas(
-        config, use_cache=cache_only, cache_only=cache_only)
+    use_monaco_cache = monaco_cli_download.is_finished_configs(config=config)
+    schema_dict = None
+    
+    if (cache_only == True and use_monaco_cache == False):
+        schema_dict = settings_2_0_schemas.extract_schemas(
+            config, use_cache=cache_only, cache_only=cache_only)
 
-    _ = extract_configs(
-        schema_id_query_dict_extractor, config, schema_dict, use_cache, cache_only, analysis_object)
+        _ = extract_configs(
+            schema_id_query_dict_extractor, config, schema_dict, use_cache, cache_only, analysis_object)
+        
+    else:
+        if (cache_only):
+            pass #return monaco_local_entity.analyze_configs(config, analysis_object)
+        else:
+            monaco_cli_download.extract_configs(
+                run_info, config['tenant_key'])
 
     return schema_dict
 

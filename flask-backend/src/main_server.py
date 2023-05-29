@@ -6,6 +6,7 @@ from route_extract_v2 import blueprint_route_extract_v2
 from route_migrate_v2 import blueprint_route_migrate_v2
 from route_options import blueprint_route_options
 from route_tenant import blueprint_route_tenant
+from route_terraform import blueprint_route_terraform
 from route_test_monaco import blueprint_route_monaco
 
 FLASK_PORT = 5004
@@ -18,6 +19,7 @@ app.register_blueprint(blueprint_route_migrate_v2)
 app.register_blueprint(blueprint_route_options)
 app.register_blueprint(blueprint_route_tenant)
 app.register_blueprint(blueprint_route_monaco)
+app.register_blueprint(blueprint_route_terraform)
 CORS(app)
 
 

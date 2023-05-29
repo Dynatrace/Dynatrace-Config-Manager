@@ -6,12 +6,15 @@ export const GLOBAL_SETTINGS = 'global_settings'
 export const ENTITY_FILTER = 'entity_filter'
 
 export const TEST_CONNECTION = 'test_connection'
-export const EXTRACT_SETTINGS_2_0 = 'extract_settings_2_0'
+export const EXTRACT_CONFIGS = 'extract_configs'
 export const EXTRACT_ENTITY_V2 = 'extract_entity_v2'
 
 export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 
 export const MIGRATE_SETTINGS_2_0 = 'migrate_settings_2_0'
+
+export const TERRAFORM_PLAN_TARGET = 'terraform_plan_target'
+export const TERRAFORM_APPLY_TARGET = 'terraform_apply_target'
 
 
 export function backendGet(api_method, searchParams, thenFunction, catchFunction) {

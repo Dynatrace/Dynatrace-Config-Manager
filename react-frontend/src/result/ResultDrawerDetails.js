@@ -7,19 +7,19 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ReactJsonViewCompare from 'react-json-view-compare';
 import { useResult } from '../context/ResultContext';
 import { defaultColumnArray, keyColumns } from '../extraction/ExtractedTable';
-import { Box, Typography } from '@mui/material';
-import { getDefaultEntityFilter, useEntityFilter, useEntityFilterKey } from '../context/EntityFilterContext';
-import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
-import ReactJson from 'react-json-view'
+import { Box, Grid, Paper, Typography } from '@mui/material';
+import TerraformButton from '../terraform/TerraformButton';
+import { TERRAFORM_APPLY_TARGET, TERRAFORM_PLAN_TARGET } from '../backend/backend';
+import Ansi from "ansi-to-react";
+import ResultDrawerList from './ResultDrawerList';
 
 export default function ResultDrawerDetails() {
 
     const { contextNode, setContextNode } = useContextMenuState()
     const resultKey = useContextResultKey(contextNode)
     const { result } = useResult(resultKey)
-    const { entityFilterKey } = useEntityFilterKey()
-    const { entityFilter: baseEntityFilter } = useEntityFilter(entityFilterKey)
     const [actionCompleted, setActionCompleted] = React.useState({})
+    const [lastActionId, setLastActionId] = React.useState({})
 
     const detailsComponent = useMemo(() => {
 
@@ -30,7 +30,7 @@ export default function ResultDrawerDetails() {
         }
 
         const [row, __, rowIdx, rowLength] = getObjectFromKeyArray(result, contextNode.rowArray, 0)
-        const [column, _, columnIdx, columnLength] = getObjectFromKeyArray(result, contextNode.columnArray, 0)
+        const [column, _, ___, ____] = getObjectFromKeyArray(result, contextNode.columnArray, 0)
 
         const scrollColumn = (adjustment) => {
 
@@ -46,8 +46,10 @@ export default function ResultDrawerDetails() {
             }
         }
 
+        /*
         const scrollColumnLeft = () => { scrollColumn(-1) }
         const scrollColumnRight = () => { scrollColumn(1) }
+        */
 
         const scrollRow = (adjustment) => {
 
@@ -89,6 +91,15 @@ export default function ResultDrawerDetails() {
             }
         }
 
+        const actionnableStatusMap = {
+            'D': 'Delete',
+            'U': 'Update',
+            'A': 'Add',
+            'P': 'Preemptive Add',
+        }
+
+        let address = {}
+
         if (column) {
             if ('data_main' in column && column.data_main) {
                 mainObject = JSON.parse(column.data_main)
@@ -97,20 +108,48 @@ export default function ResultDrawerDetails() {
                 targetObject = JSON.parse(column.data_target)
             }
 
+            const column_copy = { ...column }
+            const doWriteMissingTFInfo = (column['status'] in actionnableStatusMap || column['status'] === 'I')
+            if (result['address_map'] && result['address_map'][column['monaco_type']] && result['address_map'][column['monaco_type']][column['monaco_id']]) {
+                address = result['address_map'][column['monaco_type']][column['monaco_id']]
+                column_copy['tf_module'] = address['TrimmedType']
+                column_copy['tf_file'] = address['UniqueName'] + '.' + address['TrimmedType'] + '.tf'
+            } else {
+                if (result['address_map'] && result['address_map'][column['monaco_type']]) {
+                    const idMap = result['address_map'][column['monaco_type']]
+                    const idMapKeys = Object.keys(idMap)
+                    if (idMapKeys.length > 0) {
+                        column_copy['tf_module'] = idMap[idMapKeys[0]]['TrimmedType']
+                    }
+                }
+                if ('tf_module' in column_copy) {
+                    if (doWriteMissingTFInfo) {
+                        column_copy['tf_file'] = "Missing"
+                    }
+                } else {
+                    column_copy['tf_module'] = "Unsupported at the time"
+                }
 
-            for (const column_key of ['schemaId', 'key_id', 'status']) {
-                if (column_key in column) {
+            }
+            for (const column_key of ['schemaId', 'key_id', 'status', 'entity_list', 'tf_module', 'tf_file']) {
+                if (column_key in column_copy) {
+
+                    const value = column_copy[column_key]
+
+                    if (value === "null" || value === "[]") {
+                        continue
+                    }
 
                     let columnLabel = ""
                     columnLabel += column_key
                     columnLabel += ": "
-                    columnLabel += column[column_key]
+                    columnLabel += value
 
                     columnLabelList.push(
                         <Typography sx={{ ml: 3 }}>{columnLabel}</Typography>
                     )
 
-                    keyValues[column_key] = column[column_key]
+                    keyValues[column_key] = value
                 }
             }
 
@@ -122,190 +161,286 @@ export default function ResultDrawerDetails() {
             keyValues['from'] = keyValues['scope']
             keyValues['to'] = keyValues['scope']
         }
-
-        const actionnableStatusMap = {
-            'D': 'Delete',
-            'U': 'Update',
-            'A': 'Add',
-            'P': 'Preemptive Add',
-        }
-
-        let isActionCompleted = false
         let actionCompletedLabel = ""
-        let disableButtonAfterCompletion = () => { }
+        let handleTerraformCallComplete = (data, terraformAction) => { }
 
-        if ('status' in keyValues) {
+        const columnListArray = [...contextNode.columnArray]
+        columnListArray.pop()
 
-            if (keyValues['status'] in actionnableStatusMap
-                && 'from' in keyValues
-                && 'to' in keyValues
-                && 'schemaId' in keyValues) {
+        const [columnList, _____, _______, ________] = getObjectFromKeyArray(result, columnListArray, 0)
 
-                const { from, to, schemaId } = keyValues
-                let keyId = null
-                const statusLabel = actionnableStatusMap[keyValues['status']]
+        let nbUpdateError = 0
+        let nbUpdate = 0
+        let terraformParams = []
 
-                let entityFilter = getDefaultEntityFilter()
-                entityFilter['forcedMatchChecked'] = true
-                if (baseEntityFilter.forcedMatchChecked
-                    && baseEntityFilter.forcedMatchEntityChecked) {
-                    entityFilter['forcedMatchEntityIdChecked'] = false
-                    entityFilter['forcedMatchEntityChecked'] = true
-                    entityFilter['forcedMatchMain'] = from
-                    entityFilter['forcedMatchTarget'] = to
+        if ('selectedArray' in contextNode) {
+            for (const columnKey of Object.values(contextNode['selectedArray'])) {
+                const columnUpdate = columnList[columnKey]
+
+                const { monaco_type: monacoTypeUpdate, monaco_id: monacoIdUpdate } = columnUpdate
+
+                if (result && result['address_map'] && result['address_map'][monacoTypeUpdate]) {
+                    // pass
                 } else {
-                    entityFilter['forcedMatchEntityChecked'] = false
-                    entityFilter['forcedMatchEntityIdChecked'] = true
-                    entityFilter['forcedMatchEntityIdMain'] = from
-                    entityFilter['forcedMatchEntityIdTarget'] = to
+                    nbUpdateError += 1
+                    continue
                 }
-                entityFilter['forcedMatchSchemaIdChecked'] = true
-                entityFilter['forcedMatchSchemaId'] = schemaId
-                entityFilter['useEnvironmentCache'] = true
-                if ('key_id' in keyValues) {
-                    entityFilter['forcedMatchKeyIdChecked'] = true
-                    keyId = keyValues['key_id']
-                    entityFilter['forcedMatchKeyId'] = keyId
+                const addressUpdate = result['address_map'][monacoTypeUpdate][monacoIdUpdate]
+                if (addressUpdate) {
+                    // pass
+                } else {
+                    nbUpdateError += 1
+                    continue
                 }
-                entityFilter['applyMigrationChecked'] = true
-                entityFilter['preemptiveConfigCopy'] = statusLabel === "Preemptive"
+                const { Type: TypeUpdate, TrimmedType: TrimmedTypeUpdate, UniqueName: UniqueNameUpdate } = addressUpdate
 
-                entityFilter['forcedKeepActionChecked'] = true
-                entityFilter.forcedKeepAddChecked = statusLabel === "Add"
-                entityFilter.forcedKeepDeleteChecked = statusLabel === "Delete"
-                entityFilter.forcedKeepUpdateChecked = statusLabel === "Update"
-                entityFilter.forcedKeepIdenticalChecked = statusLabel === "Identical"
-                entityFilter.forcedKeepPreemptiveChecked = statusLabel === "Preemptive"
+                if (TypeUpdate && TrimmedTypeUpdate && UniqueNameUpdate) {
 
-                let tempKeyId = keyId
-                if (keyId == null) {
-                    tempKeyId = ""
+                    nbUpdate += 1
+                    terraformParams.push({
+                        'module': TypeUpdate,
+                        'module_trimmed': TrimmedTypeUpdate,
+                        'unique_name': UniqueNameUpdate,
+                    })
+
+
+                } else {
+                    nbUpdateError += 1
                 }
+            }
 
+            if (nbUpdate > 0 || nbUpdateError > 0) {
+                updateObjectList.push(
+                    <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Terraform action info: </Typography>
+                )
+            }
+            if (nbUpdateError > 0) {
+                updateObjectList.push(
+                    <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Warning: {nbUpdateError} configs NOT updatable. </Typography>
+                )
+            }
 
-                disableButtonAfterCompletion = (data) => {
-                    if (data == null) {
-                        ;
+            handleTerraformCallComplete = (data, terraformAction, id) => {
+                if (data == null) {
+                    // pass
+                } else {
+                    if ('action_id' in data) {
+                        // pass
                     } else {
-                        ;
-                        let newActionCompleted = { ...actionCompleted }
-                        if (from in newActionCompleted) {
-                            ;
-                        } else {
-                            newActionCompleted[from] = {}
-                        }
-                        if (to in newActionCompleted[from]) {
-                            ;
-                        } else {
-                            newActionCompleted[from][to] = {}
-                        }
-                        if (schemaId in newActionCompleted[from][to]) {
-                            ;
-                        } else {
-                            newActionCompleted[from][to][schemaId] = {}
-                        }
-                        if (tempKeyId in newActionCompleted[from][to][schemaId]) {
-                            ;
-                        } else {
-                            newActionCompleted[from][to][schemaId][tempKeyId] = {}
-                        }
-                        let newActionCOmpleted = true
-                        newActionCompleted[from][to][schemaId][tempKeyId]['action'] = statusLabel
-                        if ('aggregate_error' in data) {
-                            newActionCOmpleted = false
-                            newActionCompleted[from][to][schemaId][tempKeyId]['aggregate_error'] = data['aggregate_error']
-                        }
-                        if ('aggregate_error_response' in data) {
-                            newActionCOmpleted = false
-                            newActionCompleted[from][to][schemaId][tempKeyId]['aggregate_error_response'] = data['aggregate_error_response']
-                        }
-                        newActionCompleted[from][to][schemaId][tempKeyId]['isActionCompleted'] = newActionCOmpleted
-                        setActionCompleted(newActionCompleted)
-                    }
-                }
-
-                if (from in actionCompleted
-                    && to in actionCompleted[from]
-                    && schemaId in actionCompleted[from][to]
-                    && tempKeyId in actionCompleted[from][to][schemaId]) {
-
-                    isActionCompleted = actionCompleted[from][to][schemaId][tempKeyId]['isActionCompleted']
-                    actionCompletedLabel = actionCompleted[from][to][schemaId][tempKeyId]['action']
-
-                    if ('aggregate_error' in actionCompleted[from][to][schemaId][tempKeyId]) {
-                        updateObjectList.push(
-                            <Typography sx={{ ml: 3 }} color="error.light" variant="h5">{actionCompletedLabel + " failed with message: "}</Typography>
-                        )
-                        updateObjectList.push(
-                            <Typography sx={{ ml: 3 }} color="error.light">{actionCompleted[from][to][schemaId][tempKeyId]['aggregate_error']}</Typography>
-                        )
-                    } else if ('aggregate_error_response' in actionCompleted[from][to][schemaId][tempKeyId]) {
-                        updateObjectList.push(
-                            <Typography sx={{ ml: 3 }} color="error.light" variant="h5">{actionCompletedLabel + " failed with message: "}</Typography>
-                        )
-                        for (const agg_err_str of Object.values(actionCompleted[from][to][schemaId][tempKeyId]['aggregate_error_response'])) {
-                            
-                            const agg_err = JSON.parse(agg_err_str)
-                            console.log(agg_err)
-                            updateObjectList.push(
-                                <Typography sx={{ ml: 3 }} color="error.light">{agg_err.err_msg}</Typography>
-                            )
-                            updateObjectList.push(
-                                <ReactJson src={JSON.parse(agg_err.err_resp)} />
-                            )
-                        }
-                    } else {
-                        updateObjectList.push(
-                            <Typography sx={{ ml: 3 }} color="success.light" variant="h4">{actionCompletedLabel + " executed!"}</Typography>
-                        )
+                        return
                     }
 
+                    const id = data['action_id']
+                    let newActionCompleted = { ...actionCompleted }
+
+                    if (newActionCompleted['history']) {
+                        // pass
+                    } else {
+                        newActionCompleted['history'] = {}
+                    }
+
+                    if (id in newActionCompleted['history']) {
+                        // pass
+                    } else {
+                        newActionCompleted['history'][id] = {}
+                    }
+
+                    if (terraformAction in newActionCompleted['history'][id]) {
+                        // pass
+                    } else {
+                        newActionCompleted['history'][id][terraformAction] = {}
+                    }
+
+                    if ('aggregate_error' in data) {
+                        newActionCompleted['history'][id][terraformAction]['aggregate_error'] = data['aggregate_error']
+                    }
+                    if ('log_content' in data) {
+                        newActionCompleted['history'][id][terraformAction]['log'] = data['log_content']
+                    }
+                    newActionCompleted['history'][id]['lastTerraformAction'] = terraformAction
+
+                    for (const columnUpdateInfo of Object.values(terraformParams)) {
+                        const { module: Type, unique_name: UniqueName } = columnUpdateInfo
+
+                        if (Type in newActionCompleted) {
+                            // pass
+                        } else {
+                            newActionCompleted[Type] = {}
+                        }
+                        if (UniqueName in newActionCompleted[Type]) {
+                            // pass
+                        } else {
+                            newActionCompleted[Type][UniqueName] = {}
+                        }
+                        newActionCompleted[Type][UniqueName] = id
+                    }
+
+                    setActionCompleted(newActionCompleted)
+                }
+            }
+
+            let actionId = 0
+
+            const { schemaId } = keyValues
+            const { Type, UniqueName } = address
+            if (Type && UniqueName && actionCompleted && actionCompleted[Type] && actionCompleted[Type][UniqueName]) {
+
+                actionId = actionCompleted[Type][UniqueName]
+
+            }
+
+            const planActionLabel = "Terraform Plan"
+            const applyActionLabel = "Terraform Apply"
+            let isPlanDone = false
+            let isApplyDone = false
+
+            let actionDetails = []
+            if (actionId
+                && actionId > 0
+                && 'history' in actionCompleted
+                && actionId in actionCompleted['history']) {
+
+                const actionInfoObject = actionCompleted['history'][actionId]
+                const terraformActionCompletedLabel = actionInfoObject['lastTerraformAction']
+                const actionInfo = actionInfoObject[terraformActionCompletedLabel]
+
+                if ('aggregate_error' in actionInfo) {
+                    actionDetails.push(
+                        <Typography sx={{ ml: 3 }} color="error.light" variant="h5">{terraformActionCompletedLabel + " failed with message: "}</Typography>
+                    )
+                    actionDetails.push(
+                        <Typography sx={{ ml: 3 }} color="error.light" variant="h6">See Terraform Plan Log below for additional info</Typography>
+                    )
+                    actionDetails.push(
+                        <Typography sx={{ ml: 3 }} color="error.light">{actionInfo['aggregate_error']}</Typography>
+                    )
+                }
+                if ('log' in actionInfo) {
+
+                    if (terraformActionCompletedLabel === planActionLabel
+                        && actionInfo['log'].includes("Saved the plan to:")) {
+                        isPlanDone = true
+                    }
+
+                    if (terraformActionCompletedLabel === applyActionLabel
+                        && actionInfo['log'].includes("Apply complete!")) {
+                        isApplyDone = true
+                        actionDetails.push(
+                            <Typography sx={{ ml: 3 }} color="success.light" variant="h4">{terraformActionCompletedLabel + " executed!"}</Typography>
+                        )
+                    }
+
+                    const actionList = [applyActionLabel, planActionLabel]
+                    for (const actionLabel of Object.values(actionList)) {
+                        if (actionLabel in actionInfoObject) {
+                            // pass
+                        } else {
+                            continue
+                        }
+
+                        const localActionInfo = actionInfoObject[actionLabel]
+
+                        actionDetails.push(
+                            <Paper sx={{ ml: 3, mt: 2 }}>
+                                <Typography color="primary.main" variant="h6">Terraform Log for {actionLabel}, based on action_{actionId}</Typography>
+                                {localActionInfo['log'].split("\n").map(function (line) {
+
+                                    return (
+                                        <React.Fragment>
+                                            <Ansi>{line}</Ansi>
+                                            <br />
+                                        </React.Fragment>
+                                    )
+                                })}
+                            </Paper>
+                        )
+
+                    }
+
                 }
 
+            }
+
+            if (nbUpdate > 0) {
+                const handleTerraformCallCompletePlan = (data) => { handleTerraformCallComplete(data, planActionLabel) }
+                const getActionId = () => {
+                    const newLastActionId = { ...lastActionId }
+                    const newActionIdLabel = "newActionId"
+                    if (newActionIdLabel in newLastActionId) {
+                        // pass
+                    } else {
+                        newLastActionId[newActionIdLabel] = 0
+                    }
+                    newLastActionId[newActionIdLabel]++
+                    newLastActionId[schemaId] = newLastActionId[newActionIdLabel]
+
+                    setLastActionId(newLastActionId)
+                    
+                    return newLastActionId[newActionIdLabel]
+                }
                 updateObjectList.push(
                     <Box sx={{ ml: 2, mb: 1 }}>
-                        <MigrateButtonControlled entityFilter={entityFilter} handleChange={disableButtonAfterCompletion}
-                            label={statusLabel + " This Object"} confirm={true}
-                            disabled={isActionCompleted} />
+                        <TerraformButton terraformAPI={TERRAFORM_PLAN_TARGET} terraformParams={terraformParams}
+                            handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
+                            label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )"} confirm={false} />
                     </Box>
                 )
             }
+            if (actionId > 0) {
+                const handleTerraformCallCompleteApply = (data) => { handleTerraformCallComplete(data, applyActionLabel) }
+                const getActionIdApply = () => {
+                    return actionId
+                }
+                updateObjectList.push(
+                    <Box sx={{ ml: 2, mb: 1 }}>
+                        <TerraformButton terraformAPI={TERRAFORM_APPLY_TARGET} terraformParams={terraformParams}
+                            handleChange={handleTerraformCallCompleteApply} getActionId={getActionIdApply}
+                            label={"Terraform Apply action_" + actionId + " ( Will apply the plan below, regardless of the current selection )"} confirm={true}
+                            disabled={!isPlanDone || isApplyDone} />
+                    </Box>
+                )
+            }
+
+            updateObjectList = updateObjectList.concat(actionDetails)
+
         }
 
         const diffViewerFormatted = (
             <React.Fragment>
 
-                <IconButton onClick={scrollRowDown} aria-label="delete" size="large" disabled={rowIdx == 1}>
-                    <SkipPreviousIcon fontSize="inherit" />
-                    <Typography>Previous Row</Typography>
-                </IconButton>
-                <IconButton onClick={scrollRowUp} aria-label="delete" size="large" disabled={rowIdx == rowLength}>
-                    <Typography>Next Row</Typography>
-                    <SkipNextIcon fontSize="inherit" />
-                </IconButton>
-                <Typography sx={{ ml: 2, mb: 1 }}>Row: {rowIdx} of: {rowLength}</Typography>
-                {rowLabelList}
+                <Grid container>
 
-                <IconButton onClick={scrollColumnLeft} aria-label="delete" size="large" disabled={columnIdx == 1}>
-                    <SkipPreviousIcon fontSize="inherit" />
-                    <Typography>Previous Column</Typography>
-                </IconButton>
-                <IconButton onClick={scrollColumnRight} aria-label="delete" size="large" disabled={columnIdx == columnLength}>
-                    <Typography>Next Column</Typography>
-                    <SkipNextIcon fontSize="inherit" />
-                </IconButton>
-                <Typography sx={{ ml: 2, mb: 1 }}>Column: {columnIdx} of: {columnLength}</Typography>
-                {columnLabelList}
+                    <Grid item xs={4}>
+                        <IconButton onClick={scrollRowDown} aria-label="delete" size="large" disabled={rowIdx === 1}>
+                            <SkipPreviousIcon fontSize="inherit" />
+                            <Typography>Previous Row</Typography>
+                        </IconButton>
+                        <IconButton onClick={scrollRowUp} aria-label="delete" size="large" disabled={rowIdx === rowLength}>
+                            <Typography>Next Row</Typography>
+                            <SkipNextIcon fontSize="inherit" />
+                        </IconButton>
+                        <Typography sx={{ ml: 2, mb: 1 }}>Row: {rowIdx} of: {rowLength}</Typography>
+                        {rowLabelList}
+                        <ResultDrawerList key={"DrawerList" + keyValues['schemaId']} result={result} contextNode={contextNode} setContextNode={setContextNode} />
+                    </Grid>
 
-                {updateObjectList}
+                    <Grid item xs={8}>
 
-                <ReactJsonViewCompare oldData={targetObject} newData={mainObject} />
+                        {updateObjectList}
+
+                        <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Last Selection Details: </Typography>
+                        {columnLabelList}
+
+
+                        <ReactJsonViewCompare oldData={targetObject} newData={mainObject} />
+                    </Grid>
+                </Grid>
             </React.Fragment>
         )
 
         return diffViewerFormatted
 
-    }, [contextNode, resultKey, result, actionCompleted])
+    }, [contextNode, result, actionCompleted, lastActionId, setContextNode])
 
     return (
         detailsComponent
@@ -326,7 +461,7 @@ const getObjectFromKeyArray = (sourceObject, keyArray, adjustment, idx = 0) => {
 
     if (sourceObject && keyArray && keyArray.length && idx < keyArray.length && keyArray[idx]) {
 
-        const depthReached = (keyArray.length == (idx + 1))
+        const depthReached = (keyArray.length === (idx + 1))
 
         if (depthReached) {
             let key = keyArray[idx]
