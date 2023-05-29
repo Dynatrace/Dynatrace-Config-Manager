@@ -24,6 +24,12 @@
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4"
   },
+  "overrides": {
+    "react-json-view": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "scripts": {
     "start": "cross-env PORT=3004 react-scripts start",
     "build": "react-scripts build",
