@@ -1,16 +1,16 @@
 # Dynatrace-Config-Manager
 
-### ALPHA VERSION
+### BETA VERSION
 
 ##### Disclaimer:
 
 * I made my code available to everyone, but this project is not stable for now.
-* Error management is minimal, this should be fixed soon.
 * It is not officially supported in any way by Dynatrace or myself.
 * Use at your own risks.
 
 ### Vision:
-I am working towards a "one click migration" for all oneangents and and of their tenant's configuration to another tenant.
+I am working towards a "one click migration" for complete tenant configurations to another tenant.
+I also dream of moving the agents themselves (oneagentctl --set-tenant ...), but other people are tackling this problem.
 
 ### Access Tokens
 It is required that you use an access token with these scopes:
