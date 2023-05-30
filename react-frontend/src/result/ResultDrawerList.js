@@ -55,6 +55,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                     'resultKey': contextNode.resultKey,
                     'rowArray': contextNode.rowArray,
                     'columnArray': newColumnArray,
+                    'searchText': contextNode.searchText,
                     'selectedArray': newChecked,
                 }
                 setContextNode(newContextNode)
@@ -71,6 +72,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                 'resultKey': contextNode.resultKey,
                 'rowArray': contextNode.rowArray,
                 'columnArray': contextNode.columnArray,
+                'searchText': contextNode.searchText,
                 'selectedArray': [],
             }
             setContextNode(newContextNode)
@@ -84,19 +86,34 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
 
         const itemList = topObject[keyArray[keyArray.length - 2]]
 
-        let name = topObject['schemaId']
-        name += " ( " + Object.keys(itemList).length + " )"
 
         const items = []
+        let nbFound = 0
+        let schemaFound = (contextNode.searchText === ""
+            || topObject['schemaId'].toLowerCase().includes(contextNode.searchText))
+
 
         for (const [key, child] of Object.entries(itemList)) {
-            items.push(
-                <ResultDrawerListItem key={key} childKey={key} child={child} handleToggleList={handleToggleList} checked={checked.indexOf(key)} />
-            )
+            if (schemaFound
+                || ('key_id' in child && child['key_id'].toLowerCase().includes(contextNode.searchText))
+                || ('entity_list' in child && child['entity_list'].toLowerCase().includes(contextNode.searchText))) {
+                nbFound++
+                items.push(
+                    <ResultDrawerListItem key={key} childKey={key} child={child} handleToggleList={handleToggleList} checked={checked.indexOf(key)} />
+                )
+            }
+        }
+
+        let name = topObject['schemaId']
+        const nbMax = Object.keys(itemList).length
+        if (nbFound === nbMax) {
+            name += " ( " + nbMax + " )"
+        } else {
+            name += " ( " + nbFound + "/" + nbMax + " )"
         }
 
         return [items, name]
-    }, [handleToggleList, checked, topObject, keyArray])
+    }, [handleToggleList, checked, topObject, keyArray, contextNode])
 
     const treeViewComponent = React.useMemo(() => {
         return (
