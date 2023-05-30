@@ -18,10 +18,10 @@ export function useHandlePostSpecific(entityFilter, handleChange, api, setLoadin
     return handlePost
 }
 
-export function useHandlePostTerraform(terraformParams, handleChange, api, getActionId) {
+export function useHandlePostTerraform(terraformParams, handleChange, api, getActionId, setLoading=()=>{}) {
 
     const { backendPost } = useEnhancedBackendTerraform(terraformParams, getActionId)
-    const handlePost = useHandlePost(handleChange, api, backendPost)
+    const handlePost = useHandlePost(handleChange, api, backendPost, setLoading)
 
     return handlePost
 }

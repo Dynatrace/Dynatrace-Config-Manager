@@ -2,7 +2,7 @@ import * as React from 'react'
 import _ from 'lodash';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import ResultDrawer from './ResultDrawer';
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, FormControl, Grid, IconButton, TextField, Typography } from '@mui/material';
 import ExtractedTable from '../extraction/ExtractedTable';
 import { useResultItemMenu } from './ResultItemMenuHook';
 import { useResult } from '../context/ResultContext';
@@ -10,6 +10,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ResultTreeGroup from './ResultTreeGroup';
 import { MATCH_TYPE } from '../options/SortOrderOption';
 import ReactJson from 'react-json-view';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
+import HorizontalStackedBar from '../extraction/HorizontalStackedBar';
 
 const error_color = 'error.dark'
 const warning_color = 'secondary.dark'
@@ -35,19 +38,93 @@ export const useResultHook = (resultKey) => {
     return { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer }
 }
 
-export const useMigrationResultHook = (searchText) => {
+export const useMigrationResultHook = () => {
 
+    const [searchTextInput, setSearchTextInput] = React.useState("")
+    const [searchText, setSearchText] = React.useState("")
     const resultKey = 'migration'
     const { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer } = useResultHook(resultKey)
     const { handleContextMenu } = useResultItemMenu(setOpenDrawer, extractedData)
 
-    const tableComponents = React.useMemo(() => {
+    const handleLaunchSearch = React.useCallback(() => {
+        setSearchText(searchTextInput.toLowerCase())
+    }, [setSearchText, searchTextInput])
+
+    const handleClearSearchText = React.useCallback(() => {
+        setSearchText("");
+        setSearchTextInput("");
+    }, [setSearchTextInput])
+
+    const progressComponents = React.useMemo(() => {
+
         let components = []
 
+        if (extractedData
+            && 'stats' in extractedData) {
+            components.push(
+                <Typography sx={{ mt: 2, mb: 1 }} variant={"h4"} align={"center"}>Overall Progress</Typography>
+            )
 
-        if (searchText !== "") {
-            components.push(<Typography sx={{ color: warning_color, mt: 2 }}>Searching for: {searchText}</Typography>)
+            const statuses = {
+                "foundAll": true,
+                "perStatus": extractedData['stats'],
+            }
+            components.push(
+                <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
+            )
         }
+
+        return components
+    }, [extractedData])
+
+    const searchComponents = React.useMemo(() => {
+        let components = []
+
+        components.push(
+            <Box sx={{ mt: 2 }}>
+                <Box sx={{ ml: 2 }}>
+                    <Grid container>
+                        <Grid item xs={6}>
+                            <Typography sx={{ mt: 2, mb: 0 }} variant="h5">Search </Typography>
+                            <Grid container>
+                                <Grid item xs={10}>
+
+                                    <FormControl fullWidth>
+                                        <TextField id={"search-field"} variant="standard"
+                                            label="Text to search for (Hit enter to search)" value={searchTextInput} onChange={(event) => {
+                                                setSearchTextInput(event.target.value)
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter') {
+                                                    handleLaunchSearch()
+                                                }
+                                            }} />
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <IconButton onClick={handleClearSearchText}>
+                                        <ClearIcon />
+                                    </IconButton>
+                                </Grid>
+                            </Grid>
+                            <IconButton onClick={handleLaunchSearch} color="primary">
+                                <SearchIcon />
+                                <Typography>Search for schemaId, entityId or key_id</Typography>
+                            </IconButton>
+                        </Grid>
+                        <Grid item xs={6}>
+
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Box>
+        )
+
+        return components
+    }, [searchTextInput, handleLaunchSearch, setSearchTextInput, handleClearSearchText])
+
+    const tableComponents = React.useMemo(() => {
+        let components = []
 
         const genAccordion = (label, entityList) => {
 
@@ -175,18 +252,6 @@ export const useMigrationResultHook = (searchText) => {
         }
 
         if (extractedData
-            && 'legend' in extractedData) {
-            components.push(
-                <Typography sx={{ mt: 1 }}>Status Legend: </Typography>
-            )
-            for (const [actionLetter, action] of Object.entries(extractedData['legend']['status'])) {
-                components.push(
-                    <Typography sx={{ ml: 1 }}>{actionLetter + ": " + action}</Typography>
-                )
-            }
-        }
-
-        if (extractedData
             && 'entities' in extractedData) {
 
             for (const [type, entityData] of Object.entries(extractedData['entities'])) {
@@ -206,15 +271,34 @@ export const useMigrationResultHook = (searchText) => {
                     }
                 }
 
+                let label = type
+                if (label === "all_configs") {
+                    label = "All Configs, per schema"
+                } else {
+                    label += ":"
+                }
+
                 components.push(
                     <React.Fragment>
-                        <Typography sx={{ mt: 1 }}>{type}: </Typography>
+                        <Typography sx={{ mt: 2, mb: 1 }} align="center" variant="h4">{label} </Typography>
                         {schemaComponents}
                         <ExtractedTable data={entityData} resultKey={resultKey} keyArray={['entities', type]} handleClickMenu={handleContextMenu} searchText={searchText} />
                     </React.Fragment>
                 )
             }
 
+        }
+
+        if (extractedData
+            && 'legend' in extractedData) {
+            components.push(
+                <Typography sx={{ mt: 1 }}>Status Legend: </Typography>
+            )
+            for (const [actionLetter, action] of Object.entries(extractedData['legend']['status'])) {
+                components.push(
+                    <Typography sx={{ ml: 1 }}>{actionLetter + ": " + action}</Typography>
+                )
+            }
         }
 
         return components
@@ -225,12 +309,14 @@ export const useMigrationResultHook = (searchText) => {
         if (!_.isEmpty(extractedData)) {
             return (
                 <ResultDrawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}>
+                    {progressComponents}
+                    {searchComponents}
                     {tableComponents}
                 </ResultDrawer>
             )
         }
         return null
-    }, [tableComponents, openDrawer])
+    }, [tableComponents, openDrawer, searchComponents])
 
     return { setExtractedData, hasExtractedData, resultComponents }
 }

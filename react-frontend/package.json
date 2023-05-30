@@ -19,6 +19,7 @@
     "moment": "^2.29.4",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "react-horizontal-stacked-bar-chart": "^8.15.2",
     "react-json-view": "^1.21.3",
     "react-json-view-compare": "^2.0.1",
     "react-scripts": "^5.0.1",
@@ -26,6 +27,10 @@
   },
   "overrides": {
     "react-json-view": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "ansi-to-react": {
       "react": "$react",
       "react-dom": "$react-dom"
     }

@@ -6,12 +6,19 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ReactJsonViewCompare from 'react-json-view-compare';
 import { useResult } from '../context/ResultContext';
-import { defaultColumnArray, keyColumns } from '../extraction/ExtractedTable';
+import { defaultColumnArray } from '../extraction/ExtractedTable';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import TerraformButton from '../terraform/TerraformButton';
 import { TERRAFORM_APPLY_TARGET, TERRAFORM_PLAN_TARGET } from '../backend/backend';
 import Ansi from "ansi-to-react";
 import ResultDrawerList from './ResultDrawerList';
+
+const keyColumns = [
+    'scope',
+    'from',
+    'to',
+    'schemaId'
+]
 
 export default function ResultDrawerDetails() {
 
@@ -29,37 +36,19 @@ export default function ResultDrawerDetails() {
             return null
         }
 
-        const [row, __, rowIdx, rowLength] = getObjectFromKeyArray(result, contextNode.rowArray, 0)
-        const [column, _, ___, ____] = getObjectFromKeyArray(result, contextNode.columnArray, 0)
-
-        const scrollColumn = (adjustment) => {
-
-            const [_, newColumnArray, __, ___] = getObjectFromKeyArray(result, contextNode.columnArray, adjustment)
-
-            if (newColumnArray) {
-                let newContextNode = {
-                    'resultKey': contextNode.resultKey,
-                    'rowArray': contextNode.rowArray,
-                    'columnArray': newColumnArray
-                }
-                setContextNode(newContextNode)
-            }
-        }
-
-        /*
-        const scrollColumnLeft = () => { scrollColumn(-1) }
-        const scrollColumnRight = () => { scrollColumn(1) }
-        */
+        const [row, , rowIdx, rowLength] = getObjectFromKeyArray(result, contextNode.rowArray, 0)
+        const [column, , ,] = getObjectFromKeyArray(result, contextNode.columnArray, 0)
 
         const scrollRow = (adjustment) => {
 
-            const [_, newRowArray, __, ___] = getObjectFromKeyArray(result, contextNode.rowArray, adjustment)
+            const [, newRowArray, ,] = getObjectFromKeyArray(result, contextNode.rowArray, adjustment)
 
             if (newRowArray) {
                 let newContextNode = {
                     'resultKey': contextNode.resultKey,
                     'rowArray': newRowArray,
-                    'columnArray': [...newRowArray, ...defaultColumnArray]
+                    'columnArray': [...newRowArray, ...defaultColumnArray],
+                    'searchText': contextNode.searchText,
                 }
                 setContextNode(newContextNode)
             }
@@ -161,13 +150,12 @@ export default function ResultDrawerDetails() {
             keyValues['from'] = keyValues['scope']
             keyValues['to'] = keyValues['scope']
         }
-        let actionCompletedLabel = ""
         let handleTerraformCallComplete = (data, terraformAction) => { }
 
         const columnListArray = [...contextNode.columnArray]
         columnListArray.pop()
 
-        const [columnList, _____, _______, ________] = getObjectFromKeyArray(result, columnListArray, 0)
+        const [columnList, , ,] = getObjectFromKeyArray(result, columnListArray, 0)
 
         let nbUpdateError = 0
         let nbUpdate = 0
@@ -375,7 +363,7 @@ export default function ResultDrawerDetails() {
                     newLastActionId[schemaId] = newLastActionId[newActionIdLabel]
 
                     setLastActionId(newLastActionId)
-                    
+
                     return newLastActionId[newActionIdLabel]
                 }
                 updateObjectList.push(
