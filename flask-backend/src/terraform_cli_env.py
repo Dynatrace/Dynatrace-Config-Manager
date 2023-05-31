@@ -28,6 +28,7 @@ def get_env_vars_base(tenant_data_target, terraform_path):
         "DYNATRACE_HEREDOC": "false",
         "DYNATRACE_HCL_NO_FORMAT": "true",
         "DYNATRACE_BUILD_ADDRESS_FILES": "true",
+        "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
     }
 
     return env_vars

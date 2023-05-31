@@ -78,7 +78,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_target):
     terraform_cli_cmd.write_plan_cmd(terraform_path, set_env_filename)
 
     provider_src = dirs.get_file_path(
-        dirs.get_terraform_exec_dir(), PROVIDER_EXE, ".exe"
+        dirs.prep_dir(dirs.get_terraform_exec_dir(), "dynatrace.com", "com", "dynatrace", "1.8.3", "windows_amd64"), PROVIDER_EXE, ".exe"
     )
     provider_dst = dirs.get_file_path(terraform_path, PROVIDER_EXE, ".exe")
     shutil.copy(provider_src, provider_dst)
