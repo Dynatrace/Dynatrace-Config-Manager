@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import HorizontalStackedBar from './HorizontalStackedBar';
+import HorizontalStackedBar, { statusOrder } from './HorizontalStackedBar';
 
 export const defaultColumnArray = ['data', '0']
-export const statusOrder = ["I", "U", "A", "D"]
 
 export default function ExtractedTable({ data, resultKey, keyArray, handleClickMenu, searchText }) {
 
@@ -120,7 +119,14 @@ function compileStatusStats(row, statuses) {
     if ('data' in row) {
         for (const item of Object.values(row['data'])) {
             if ('status' in item) {
-                const status = item['status'];
+                let status = item['status'];
+
+                if (statusOrder.includes(status)) {
+                    // pass
+                } else {
+                    status = "Other"
+                }
+
                 if (status in statuses['perStatus']) {
                     // pass
                 } else {
