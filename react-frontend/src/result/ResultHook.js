@@ -12,7 +12,7 @@ import { MATCH_TYPE } from '../options/SortOrderOption';
 import ReactJson from 'react-json-view';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
-import HorizontalStackedBar from '../extraction/HorizontalStackedBar';
+import HorizontalStackedBar, { statusOrder } from '../extraction/HorizontalStackedBar';
 
 const error_color = 'error.dark'
 const warning_color = 'secondary.dark'
@@ -65,10 +65,8 @@ export const useMigrationResultHook = () => {
                 <Typography sx={{ mt: 2, mb: 1 }} variant={"h4"} align={"center"}>Overall Progress</Typography>
             )
 
-            const statuses = {
-                "foundAll": true,
-                "perStatus": extractedData['stats'],
-            }
+            const statuses = buildStatuses(extractedData);
+
             components.push(
                 <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
             )
@@ -320,3 +318,26 @@ export const useMigrationResultHook = () => {
 
     return { setExtractedData, hasExtractedData, resultComponents }
 }
+function buildStatuses(extractedData) {
+    const perStatus = {};
+    for (const [statusKey, statusValue] of Object.entries(extractedData['stats'])) {
+        if (statusOrder.includes(statusKey)) {
+            perStatus[statusKey] = statusValue;
+        } else {
+            const statusKeyOther = "Other"
+            if (statusKeyOther in perStatus) {
+                // pass
+            } else {
+                perStatus[statusKeyOther] = 0;
+            }
+            perStatus[statusKeyOther] += statusValue;
+        }
+    }
+
+    const statuses = {
+        "foundAll": true,
+        "perStatus": perStatus,
+    };
+    return statuses;
+}
+
