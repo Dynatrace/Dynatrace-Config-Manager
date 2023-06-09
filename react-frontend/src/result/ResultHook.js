@@ -2,17 +2,17 @@ import * as React from 'react'
 import _ from 'lodash';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import ResultDrawer from './ResultDrawer';
-import { Accordion, AccordionDetails, AccordionSummary, Box, FormControl, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Box, FormControl, Grid, IconButton, TextField, Typography } from '@mui/material';
 import ExtractedTable from '../extraction/ExtractedTable';
 import { useResultItemMenu } from './ResultItemMenuHook';
 import { useResult } from '../context/ResultContext';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ResultTreeGroup from './ResultTreeGroup';
 import { MATCH_TYPE } from '../options/SortOrderOption';
 import ReactJson from 'react-json-view';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import HorizontalStackedBar, { statusOrder } from '../extraction/HorizontalStackedBar';
+import EfficientAccordion from './EfficientAccordion';
 
 const error_color = 'error.dark'
 const warning_color = 'secondary.dark'
@@ -124,28 +124,6 @@ export const useMigrationResultHook = () => {
     const tableComponents = React.useMemo(() => {
         let components = []
 
-        const genAccordion = (label, entityList) => {
-
-            if (entityList && entityList.length > 0) {
-                return (
-                    // unmountOnExit: Only render the details when the accordion is expanded
-                    <Accordion defaultExpanded={false} TransitionProps={{ unmountOnExit: true }} >
-                        <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            id={label}
-                        >
-                            <Typography sx={{ color: error_color }}>{label}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {entityList}
-                        </AccordionDetails>
-                    </Accordion>
-                )
-            } else {
-                return null
-            }
-        }
-
         if (extractedData
             && 'errors' in extractedData) {
 
@@ -192,10 +170,15 @@ export const useMigrationResultHook = () => {
             for (const message of extractedData['aggregate_error_response']) {
                 messageNumber++
                 const agg_err = JSON.parse(message)
-                components.push(genAccordion(
-                    "Message #" + messageNumber + ":" + agg_err.err_msg,
-                    ([<ReactJson src={JSON.parse(agg_err.err_resp)} />])
-                ))
+                components.push(
+                    <EfficientAccordion
+                        label={
+                            "Message #" + messageNumber + ":" + agg_err.err_msg
+                        }
+                        componentList={
+                            ([<ReactJson src={JSON.parse(agg_err.err_resp)} />])
+                        } />
+                )
             }
         }
 
@@ -232,8 +215,12 @@ export const useMigrationResultHook = () => {
 
             }
 
-            const missingComponent = genAccordion("ERROR: UNMATCHED Entities MISSING from the extraction (Expected for Forced Match or 'Dead' Entity)", missingList)
-            components.push(missingComponent)
+            components.push(
+                <EfficientAccordion
+                    label={"ERROR: UNMATCHED Entities MISSING from the extraction (Expected for Forced Match or 'Dead' Entity)"}
+                    componentList={missingList}
+                />
+            )
         }
 
         if (extractedData
@@ -245,8 +232,12 @@ export const useMigrationResultHook = () => {
                 <ResultTreeGroup data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
             )
 
-            const unmatchedComponent = genAccordion("ERROR: UNMATCHED Entities that were part of the extraction (May need to ajust Rules using the Match Tab)", unmatchedTreeList)
-            components.push(unmatchedComponent)
+            components.push(
+                <EfficientAccordion
+                    label={"ERROR: UNMATCHED Entities that were part of the extraction (May need to ajust Rules using the Match Tab)"}
+                    componentList={unmatchedTreeList}
+                />
+            )
         }
 
         if (extractedData

@@ -78,7 +78,16 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_target):
     terraform_cli_cmd.write_plan_cmd(terraform_path, set_env_filename)
 
     provider_src = dirs.get_file_path(
-        dirs.prep_dir(dirs.get_terraform_exec_dir(), "dynatrace.com", "com", "dynatrace", "1.8.3", "windows_amd64"), PROVIDER_EXE, ".exe"
+        dirs.prep_dir(
+            dirs.get_terraform_exec_dir(),
+            "dynatrace.com",
+            "com",
+            "dynatrace",
+            "1.8.3",
+            "windows_amd64",
+        ),
+        PROVIDER_EXE,
+        ".exe",
     )
     provider_dst = dirs.get_file_path(terraform_path, PROVIDER_EXE, ".exe")
     shutil.copy(provider_src, provider_dst)
@@ -90,7 +99,9 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_target):
     else:
         vscodeExecutable = "code.cmd"
         try:
-            subprocess.Popen([vscodeExecutable, "."], cwd=dirs.to_backward_slash(terraform_path))
+            subprocess.Popen(
+                [vscodeExecutable, "."], cwd=dirs.to_backward_slash(terraform_path)
+            )
         except FileNotFoundError as e:
             print("Can't open VSCode as", vscodeExecutable, "isn't found.")
 
@@ -326,6 +337,40 @@ def apply_target(run_info, tenant_key_target, terraform_params, action_id):
         tenant_key_target,
         cmd_list,
         "apply_target_" + "action_" + action_id,
+        "apply Target",
+        CONFIG_DIR,
+        use_cache=False,
+        return_log_content=True,
+    )
+
+
+def plan_all(run_info, tenant_key_target, action_id):
+    plan_filename = "action_" + action_id + ".plan"
+
+    cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
+
+    return terraform_execute(
+        run_info,
+        tenant_key_target,
+        cmd_list,
+        "plan_all_" + "action_" + action_id,
+        "Plan Target",
+        CONFIG_DIR,
+        use_cache=False,
+        return_log_content=True,
+    )
+
+
+def apply_all(run_info, tenant_key_target, action_id):
+    plan_filename = "action_" + action_id + ".plan"
+
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
+
+    return terraform_execute(
+        run_info,
+        tenant_key_target,
+        cmd_list,
+        "apply_all_" + "action_" + action_id,
         "apply Target",
         CONFIG_DIR,
         use_cache=False,

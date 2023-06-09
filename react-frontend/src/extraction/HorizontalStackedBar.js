@@ -21,16 +21,17 @@ const statusColors = {
 }
 
 const statusColorsPale = {
-    "Other": "LightGray",
-    "A": "Khaki",
-    "D": "Salmon",
-    "I": "LightGreen",
-    "U": "SkyBlue",
+    "Other": "Snow",
+    "A": "LemonChiffon",
+    "D": "MistyRose",
+    "I": "Honeydew",
+    "U": "AliceBlue",
 }
 
 export default function HorizontalStackedBar({ id, statuses, onClickMenu }) {
     return (
         <HSBar
+            key={id}
             height={35}
             showTextIn
             id={id}
@@ -55,7 +56,6 @@ function buildHSBarData(statuses) {
         }
         addBarData(statusKey, statuses, hsBarData);
     }
-    console.log(hsBarData)
     return hsBarData;
 }
 
