@@ -125,7 +125,10 @@ def extract(
     stdout = call_result.stdout.decode()
     stderr = call_result.stderr.decode()
 
-    if "Finished download" in stderr:
+    if (
+        "Finished download" in stderr
+        and not "Failed to fetch all known entities types" in stderr
+    ):
         print(log_label, "downloaded successfully")
         result["monaco_finished"] = True
         monaco_cli.save_finished(path)

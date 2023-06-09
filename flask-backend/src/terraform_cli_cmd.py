@@ -4,10 +4,7 @@ import windows_cmd_file_util
 
 
 def gen_export_cmd_list(run_info, import_state):
-    import_option = ""
     specific_schema_id = ""
-    if import_state:
-        import_option = "-import-state-v2"
 
     if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
         print("TODO: Specify the schema name properly in terraform export")
@@ -18,10 +15,16 @@ def gen_export_cmd_list(run_info, import_state):
     export_cmd_list = [terraform_cli.PROVIDER_EXE]
     export_cmd_list.append("-export")
     export_cmd_list.append("-id")
-    if import_option != "":
-        export_cmd_list.append(import_option)
+
+    if import_state:
+        export_cmd_list.append("-import-state-v2")
+    else:
+        export_cmd_list.append("-migrate")
+        export_cmd_list.append("-datasources")
+
     if specific_schema_id != "":
         export_cmd_list.append(specific_schema_id)
+
     return export_cmd_list
 
 

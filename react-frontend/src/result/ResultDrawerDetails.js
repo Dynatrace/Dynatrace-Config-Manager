@@ -10,8 +10,9 @@ import { defaultColumnArray } from '../extraction/ExtractedTable';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import TerraformButton from '../terraform/TerraformButton';
 import { TERRAFORM_APPLY_TARGET, TERRAFORM_PLAN_TARGET } from '../backend/backend';
-import Ansi from "ansi-to-react";
 import ResultDrawerList from './ResultDrawerList';
+import TFLog from './TFLog';
+import EfficientAccordion from './EfficientAccordion';
 
 const keyColumns = [
     'scope',
@@ -197,11 +198,6 @@ export default function ResultDrawerDetails() {
                 }
             }
 
-            if (nbUpdate > 0 || nbUpdateError > 0) {
-                updateObjectList.push(
-                    <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Terraform action info: </Typography>
-                )
-            }
             if (nbUpdateError > 0) {
                 updateObjectList.push(
                     <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Warning: {nbUpdateError} configs NOT updatable. </Typography>
@@ -310,6 +306,13 @@ export default function ResultDrawerDetails() {
                         isPlanDone = true
                     }
 
+                    if (terraformActionCompletedLabel === planActionLabel
+                        && actionInfo['log'].includes("No changes.")) {
+                        actionDetails.push(
+                            <Typography sx={{ ml: 3 }} color="secondary.main" variant="h5">{terraformActionCompletedLabel + " executed. No Changes."}</Typography>
+                        )
+                    }
+
                     if (terraformActionCompletedLabel === applyActionLabel
                         && actionInfo['log'].includes("Apply complete!")) {
                         isApplyDone = true
@@ -329,18 +332,7 @@ export default function ResultDrawerDetails() {
                         const localActionInfo = actionInfoObject[actionLabel]
 
                         actionDetails.push(
-                            <Paper sx={{ ml: 3, mt: 2 }}>
-                                <Typography color="primary.main" variant="h6">Terraform Log for {actionLabel}, based on action_{actionId}</Typography>
-                                {localActionInfo['log'].split("\n").map(function (line) {
-
-                                    return (
-                                        <React.Fragment>
-                                            <Ansi>{line}</Ansi>
-                                            <br />
-                                        </React.Fragment>
-                                    )
-                                })}
-                            </Paper>
+                            <TFLog logs={localActionInfo['log']} actionLabel={actionLabel} actionId={actionId} />
                         )
 
                     }
@@ -414,13 +406,31 @@ export default function ResultDrawerDetails() {
 
                     <Grid item xs={8}>
 
-                        {updateObjectList}
+                        {(nbUpdate > 0 || nbUpdateError > 0) ?
+                            <Paper sx={{ ml: 1, mt: 2 }}>
+                                <EfficientAccordion
+                                    defaultExpanded={true}
+                                    label="Terraform action info: "
+                                    labelColor={null}
+                                    componentList={updateObjectList}
+                                />
+                            </Paper>
+                            : null
+                        }
 
-                        <Typography sx={{ mt: 1, ml: 2, mb: 1 }}>Last Selection Details: </Typography>
-                        {columnLabelList}
-
-
-                        <ReactJsonViewCompare oldData={targetObject} newData={mainObject} />
+                        <Paper sx={{ ml: 1, mt: 2 }}>
+                            <EfficientAccordion
+                                defaultExpanded={true}
+                                label="Last Selection Details:"
+                                labelColor={null}
+                                componentList={
+                                    [
+                                        columnLabelList,
+                                        <ReactJsonViewCompare oldData={targetObject} newData={mainObject} />
+                                    ]
+                                }
+                            />
+                        </Paper>
                     </Grid>
                 </Grid>
             </React.Fragment>
