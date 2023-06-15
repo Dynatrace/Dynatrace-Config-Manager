@@ -13,7 +13,6 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
     }, [checked])
 
     React.useEffect(() => {
-        console.log(forceCheck, forceUncheck)
         if (forceCheck || forceUncheck) {
             return
         }
