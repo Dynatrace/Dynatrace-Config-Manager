@@ -12,35 +12,35 @@ import yaml
 import subprocess
 
 
-def get_path_match_entities(config):
-    return dirs.get_tenant_data_cache_sub_dir(config, "mat_ent_mon")
+def get_path_match_entities(config_main, config_target):
+    return dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "mat_ent_mon")
 
 
-def get_path_match_configs(config):
-    return dirs.get_tenant_data_cache_sub_dir(config, "mat_conf_mon")
+def get_path_match_configs(config_main, config_target):
+    return dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "mat_conf_mon")
 
 
-def get_path_match_entities_results(config):
+def get_path_match_entities_results(config_main, config_target):
     return dirs.prep_dir(
-        get_path_match_entities(config), "results")
+        get_path_match_entities(config_main, config_target), "results")
 
 
-def get_path_match_configs_results(config):
+def get_path_match_configs_results(config_main, config_target):
     return dirs.prep_dir(
-        get_path_match_configs(config), "results")
+        get_path_match_configs(config_main, config_target), "results")
 
 
-def get_path_match_configs_UI_payload(config):
+def get_path_match_configs_UI_payload(config_main, config_target):
     return dirs.prep_dir(
-        get_path_match_configs_results(config), "UIPayload")
+        get_path_match_configs_results(config_main, config_target), "UIPayload")
 
 
-def get_path_match_entities_yaml(config):
-    return dirs.get_file_path(get_path_match_entities(config), 'match', '.yaml')
+def get_path_match_entities_yaml(config_main, config_target):
+    return dirs.get_file_path(get_path_match_entities(config_main, config_target), 'match', '.yaml')
 
 
-def get_path_match_configs_yaml(config):
-    return dirs.get_file_path(get_path_match_configs(config), 'match', '.yaml')
+def get_path_match_configs_yaml(config_main, config_target):
+    return dirs.get_file_path(get_path_match_configs(config_main, config_target), 'match', '.yaml')
 
 
 def is_finished_match_entities(tenant_key_target, tenant_key_main=None):
@@ -55,15 +55,16 @@ def is_finished_match_configs(tenant_key_target, tenant_key_main=None):
     return is_finished_match(match_type, tenant_key_target, tenant_key_main)
 
 
-def is_finished_match(match_type, tenant_key_target, tenant_key_main=None):
+def is_finished_match(match_type, tenant_key_target, tenant_key_main):
 
     if (tenant_key_main == None):
         tenant_key_main = tenant_key_target
 
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
     is_finished, finished_file = monaco_cli.is_finished(
-        match_type_options[match_type]["cache_path_func"](config_target))
+        match_type_options[match_type]["cache_path_func"](config_main, config_target))
 
     return (
         is_finished
@@ -120,7 +121,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
     config_target = credentials.get_api_call_credentials(tenant_key_target)
     config_main = credentials.get_api_call_credentials(tenant_key_main)
 
-    delete_old_cache(config_target, match_type)
+    delete_old_cache(config_main, config_target, match_type)
 
     match_yaml_path = save_match_yaml(
         run_info, config_target, config_main, match_type)
@@ -158,7 +159,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
             'tenant_key_target': tenant_key_target,
         }
         monaco_cli.save_finished(
-            match_type_options[match_type]["cache_path_func"](config_target), finished_file)
+            match_type_options[match_type]["cache_path_func"](config_main, config_target), finished_file)
     else:
         monaco_cli.handle_subprocess_error(
             run_info, result, command, options, stdout, stderr, ("Match " + match_type))
@@ -166,10 +167,10 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
     return result
 
 
-def delete_old_cache(config, match_type):
+def delete_old_cache(config_main, config_target, match_type):
 
     monaco_cache_path = match_type_options[match_type]["cache_path_func"](
-        config)
+        config_main, config_target)
 
     if (os.path.exists(monaco_cache_path) and os.path.isdir(monaco_cache_path)):
         print("Deleting expired Monaco Match cache: ", monaco_cache_path)
@@ -181,7 +182,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
     match_config = {
         'name': 'match',
         'type': match_type,
-        'outputPath': match_type_options[match_type]["output_path_func"](config_target),
+        'outputPath': match_type_options[match_type]["output_path_func"](config_main, config_target),
         'sourceInfo': {
             'manifestPath': dirs.get_file_path(match_type_options[match_type]["manifest_path_func"](config_main), 'manifest', '.yaml'),
             'project': monaco_cli.PROJECT_NAME,
@@ -198,7 +199,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
         pass
     else:
         match_config["entitiesMatchPath"] = match_type_options[match_type]["entities_match_path_func"](
-            config_target)
+            config_main, config_target)
 
     if match_type == 'configs':
         if (run_info['forced_schema_id'] != None and run_info['forced_schema_id'] != ""):
@@ -217,7 +218,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
                     match_config["specificActions"].append(action)
 
     match_yaml_path = match_type_options[match_type]["yaml_path_func"](
-        config_target)
+        config_main, config_target)
 
     with open(match_yaml_path, 'w') as f:
         f.write(yaml.dump(match_config))
@@ -239,12 +240,13 @@ def try_monaco_match_configs(run_info, tenant_key_main, tenant_key_target, pre_m
     match_type = 'configs'
 
     print("Always re-run config matching (FOR DEBUG PURPOSES):")
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
     
     if pre_migration:
         pass
     else:
-        delete_old_cache(config_target, match_type)
+        delete_old_cache(config_main, config_target, match_type)
 
     run_legacy_match, result_tuple = try_monaco_match(
         run_info, match_type, tenant_key_main, tenant_key_target)

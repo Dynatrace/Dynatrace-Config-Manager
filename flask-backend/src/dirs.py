@@ -52,7 +52,7 @@ def get_data_dir():
 
 
 def get_tenant_list_dir():
-    return prep_dir(get_data_dir(), "tenant")
+    return prep_dir(get_data_dir(), "tenant_list")
 
 
 def get_options_dir():
@@ -60,7 +60,7 @@ def get_options_dir():
 
 
 def get_tenant_data_dir():
-    return prep_dir(get_data_dir(), "tenant_data")
+    return prep_dir(get_data_dir(), "cache")
 
 
 def get_tenant_data_cache_dir(config):
@@ -69,6 +69,18 @@ def get_tenant_data_cache_dir(config):
 
 def get_tenant_data_cache_sub_dir(config, sub_dir):
     return prep_dir(get_tenant_data_cache_dir(config), sub_dir)
+
+
+def get_tenant_work_dir():
+    return prep_dir(get_data_dir(), "work")
+
+
+def get_tenant_work_cache_dir(config_main, config_target):
+    return prep_dir(get_tenant_work_dir(), config_main["tenant_key"] + "-" + config_target["tenant_key"])
+
+
+def get_tenant_work_cache_sub_dir(config_main, config_target, sub_dir):
+    return prep_dir(get_tenant_work_cache_dir(config_main, config_target), sub_dir)
 
 
 def get_log_list_dir():

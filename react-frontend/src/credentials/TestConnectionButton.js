@@ -28,7 +28,6 @@ export default function TestConnectionButton({ tenantKey }) {
                 promise =>
                     promise
                         .then(response => {
-                            console.log("Test")
                             setLoading(false)
                             return response.json()
                         })

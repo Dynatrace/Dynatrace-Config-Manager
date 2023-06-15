@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useContextMenuState } from './ContextMenuContext';
 
 export const ResultContextState = React.createContext();
 export const ResultContextDispatch = React.createContext();
@@ -37,10 +38,12 @@ function useContextState() {
 
 export function useResult(key) {
 
+    
+    const { resetContextNode } = useContextMenuState()
     const contextState = useContextState()
     const contextDispatch = useContextDispatch()
 
-    let result = undefined
+    let result = null
     let setResult = undefined
 
     if (key) {
@@ -48,6 +51,7 @@ export function useResult(key) {
         result = contextState["results"][key]
 
         setResult = (value) => {
+            resetContextNode()
             const action = { type: "updateResult", key, value }
             contextDispatch(action)
         }

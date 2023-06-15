@@ -9,6 +9,9 @@ import process_utils
 import tenant
 import terraform_cli_env
 import terraform_cli_cmd
+import terraform_local
+import terraform_ui_util
+import util_remove_ansi
 
 DYNATRACE_PROVIDER_VERSION = "1.8.3"
 PROVIDER_EXE = "terraform-provider-dynatrace_v" + DYNATRACE_PROVIDER_VERSION
@@ -19,25 +22,28 @@ STATE_GEN_DIR = "state_gen"
 CONFIG_DIR = "config"
 
 
-def get_path_terraform(config):
-    return dirs.prep_dir(dirs.get_tenant_data_cache_sub_dir(config, "terraform"))
+def get_path_terraform(config_main, config_target):
+    return dirs.prep_dir(
+        dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "terraform")
+    )
 
 
-def get_path_terraform_state_gen(config):
-    return dirs.prep_dir(get_path_terraform(config), STATE_GEN_DIR)
+def get_path_terraform_state_gen(config_main, config_target):
+    return dirs.prep_dir(get_path_terraform(config_main, config_target), STATE_GEN_DIR)
 
 
-def get_path_terraform_config(config):
-    return dirs.prep_dir(get_path_terraform(config), CONFIG_DIR)
+def get_path_terraform_config(config_main, config_target):
+    return dirs.prep_dir(get_path_terraform(config_main, config_target), CONFIG_DIR)
 
 
-def create_terraform_repo(run_info, pre_migration, tenant_key_target):
+def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_target):
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
     tenant_data_target = tenant.load_tenant(tenant_key_target)
 
-    terraform_path = get_path_terraform(config_target)
+    terraform_path = get_path_terraform(config_main, config_target)
     print("Terraform Path: ", terraform_path)
-    delete_old_terraform_repo(terraform_path)
+    delete_old_dir(terraform_path)
 
     set_env_filename = terraform_cli_env.write_env_cmd_base(
         tenant_data_target, terraform_path
@@ -48,6 +54,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_target):
         set_env_filename_export = terraform_cli_env.write_env_cmd_export(
             run_info,
             tenant_data_target,
+            config_main,
             config_target,
             terraform_path,
             CONFIG_DIR,
@@ -56,6 +63,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_target):
         set_env_filename_export_import = terraform_cli_env.write_env_cmd_export(
             run_info,
             tenant_data_target,
+            config_main,
             config_target,
             terraform_path,
             STATE_GEN_DIR,
@@ -116,6 +124,7 @@ def get_env_vars(
     run_info,
     tenant_data_target,
     terraform_path,
+    config_main=None,
     config_target=None,
     cache_dir=None,
     terraform_path_output=None,
@@ -128,6 +137,7 @@ def get_env_vars(
             run_info,
             tenant_data_target,
             terraform_path,
+            config_main,
             config_target,
             cache_dir,
             terraform_path_output,
@@ -151,8 +161,10 @@ def execute_terraform_cmd(
     log_label,
     return_log_content=False,
 ):
-    log_content = ""
-    log_file_path = dirs.forward_slash_join(terraform_path, log_file_name)
+    execution_log_file_name = log_file_name + ".log"
+
+    log_dict = {}
+    log_file_path = dirs.forward_slash_join(terraform_path, execution_log_file_name)
     print(
         log_label,
         "running, see ",
@@ -160,7 +172,7 @@ def execute_terraform_cmd(
     )
 
     cmd_list.append(">")
-    cmd_list.append(log_file_name)
+    cmd_list.append(execution_log_file_name)
     cmd_list.append("2>&1")
 
     print(terraform_path)
@@ -190,15 +202,28 @@ def execute_terraform_cmd(
 
     if return_log_content:
         if os.path.exists(log_file_path):
-            with open(log_file_path, "rb") as f:
-                log_content = f.read().decode()
-                run_info["return_status"] = 200
+            cleaned_file_name = log_file_name + "_cleaned" + ".log"
+            cleaned_log_file_path = dirs.forward_slash_join(
+                terraform_path, cleaned_file_name
+            )
 
-    return log_content
+            log_content, log_content_cleaned = util_remove_ansi.remove_ansi_colors(
+                run_info,
+                log_file_path,
+                True,
+                cleaned_log_file_path,
+            )
+
+            log_dict = terraform_ui_util.create_dict_from_terraform_log(
+                log_content, log_content_cleaned
+            )
+
+    return log_dict
 
 
 def terraform_execute(
     run_info,
+    tenant_key_main,
     tenant_key_target,
     cmd_list,
     log_filename,
@@ -209,8 +234,9 @@ def terraform_execute(
     use_cache=True,
     return_log_content=False,
 ):
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target, tenant_data_target = get_config_and_tenant_data(tenant_key_target)
-    terraform_path = get_path_terraform(config_target)
+    terraform_path = get_path_terraform(config_main, config_target)
 
     (terraform_path_output, export_output_dir, log_file_name) = gen_exec_path(
         log_filename, config_dir, is_config_creation, terraform_path
@@ -220,6 +246,7 @@ def terraform_execute(
         run_info,
         tenant_data_target,
         terraform_path,
+        config_main,
         config_target,
         cache_dir,
         export_output_dir,
@@ -240,8 +267,6 @@ def terraform_execute(
 
 
 def gen_exec_path(log_filename, config_dir, is_config_creation, terraform_path):
-    log_filename = f"{log_filename}.log"
-
     if is_config_creation:
         return (terraform_path, config_dir, log_filename)
 
@@ -252,11 +277,12 @@ def gen_exec_path(log_filename, config_dir, is_config_creation, terraform_path):
     )
 
 
-def create_target_current_state(run_info, tenant_key_target):
+def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=True)
 
     terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "import",
@@ -267,10 +293,11 @@ def create_target_current_state(run_info, tenant_key_target):
     )
 
 
-def terraform_refresh_plan(run_info, tenant_key_target):
+def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(PLAN_FILE, is_refresh=True)
     terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "refresh_plan",
@@ -280,10 +307,11 @@ def terraform_refresh_plan(run_info, tenant_key_target):
     )
 
 
-def terraform_refresh_apply(run_info, tenant_key_target):
+def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(PLAN_FILE, is_refresh=True)
     terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "refresh_apply",
@@ -293,11 +321,12 @@ def terraform_refresh_apply(run_info, tenant_key_target):
     )
 
 
-def create_work_hcl(run_info, tenant_key_target):
+def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=False)
 
     terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "export_work_hcl",
@@ -308,7 +337,9 @@ def create_work_hcl(run_info, tenant_key_target):
     )
 
 
-def plan_target(run_info, tenant_key_target, terraform_params, action_id):
+def plan_target(
+    run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
+):
     plan_filename = "action_" + action_id + ".plan"
 
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(
@@ -317,6 +348,7 @@ def plan_target(run_info, tenant_key_target, terraform_params, action_id):
 
     return terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "plan_target_" + "action_" + action_id,
@@ -327,13 +359,16 @@ def plan_target(run_info, tenant_key_target, terraform_params, action_id):
     )
 
 
-def apply_target(run_info, tenant_key_target, terraform_params, action_id):
+def apply_target(
+    run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
+):
     plan_filename = "action_" + action_id + ".plan"
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
     return terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "apply_target_" + "action_" + action_id,
@@ -344,34 +379,42 @@ def apply_target(run_info, tenant_key_target, terraform_params, action_id):
     )
 
 
-def plan_all(run_info, tenant_key_target, action_id):
+def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
     plan_filename = "action_" + action_id + ".plan"
 
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
 
-    return terraform_execute(
+    log_dict = terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "plan_all_" + "action_" + action_id,
-        "Plan Target",
+        "Plan All",
         CONFIG_DIR,
         use_cache=False,
         return_log_content=True,
     )
 
+    ui_payload = terraform_local.write_UI_payloads(tenant_key_main, tenant_key_target, log_dict)
 
-def apply_all(run_info, tenant_key_target, action_id):
+    del log_dict['modules']
+    
+    return ui_payload, log_dict
+
+
+def apply_all(run_info, tenant_key_main, tenant_key_target, action_id):
     plan_filename = "action_" + action_id + ".plan"
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
     return terraform_execute(
         run_info,
+        tenant_key_main,
         tenant_key_target,
         cmd_list,
         "apply_all_" + "action_" + action_id,
-        "apply Target",
+        "apply All",
         CONFIG_DIR,
         use_cache=False,
         return_log_content=True,
@@ -391,8 +434,8 @@ def retry_on_permission_error(action, path, max_retries=5, delay=2):
     )
 
 
-def delete_old_terraform_repo(path, max_retries=5, delay=2):
-    print("Deleting old Terraform repo: ", path)
+def delete_old_dir(path, max_retries=5, delay=2, label="Terraform"):
+    print("Deleting old", label, "directory: ", path)
     try:
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:

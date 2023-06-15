@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import HorizontalStackedBar, { statusOrder } from './HorizontalStackedBar';
+import HorizontalStackedBar, { STATUS_ORDER } from './HorizontalStackedBar';
 
 export const defaultColumnArray = ['data', '0']
 
 export default function ExtractedTable({ data, resultKey, keyArray, handleClickMenu, searchText }) {
 
     const hsBarComponents = React.useMemo(() => {
-        if (data && data['items'] && keyArray) {
+        if (data && keyArray) {
             // pass
         } else {
             return null
@@ -17,10 +17,10 @@ export default function ExtractedTable({ data, resultKey, keyArray, handleClickM
         let hsBarComponents = []
         let id = 0
 
-        for (const [idx, row] of Object.entries(data['items'])) {
+        for (const [idx, row] of Object.entries(data)) {
 
             let columnArray = [...defaultColumnArray]
-            let rowArray = [...keyArray, 'items', idx]
+            let rowArray = [...keyArray, idx]
             let ctxMenuBtnInfo = { 'value': { resultKey, 'rowArray': rowArray, 'columnArray': [...rowArray, ...columnArray], 'searchText': searchText } }
 
             let { statuses, foundText } = searchForText(row, searchText);
@@ -38,20 +38,13 @@ export default function ExtractedTable({ data, resultKey, keyArray, handleClickM
                     <Grid container>
                         <Grid item xs={3}>
 
-                            <Grid container>
-                                <Grid item xs={1}>
-                                    <IconButton
-                                        variant="outlined"
-                                        color="primary"
-                                        onClick={onClickMenu}
-                                    >
-                                        <MoreHorizIcon />
-                                    </IconButton>
-                                </Grid>
-                                <Grid item xs={11} sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                                    <Typography >{row['schemaId']}</Typography>
-                                </Grid>
-                            </Grid>
+                            <IconButton
+                                variant="outlined"
+                                onClick={onClickMenu}
+                            >
+                                <MoreHorizIcon color="primary" />
+                                <Typography color="black" >{row['module']}</Typography>
+                            </IconButton>
                         </Grid>
                         <Grid item xs={9}>
                             <HorizontalStackedBar id={id} statuses={statuses} onClickMenu={onClickMenu} />
@@ -82,7 +75,7 @@ function searchForText(row, searchText) {
         foundText = true;
         statuses['foundAll'] = true;
     } else {
-        if ('schemaId' in row && row['schemaId'].toLowerCase().includes(searchText)) {
+        if ('module' in row && row['module'].toLowerCase().includes(searchText)) {
             foundText = true;
             statuses['foundAll'] = true;
         }
@@ -121,7 +114,7 @@ function compileStatusStats(row, statuses) {
             if ('status' in item) {
                 let status = item['status'];
 
-                if (statusOrder.includes(status)) {
+                if (STATUS_ORDER.includes(status)) {
                     // pass
                 } else {
                     status = "Other"

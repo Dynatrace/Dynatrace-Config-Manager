@@ -8,8 +8,9 @@ import { genTenantLabel } from '../credentials/TenantSelector';
 import ConfirmAction from '../action/ConfirmAction';
 import { useConfirmAction } from './ConfirmHook';
 
-export default function MigrateButton({ label, handlePost, confirm = false, disabled = false, progressComponent = null }) {
+export default function MigrateButton({ label, handlePost, confirm = false, disabled = false, progressComponent = null, runOnce = false }) {
 
+    const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenant: tenantTarget } = useTenant(tenantKeyTarget)
     const { open, handleClickOpen, handleClose } = useConfirmAction()
@@ -25,6 +26,12 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
             return handlePost
         }
     }, [confirm, handlePost, handleClickOpen])
+
+    React.useEffect(() => {
+        if (runOnce) {
+            handleClickAction()
+        }
+    }, [tenantKeyMain, tenantKeyTarget])
 
     const button = React.useMemo(() => {
 

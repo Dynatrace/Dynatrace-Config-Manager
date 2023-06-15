@@ -2,30 +2,38 @@ import * as React from 'react';
 import HSBar from "react-horizontal-stacked-bar-chart";
 
 export const defaultColumnArray = ['data', '0']
-export const statusOrder = ["I", "U", "A", "D", "Other"]
+export const STATUS_ORDER = ["I", "U", "A", "D", "Other"]
 
-const labels = {
-    "A": "Missing (A)",
-    "U": "Different (U)",
-    "D": "Unexpected (D)",
-    "I": "Match (I)",
-    "Other": "Other",
+export const STATUS_PREFIX = {
+    "I": "",
+    "U": "~",
+    "A": "+",
+    "D": "-",
+    "Other": "?",
 }
 
-const statusColors = {
-    "Other": "black",
-    "A": "DarkGoldenRod",
+export const STATUS_LABELS = {
+    "I": "Match",
+    "U": "~ Different",
+    "A": "+ Missing",
+    "D": "- Unexpected",
+    "Other": "? Other",
+}
+
+export const STATUS_COLORS = {
+    "I": "Blue",
+    "U": "DarkGoldenRod",
+    "A": "ForestGreen",
     "D": "FireBrick",
-    "I": "ForestGreen",
-    "U": "Blue",
+    "Other": "black",
 }
 
 const statusColorsPale = {
-    "Other": "Snow",
-    "A": "LemonChiffon",
+    "I": "AliceBlue",
+    "U": "LemonChiffon",
+    "A": "Honeydew",
     "D": "MistyRose",
-    "I": "Honeydew",
-    "U": "AliceBlue",
+    "Other": "WhiteSmoke",
 }
 
 export default function HorizontalStackedBar({ id, statuses, onClickMenu }) {
@@ -46,12 +54,12 @@ function buildHSBarData(statuses) {
 
     sumStatusesTotal(statuses);
 
-    for (const key of Object.values(statusOrder)) {
+    for (const key of Object.values(STATUS_ORDER)) {
         addBarData(key, statuses, hsBarData);
     }
 
     for (const statusKey of Object.keys(statuses['perStatus'])) {
-        if (statusOrder.includes(statusKey)) {
+        if (STATUS_ORDER.includes(statusKey)) {
             continue;
         }
         addBarData(statusKey, statuses, hsBarData);
@@ -72,8 +80,8 @@ const addBarData = (statusKey, statuses, hsBarData) => {
         statusValue = statuses["found"][statusKey]
     }
 
-    let colorObject = statusColors
-    if(statusValueMax == 0) {
+    let colorObject = STATUS_COLORS
+    if(statusValueMax === 0) {
         colorObject = statusColorsPale
     }
 
@@ -83,7 +91,7 @@ const addBarData = (statusKey, statuses, hsBarData) => {
         color = colorObject[statusKey]
     }
 
-    let pctBar = 100 / Object.keys(labels).length
+    let pctBar = 100 / Object.keys(STATUS_LABELS).length
     const minPctBar = 12
     if (pctBar < minPctBar) {
         pctBar = minPctBar
@@ -91,8 +99,8 @@ const addBarData = (statusKey, statuses, hsBarData) => {
 
 
     let name = statusKey
-    if (name in labels) {
-        name = labels[statusKey]
+    if (name in STATUS_LABELS) {
+        name = STATUS_LABELS[statusKey]
     }
 
     let valueLabel = "" + statusValue

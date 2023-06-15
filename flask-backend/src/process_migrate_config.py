@@ -92,7 +92,7 @@ def get_config_dict(
 ):
     all_tenant_config_dict = None
     run_legacy_match = entity_legacy_match
-    flat_result_table = None
+    ui_payload = None
 
     if run_legacy_match:
         pass
@@ -116,23 +116,36 @@ def get_config_dict(
             run_legacy_match = False
 
     else:
-
         if pre_migration:
             pass
         else:
             terraform_cli.create_terraform_repo(
-                run_info, pre_migration, tenant_key_target
+                run_info, pre_migration, tenant_key_main, tenant_key_target
             )
-            terraform_cli.create_target_current_state(run_info, tenant_key_target)
-            terraform_cli.terraform_refresh_plan(run_info, tenant_key_target)
-            terraform_cli.terraform_refresh_apply(run_info, tenant_key_target)
-            terraform_cli.create_work_hcl(run_info, tenant_key_target)
-            terraform_local.merge_state_into_config(tenant_key_target)
-            
-        address_map = terraform_local.get_address_map(tenant_key_target)
-        flat_result_table["address_map"] = address_map
+            terraform_cli.create_target_current_state(
+                run_info, tenant_key_main, tenant_key_target
+            )
+            terraform_cli.terraform_refresh_plan(
+                run_info, tenant_key_main, tenant_key_target
+            )
+            terraform_cli.terraform_refresh_apply(
+                run_info, tenant_key_main, tenant_key_target
+            )
+            terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
+            terraform_local.merge_state_into_config(tenant_key_main, tenant_key_target)
+            ui_payload, log_dict = terraform_cli.plan_all(
+                run_info, tenant_key_main, tenant_key_target, "0"
+            )
 
-    return all_tenant_config_dict, run_legacy_match, flat_result_table
+        if ui_payload is None:
+            ui_payload = terraform_local.load_ui_payload(
+                tenant_key_main, tenant_key_target
+            )
+
+        # address_map = terraform_local.get_address_map(tenant_key_main, tenant_key_target)
+        # flat_result_table["address_map"] = address_map
+
+    return all_tenant_config_dict, run_legacy_match, ui_payload
 
 
 def copy_configs_safe_same_entity_id(

@@ -1,13 +1,13 @@
 import * as React from 'react';
 import TenantMigrationSelector from '../credentials/TenantMigrationSelector';
-import MigrateEntities from './MigrateEntities';
+import MigrateTenant from './MigrateTenant';
 
 export default function MigratePanel() {
 
     return (
         <React.Fragment>
             <TenantMigrationSelector />
-            <MigrateEntities />
+            <MigrateTenant />
         </React.Fragment>
     );
 }

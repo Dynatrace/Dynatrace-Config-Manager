@@ -2,7 +2,7 @@ import * as React from 'react'
 import _ from 'lodash';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import ResultDrawer from './ResultDrawer';
-import { Box, FormControl, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Box, FormControl, Grid, IconButton, Paper, TextField, Typography } from '@mui/material';
 import ExtractedTable from '../extraction/ExtractedTable';
 import { useResultItemMenu } from './ResultItemMenuHook';
 import { useResult } from '../context/ResultContext';
@@ -11,8 +11,9 @@ import { MATCH_TYPE } from '../options/SortOrderOption';
 import ReactJson from 'react-json-view';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
-import HorizontalStackedBar, { statusOrder } from '../extraction/HorizontalStackedBar';
+import HorizontalStackedBar, { STATUS_ORDER } from '../extraction/HorizontalStackedBar';
 import EfficientAccordion from './EfficientAccordion';
+import ResultDetails from './ResultDetails';
 
 const error_color = 'error.dark'
 const warning_color = 'secondary.dark'
@@ -61,14 +62,26 @@ export const useMigrationResultHook = () => {
 
         if (extractedData
             && 'stats' in extractedData) {
+
             components.push(
-                <Typography sx={{ mt: 2, mb: 1 }} variant={"h4"} align={"center"}>Overall Progress</Typography>
+                <Box sx={{ mt: 2, mb: 1 }} align={"center"}>
+                    <Typography color="black" variant={"h4"}>Overall Progress</Typography>
+                </Box>
+
             )
 
             const statuses = buildStatuses(extractedData);
 
             components.push(
-                <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
+                <Grid container>
+                    <Grid item xs={3}></Grid>
+                    <Grid item xs={9}>
+                        <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
+                    </Grid>
+                </Grid>
+            )
+            components.push(
+                <ResultDetails resultKey={resultKey} setExtractedData={setExtractedData} />
             )
         }
 
@@ -107,7 +120,7 @@ export const useMigrationResultHook = () => {
                             </Grid>
                             <IconButton onClick={handleLaunchSearch} color="primary">
                                 <SearchIcon />
-                                <Typography>Search for schemaId, entityId or key_id</Typography>
+                                <Typography>Search for module or key_id (entityId: coming soon)</Typography>
                             </IconButton>
                         </Grid>
                         <Grid item xs={6}>
@@ -241,54 +254,35 @@ export const useMigrationResultHook = () => {
         }
 
         if (extractedData
-            && 'entities' in extractedData) {
+            && 'modules' in extractedData) {
 
-            for (const [type, entityData] of Object.entries(extractedData['entities'])) {
+            let schemaComponents = []
 
-                let schemaComponents = []
+            let label = "All Configs, per module"
 
-                if (type in extractedData['legend']
-                    && 'schemas' in extractedData['legend'][type]) {
-
-                    schemaComponents.push(
-                        <Typography sx={{ mt: 1 }}>{"Schema Legend:"}</Typography>
-                    )
-                    for (const [schemaLabel, schema_key] of Object.entries(extractedData['legend'][type]['schemas'])) {
-                        schemaComponents.push(
-                            <Typography sx={{ ml: 1 }}>{schema_key + ": " + schemaLabel}</Typography>
-                        )
-                    }
-                }
-
-                let label = type
-                if (label === "all_configs") {
-                    label = "All Configs, per schema"
-                } else {
-                    label += ":"
-                }
-
-                components.push(
-                    <React.Fragment>
-                        <Typography sx={{ mt: 2, mb: 1 }} align="center" variant="h4">{label} </Typography>
-                        {schemaComponents}
-                        <ExtractedTable data={entityData} resultKey={resultKey} keyArray={['entities', type]} handleClickMenu={handleContextMenu} searchText={searchText} />
-                    </React.Fragment>
-                )
-            }
+            components.push(
+                <React.Fragment>
+                    <Typography sx={{ mt: 2, mb: 1 }} align="center" variant="h4">{label} </Typography>
+                    {schemaComponents}
+                    <ExtractedTable data={extractedData['modules']} resultKey={resultKey} keyArray={['modules']} handleClickMenu={handleContextMenu} searchText={searchText} />
+                </React.Fragment>
+            )
 
         }
 
+        /*
         if (extractedData
             && 'legend' in extractedData) {
             components.push(
                 <Typography sx={{ mt: 1 }}>Status Legend: </Typography>
             )
-            for (const [actionLetter, action] of Object.entries(extractedData['legend']['status'])) {
+            for (const [actionLetter, action] of Object.entries(extractedData['legend'])) {
                 components.push(
                     <Typography sx={{ ml: 1 }}>{actionLetter + ": " + action}</Typography>
                 )
             }
         }
+        */
 
         return components
 
@@ -298,7 +292,9 @@ export const useMigrationResultHook = () => {
         if (!_.isEmpty(extractedData)) {
             return (
                 <ResultDrawer openDrawer={openDrawer} setOpenDrawer={setOpenDrawer}>
-                    {progressComponents}
+                    <Paper sx={{ p: 1 }} elevation={3} >
+                        {progressComponents}
+                    </Paper>
                     {searchComponents}
                     {tableComponents}
                 </ResultDrawer>
@@ -312,7 +308,7 @@ export const useMigrationResultHook = () => {
 function buildStatuses(extractedData) {
     const perStatus = {};
     for (const [statusKey, statusValue] of Object.entries(extractedData['stats'])) {
-        if (statusOrder.includes(statusKey)) {
+        if (STATUS_ORDER.includes(statusKey)) {
             perStatus[statusKey] = statusValue;
         } else {
             const statusKeyOther = "Other"

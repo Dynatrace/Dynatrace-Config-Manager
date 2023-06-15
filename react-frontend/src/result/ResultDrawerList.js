@@ -1,11 +1,14 @@
 import * as React from 'react'
-import TreeItem from '@mui/lab/TreeItem/TreeItem'
-import { Box, List, ListSubheader, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import ResultDrawerListItem from './ResultDrawerListItem'
+import { STATUS_ORDER } from '../extraction/HorizontalStackedBar'
+import ResultDrawerListSchema from './ResultDrawerListSchema'
 
 export default function ResultDrawerList({ result, contextNode, setContextNode }) {
 
     const [checked, setChecked] = React.useState([])
+    const [checkAllStatus, setCheckAllStatus] = React.useState("")
+    const [currentKey, setCurrentKey] = React.useState("")
 
     const keyArray = React.useMemo(() => {
         return contextNode.columnArray
@@ -39,24 +42,42 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             }
         }
 
-        let sendEmptyArray = false
-        if (newChecked.length >= 1) {
-            let currentKey = newChecked[newChecked.length - 1]
+        if (toggleOn) {
+            setCurrentKey(key)
+        }
 
-            if (toggleOn) {
-                currentKey = key
+        setChecked(newChecked)
+    }, [checked, setChecked])
+
+    const handleSetCheckAllStatus = React.useCallback((status, keys) => {
+        if (status === checkAllStatus) {
+            setCheckAllStatus("")
+        } else {
+            setCheckAllStatus(status)
+            setChecked(keys)
+        }
+    }, [checkAllStatus, setCheckAllStatus])
+
+    React.useMemo(() => {
+        let sendEmptyArray = false
+        if (checked.length >= 1) {
+            let key = checked[checked.length - 1]
+
+            if(isNumeric(currentKey) && checked.includes(currentKey)) {
+                console.log("AAA")
+                key = currentKey
             }
 
-            if (isNumeric(currentKey)) {
+            if (isNumeric(key)) {
                 let newColumnArray = [...keyArray]
-                newColumnArray[newColumnArray.length - 1] = currentKey
+                newColumnArray[newColumnArray.length - 1] = key
 
                 let newContextNode = {
                     'resultKey': contextNode.resultKey,
                     'rowArray': contextNode.rowArray,
                     'columnArray': newColumnArray,
                     'searchText': contextNode.searchText,
-                    'selectedArray': newChecked,
+                    'selectedArray': checked,
                 }
                 setContextNode(newContextNode)
             } else {
@@ -77,43 +98,74 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             }
             setContextNode(newContextNode)
         }
-
-
-        setChecked(newChecked)
-    }, [checked, contextNode, keyArray, setContextNode])
+    }, [checked, currentKey])
 
     const [listItems, listName] = React.useMemo(() => {
 
         const itemList = topObject[keyArray[keyArray.length - 2]]
 
-
-        const items = []
+        const items = {}
         let nbFound = 0
         let schemaFound = (contextNode.searchText === ""
-            || topObject['schemaId'].toLowerCase().includes(contextNode.searchText))
+            || topObject['module'].toLowerCase().includes(contextNode.searchText))
 
 
         for (const [key, child] of Object.entries(itemList)) {
+            const { key_id, entity_list, status } = child
+
+            if (status) {
+                if (status in items) {
+                    // pass
+                } else {
+
+                    items[status] = { "nbMax": 0, "list": [], "keys": [] }
+                }
+                items[status]["nbMax"]++
+            } else {
+                console.log("ERROR: Resource without status: ", child)
+                continue
+            }
+
             if (schemaFound
-                || ('key_id' in child && child['key_id'].toLowerCase().includes(contextNode.searchText))
-                || ('entity_list' in child && child['entity_list'].toLowerCase().includes(contextNode.searchText))) {
+                || (key_id && key_id.toLowerCase().includes(contextNode.searchText))
+                || (entity_list && entity_list.toLowerCase().includes(contextNode.searchText))) {
                 nbFound++
-                items.push(
-                    <ResultDrawerListItem key={key} childKey={key} child={child} handleToggleList={handleToggleList} checked={checked.indexOf(key)} />
+
+                items[status]["list"].push(
+                    <ResultDrawerListItem key={key} childKey={key} child={child}
+                        handleToggleList={handleToggleList} checked={checked.indexOf(key)}
+                        forceCheck={status === checkAllStatus}
+                        forceUncheck={status !== checkAllStatus && checkAllStatus !== ""} />
                 )
+
+                items[status]["keys"].push(key)
+
             }
         }
 
-        let name = topObject['schemaId']
         const nbMax = Object.keys(itemList).length
-        if (nbFound === nbMax) {
-            name += " ( " + nbMax + " )"
-        } else {
-            name += " ( " + nbFound + "/" + nbMax + " )"
+        let name = GetNumberedLabel(topObject['module'], nbFound, nbMax)
+
+        const componentList = []
+
+        for (const status of STATUS_ORDER) {
+            const resourceComponent = items[status]
+            if (resourceComponent) {
+                // pass
+            } else {
+                continue
+            }
+
+            const { nbMax, list, keys } = resourceComponent
+            const props = { status, list, nbMax, keys, checkAllStatus, handleSetCheckAllStatus }
+            componentList.push(
+                <ResultDrawerListSchema {...props} />
+            )
+
         }
 
-        return [items, name]
-    }, [handleToggleList, checked, topObject, keyArray, contextNode])
+        return [componentList, name]
+    }, [handleToggleList, checked, topObject, keyArray, contextNode, checkAllStatus, handleSetCheckAllStatus])
 
     const treeViewComponent = React.useMemo(() => {
         return (
@@ -144,36 +196,16 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
     return treeViewComponent
 }
 
-/*
-<TreeView
-    aria-label="rich object"
-    defaultCollapseIcon={<ExpandMoreIcon />}
-    defaultExpandIcon={<ChevronRightIcon />}
-    defaultSelected={"0"}
-    onNodeSelect={(event, selectedNode) => {
+export function GetNumberedLabel(label, nbFound, nbMax) {
+    let name = label
 
-        if (isNumeric(selectedNode)) {
-            let newColumnArray = [...keyArray]
-            newColumnArray[newColumnArray.length - 1] = selectedNode
-            let newContextNode = {
-                'resultKey': contextNode.resultKey,
-                'rowArray': contextNode.rowArray,
-                'columnArray': newColumnArray
-            }
-            setContextNode(newContextNode)
-        }
-    }}
-    sx={{ flexGrow: 1, overflowY: 'auto' }}
->
-    {renderTree(richData)}
-</TreeView>
-*/
-
-const renderTree = (nodes) => (
-    <TreeItem key={nodes.id} nodeId={nodes.id} label={nodes.name}>
-        {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
-    </TreeItem>
-);
+    if (nbFound === nbMax) {
+        name += " ( " + nbMax + " )"
+    } else {
+        name += " ( " + nbFound + "/" + nbMax + " )"
+    }
+    return name
+}
 
 function isNumeric(str) {
     if (typeof str != "string") return false // we only process strings!  
