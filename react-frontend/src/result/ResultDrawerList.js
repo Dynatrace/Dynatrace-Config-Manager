@@ -64,7 +64,6 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             let key = checked[checked.length - 1]
 
             if(isNumeric(currentKey) && checked.includes(currentKey)) {
-                console.log("AAA")
                 key = currentKey
             }
 
