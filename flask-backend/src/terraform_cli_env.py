@@ -38,12 +38,13 @@ def get_env_vars_export_dict(
     run_info,
     tenant_data_target,
     terraform_path,
+    config_main, 
     config_target,
     cache_dir,
     terraform_path_output,
 ):
     env_vars_export_extras = get_env_vars_export_extras(
-        run_info, config_target, cache_dir, terraform_path_output
+        run_info, config_main, config_target, cache_dir, terraform_path_output
     )
     env_vars_base = get_env_vars_base(tenant_data_target, terraform_path)
 
@@ -53,7 +54,7 @@ def get_env_vars_export_dict(
 
 
 def get_env_vars_export_extras(
-    run_info, config_target, cache_dir, terraform_path_output
+    run_info, config_main, config_target, cache_dir, terraform_path_output
 ):
     cache_strict = CACHE_STRICT_NO
     if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
@@ -62,7 +63,7 @@ def get_env_vars_export_extras(
     env_vars = {
         "CACHE_OFFLINE_MODE": "true",
         "DYNATRACE_MIGRATION_CACHE_FOLDER": dirs.forward_slash_join(
-            monaco_cli_match.get_path_match_configs_results(config_target), cache_dir
+            monaco_cli_match.get_path_match_configs_results(config_main, config_target), cache_dir
         ),
         "DYNATRACE_MIGRATION_CACHE_STRICT": cache_strict,
     }
@@ -75,6 +76,7 @@ def get_env_vars_export_extras(
 def write_env_cmd_export(
     run_info,
     tenant_data_target,
+    config_main, 
     config_target,
     terraform_path,
     terraform_path_output,
@@ -84,6 +86,7 @@ def write_env_cmd_export(
         run_info,
         tenant_data_target,
         terraform_path,
+        config_main, 
         config_target,
         cache_dir,
         terraform_path_output,

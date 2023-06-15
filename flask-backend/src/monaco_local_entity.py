@@ -19,7 +19,7 @@ def analyze_entities(config, analysis_object):
     run_on_all_sub_files(path_entities_local, analysis_object)
 
 
-def load_matched_entities(tenant_key_target, tenant_key_main=None):
+def load_matched_entities(tenant_key_target, tenant_key_main):
 
     if (tenant_key_main == None):
         tenant_key_main = tenant_key_target
@@ -29,7 +29,7 @@ def load_matched_entities(tenant_key_target, tenant_key_main=None):
     matched_analysis_object = LoadMatchedEntities(tenant_key_main)
 
     path_matched_entities_local = monaco_cli_match.get_path_match_entities(
-        config_target)
+        config_main, config_target)
     run_on_all_sub_files(path_matched_entities_local, matched_analysis_object)
 
     results = matched_analysis_object.get_results()
@@ -64,21 +64,22 @@ def load_matched_entities(tenant_key_target, tenant_key_main=None):
     return False, (results['matched_entities'], results['entities_dict'])
 
 
-def load_matched_configs(tenant_key_target, tenant_key_main=None):
+def load_matched_configs(tenant_key_target, tenant_key_main):
 
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
     path_UI_payload = monaco_cli_match.get_path_match_configs_UI_payload(
-        config_target)
+        config_main, config_target)
 
     path_UI_payload_file = dirs.get_file_path(path_UI_payload, "payload")
     
     cached_data = None
 
-    try:
-        cached_data = get_cached_data(path_UI_payload_file, '.json')
-    except FileNotFoundError as e:
-        return True, (cached_data)
+    #try:
+    #    cached_data = get_cached_data(path_UI_payload_file, '.json')
+    #except FileNotFoundError as e:
+    #    return True, (cached_data)
 
     return False, (cached_data)
 

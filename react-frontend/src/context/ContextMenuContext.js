@@ -64,5 +64,9 @@ export function useContextMenuState() {
         setProperty("contextNode", value)
     }
 
-    return { contextMenu, contextNode, setContextMenu, setContextNode }
+    const resetContextNode = () => {
+        setProperty("contextNode", initState()['contextNode'])
+    }
+
+    return { contextMenu, contextNode, setContextMenu, setContextNode, resetContextNode }
 }

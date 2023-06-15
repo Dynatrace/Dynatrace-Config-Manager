@@ -1,34 +1,68 @@
-import { Box, Paper } from '@mui/material';
-import Ansi from 'ansi-to-react';
+import { Paper } from '@mui/material';
 import * as React from 'react';
 import EfficientAccordion from './EfficientAccordion';
+import { STATUS_COLORS } from '../extraction/HorizontalStackedBar';
+import TFAnsiText from './TFAnsiText';
 
 
-export default function TFLog({ logs, actionLabel, actionId }) {
+export default function TFLog({ logs, other, actionLabel, actionId }) {
+
     return (
-        <Paper sx={{ ml: 3, mt: 2 }}>
-            <EfficientAccordion
-                label={"Terraform Log for " + actionLabel + ", based on action_" + actionId}
-                labelColor="secondary.dark"
-                labelVariant="h6"
-                defaultExpanded={false}
-                componentList={
-                    logs.split("\n").map(function (line) {
+        ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
+            <Paper sx={{ ml: -1, mt: 2 }}>
+                <EfficientAccordion
+                    label={"Planned changes details " + actionLabel + ", based on action_" + actionId}
+                    labelColor="secondary.dark"
+                    labelVariant="h6"
+                    defaultExpanded={false}
+                    componentList={
+                        [
+                            other == null ? null :
+                                <EfficientAccordion
+                                    label="General execution info"
+                                    labelColor={STATUS_COLORS["Other"]}
+                                    labelVariant="h6"
+                                    defaultExpanded={false}
+                                    componentList={
+                                        [<TFAnsiText logList={other} />]
+                                    }
+                                />,
+                            genLogComponents(logs),
+                        ]
+                    }
+                />
+            </Paper>
 
-                        const leadingSpaces = stripAnsiCodes(line).search(/\S|$/) / 2
-
-                        return (
-                            <React.Fragment>
-                                <Box sx={{ ml: leadingSpaces, my: 0 }}>
-                                    <Ansi>{line}</Ansi>
-                                </Box>
-                            </React.Fragment>
-                        )
-                    })
-                }
-            />
-        </Paper>
     )
 }
 
-const stripAnsiCodes = str => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1, 4}(?:;[0-9]{0, 4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+function genLogComponents(logMap) {
+
+    if (logMap) {
+        // pass
+    } else {
+        return null
+    }
+
+    let resourceComponents = []
+
+    for (const logModule of Object.values(logMap)) {
+        for (const resourceLog of Object.values(logModule)) {
+            const { module, resource, action, action_code, module_lines } = resourceLog
+
+            resourceComponents.push(
+                <EfficientAccordion
+                    label={action + ": " + module + " " + resource}
+                    labelColor={STATUS_COLORS[action_code]}
+                    labelVariant="h6"
+                    defaultExpanded={false}
+                    componentList={
+                        [<TFAnsiText logList={module_lines} />]
+                    }
+                />
+            )
+        }
+    }
+
+    return resourceComponents
+}

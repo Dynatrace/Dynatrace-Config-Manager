@@ -13,8 +13,14 @@ export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 
 export const MIGRATE_SETTINGS_2_0 = 'migrate_settings_2_0'
 
+export const TERRAFORM_LOAD_UI_PAYLOAD = 'terraform_load_ui_payload'
 export const TERRAFORM_PLAN_TARGET = 'terraform_plan_target'
 export const TERRAFORM_APPLY_TARGET = 'terraform_apply_target'
+
+export const TERRAFORM_PLAN_ALL = 'terraform_plan_all'
+export const TERRAFORM_APPLY_ALL = 'terraform_apply_all'
+
+export const PLAN_ALL_RESOURCE_DIFF = 'terraform_plan_all_resource_diff'
 
 
 export function backendGet(api_method, searchParams, thenFunction, catchFunction) {
@@ -60,7 +66,7 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, ca
         return validationPromise
             .catch((error) => {
                 alert("Error Backend Api: " + api_method + "\n" + error)
-                if(catchFunction instanceof Function) {
+                if (catchFunction instanceof Function) {
                     catchFunction(error)
                 }
             })
@@ -80,12 +86,12 @@ function validateReturnCodePromise(fetchPromise, api_method, thenFunction, catch
                 responseTextPromise.then(responseText => {
                     throw new Error("Http Status: " + response.status + "\nBody: " + responseText)
                 })
-                .catch((error) => {
-                    alert("Error Backend Api: " + api_method + "\n" + error)
-                    if(catchFunction instanceof Function) {
-                        catchFunction(error)
-                    }
-                })
+                    .catch((error) => {
+                        alert("Error Backend Api: " + api_method + "\n" + error)
+                        if (catchFunction instanceof Function) {
+                            catchFunction(error)
+                        }
+                    })
 
             }
 

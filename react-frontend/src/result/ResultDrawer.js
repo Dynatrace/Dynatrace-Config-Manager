@@ -55,6 +55,13 @@ export default function ResultDrawer({ openDrawer, setOpenDrawer, children }) {
 
     }, [openDrawer])
 
+    const drawerDetails = React.useMemo(() => {
+
+        return (
+            <ResultDrawerDetails />
+        )
+    }, [])
+
     return (
         <Root>
             <CssBaseline />
@@ -96,7 +103,7 @@ export default function ResultDrawer({ openDrawer, setOpenDrawer, children }) {
                         <Button onClick={toggleDrawer(!openDrawer)} disabled={drawerEmpty} fullWidth>DETAILS</Button>
                     </Box>
                     <Box>
-                        <ResultDrawerDetails />
+                        {drawerDetails}
                     </Box>
                 </StyledBox>
             </Drawer>

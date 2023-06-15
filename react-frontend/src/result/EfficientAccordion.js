@@ -16,7 +16,7 @@ export default function EfficientAccordion({ label, componentList, defaultExpand
                 >
                     <Typography sx={{ color: labelColor, variant: labelVariant }}>{label}</Typography>
                 </AccordionSummary>
-                <AccordionDetails>
+                <AccordionDetails sx={{overflow: "auto"}}>
                     {componentList}
                 </AccordionDetails>
             </Accordion>
