@@ -2,7 +2,7 @@ import * as React from 'react';
 import HSBar from "react-horizontal-stacked-bar-chart";
 
 export const defaultColumnArray = ['data', '0']
-export const STATUS_ORDER = ["I", "U", "A", "D", "Other"]
+export const STATUS_ORDER = ["I", "A", "U", "D", "Other"]
 
 export const STATUS_PREFIX = {
     "I": "",
@@ -13,10 +13,10 @@ export const STATUS_PREFIX = {
 }
 
 export const STATUS_LABELS = {
-    "I": "Match",
-    "U": "~ Different",
-    "A": "+ Missing",
-    "D": "- Unexpected",
+    "I": "Done",
+    "U": "~ Change",
+    "A": "+ Add",
+    "D": "- Destroy",
     "Other": "? Other",
 }
 

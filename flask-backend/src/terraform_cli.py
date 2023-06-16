@@ -39,6 +39,7 @@ def get_path_terraform_config(config_main, config_target):
 def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_target):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
+    tenant_data_main = tenant.load_tenant(tenant_key_main)
     tenant_data_target = tenant.load_tenant(tenant_key_target)
 
     terraform_path = get_path_terraform(config_main, config_target)
@@ -53,7 +54,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
     if write_automated_cmds:
         set_env_filename_export = terraform_cli_env.write_env_cmd_export(
             run_info,
-            tenant_data_target,
+            tenant_data_main,
             config_main,
             config_target,
             terraform_path,
@@ -114,15 +115,9 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
             print("Can't open VSCode as", vscodeExecutable, "isn't found.")
 
 
-def get_config_and_tenant_data(tenant_key_target):
-    config_target = credentials.get_api_call_credentials(tenant_key_target)
-    tenant_data_target = tenant.load_tenant(tenant_key_target)
-    return config_target, tenant_data_target
-
-
 def get_env_vars(
     run_info,
-    tenant_data_target,
+    tenant_data_current,
     terraform_path,
     config_main=None,
     config_target=None,
@@ -135,7 +130,7 @@ def get_env_vars(
     if use_cache:
         env_vars = terraform_cli_env.get_env_vars_export_dict(
             run_info,
-            tenant_data_target,
+            tenant_data_current,
             terraform_path,
             config_main,
             config_target,
@@ -144,7 +139,7 @@ def get_env_vars(
         )
     else:
         env_vars = terraform_cli_env.get_env_vars_base(
-            tenant_data_target, terraform_path
+            tenant_data_current, terraform_path
         )
 
     my_env = os.environ.copy()
@@ -225,6 +220,7 @@ def terraform_execute(
     run_info,
     tenant_key_main,
     tenant_key_target,
+    tenant_key_current,
     cmd_list,
     log_filename,
     log_label_suffix,
@@ -235,7 +231,9 @@ def terraform_execute(
     return_log_content=False,
 ):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
-    config_target, tenant_data_target = get_config_and_tenant_data(tenant_key_target)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+    tenant_data_current = tenant.load_tenant(tenant_key_current)
+
     terraform_path = get_path_terraform(config_main, config_target)
 
     (terraform_path_output, export_output_dir, log_file_name) = gen_exec_path(
@@ -244,7 +242,7 @@ def terraform_execute(
 
     my_env = get_env_vars(
         run_info,
-        tenant_data_target,
+        tenant_data_current,
         terraform_path,
         config_main,
         config_target,
@@ -284,6 +282,7 @@ def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
         run_info,
         tenant_key_main,
         tenant_key_target,
+        tenant_key_target,
         cmd_list,
         "import",
         "Import State",
@@ -299,6 +298,7 @@ def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
         run_info,
         tenant_key_main,
         tenant_key_target,
+        tenant_key_target,
         cmd_list,
         "refresh_plan",
         "Refresh Plan [refresh state only]",
@@ -312,6 +312,7 @@ def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
     terraform_execute(
         run_info,
         tenant_key_main,
+        tenant_key_target,
         tenant_key_target,
         cmd_list,
         "refresh_apply",
@@ -328,6 +329,7 @@ def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
         run_info,
         tenant_key_main,
         tenant_key_target,
+        tenant_key_main,
         cmd_list,
         "export_work_hcl",
         "Export Work HCL",
@@ -350,6 +352,7 @@ def plan_target(
         run_info,
         tenant_key_main,
         tenant_key_target,
+        tenant_key_target,
         cmd_list,
         "plan_target_" + "action_" + action_id,
         "Plan Target",
@@ -370,6 +373,7 @@ def apply_target(
         run_info,
         tenant_key_main,
         tenant_key_target,
+        tenant_key_target,
         cmd_list,
         "apply_target_" + "action_" + action_id,
         "apply Target",
@@ -387,6 +391,7 @@ def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
     log_dict = terraform_execute(
         run_info,
         tenant_key_main,
+        tenant_key_target,
         tenant_key_target,
         cmd_list,
         "plan_all_" + "action_" + action_id,
@@ -411,6 +416,7 @@ def apply_all(run_info, tenant_key_main, tenant_key_target, action_id):
     return terraform_execute(
         run_info,
         tenant_key_main,
+        tenant_key_target,
         tenant_key_target,
         cmd_list,
         "apply_all_" + "action_" + action_id,
