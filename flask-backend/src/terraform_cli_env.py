@@ -7,8 +7,8 @@ CACHE_STRICT_NO = "false"
 CACHE_STRICT_YES = "true"
 
 
-def write_env_cmd_base(tenant_data_target, terraform_path):
-    env_vars = get_env_vars_base(tenant_data_target, terraform_path)
+def write_env_cmd_base(tenant_data_current, terraform_path):
+    env_vars = get_env_vars_base(tenant_data_current, terraform_path)
 
     command_file_name = "setenv"
 
@@ -29,6 +29,8 @@ def get_env_vars_base(tenant_data_target, terraform_path):
         "DYNATRACE_HCL_NO_FORMAT": "true",
         "DYNATRACE_BUILD_ADDRESS_FILES": "true",
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
+        "DYNATRACE_ATOMIC_DEPENDENCIES": "true",
+        "DYNATRACE_ENABLE_EXPORT_DASHBOARD": "true",  # Could also be disabled with some setting in the UI
     }
 
     return env_vars
@@ -36,9 +38,9 @@ def get_env_vars_base(tenant_data_target, terraform_path):
 
 def get_env_vars_export_dict(
     run_info,
-    tenant_data_target,
+    tenant_data_current,
     terraform_path,
-    config_main, 
+    config_main,
     config_target,
     cache_dir,
     terraform_path_output,
@@ -46,7 +48,7 @@ def get_env_vars_export_dict(
     env_vars_export_extras = get_env_vars_export_extras(
         run_info, config_main, config_target, cache_dir, terraform_path_output
     )
-    env_vars_base = get_env_vars_base(tenant_data_target, terraform_path)
+    env_vars_base = get_env_vars_base(tenant_data_current, terraform_path)
 
     env_vars = {**env_vars_base, **env_vars_export_extras}
 
@@ -63,7 +65,8 @@ def get_env_vars_export_extras(
     env_vars = {
         "CACHE_OFFLINE_MODE": "true",
         "DYNATRACE_MIGRATION_CACHE_FOLDER": dirs.forward_slash_join(
-            monaco_cli_match.get_path_match_configs_results(config_main, config_target), cache_dir
+            monaco_cli_match.get_path_match_configs_results(config_main, config_target),
+            cache_dir,
         ),
         "DYNATRACE_MIGRATION_CACHE_STRICT": cache_strict,
     }
@@ -75,8 +78,8 @@ def get_env_vars_export_extras(
 
 def write_env_cmd_export(
     run_info,
-    tenant_data_target,
-    config_main, 
+    tenant_data_current,
+    config_main,
     config_target,
     terraform_path,
     terraform_path_output,
@@ -84,9 +87,9 @@ def write_env_cmd_export(
 ):
     env_vars = get_env_vars_export_dict(
         run_info,
-        tenant_data_target,
+        tenant_data_current,
         terraform_path,
-        config_main, 
+        config_main,
         config_target,
         cache_dir,
         terraform_path_output,

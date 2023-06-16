@@ -6,6 +6,8 @@ import { Checkbox, FormControl, FormControlLabel } from '@mui/material';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 
+export const NB_MAX_TARGETS = 40
+
 export default function ResultDrawerListSchema({ status, list, nbMax, keys, checkAllStatus, handleSetCheckAllStatus }) {
 
     const button = (
@@ -13,8 +15,9 @@ export default function ResultDrawerListSchema({ status, list, nbMax, keys, chec
             <FormControlLabel
                 control={<Checkbox checked={checkAllStatus === status}
                     onChange={() => { handleSetCheckAllStatus(status, keys) }}
-                    icon={<RadioButtonUncheckedIcon />} checkedIcon={<RadioButtonCheckedIcon />} />}
-                label="Select All" />
+                    icon={<RadioButtonUncheckedIcon />} checkedIcon={<RadioButtonCheckedIcon />}
+                    disabled={keys.length > NB_MAX_TARGETS} />}
+                label={"Select All" + genTooManyLabel(keys.length)} />
         </FormControl>
     )
 
@@ -27,4 +30,13 @@ export default function ResultDrawerListSchema({ status, list, nbMax, keys, chec
             }
         />
     )
+}
+
+
+export const genTooManyLabel = (genTooManyLabel) => {
+    if (genTooManyLabel > NB_MAX_TARGETS) {
+        return " (DISABLED: too many items)"
+    } else {
+        return ""
+    }
 }

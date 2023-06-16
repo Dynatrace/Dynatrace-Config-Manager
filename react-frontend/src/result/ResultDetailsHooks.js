@@ -3,6 +3,7 @@ import { Box, Paper, Typography } from '@mui/material';
 import TFLog from './TFLog';
 import TerraformButton from '../terraform/TerraformButton';
 import EfficientAccordion from './EfficientAccordion';
+import { NB_MAX_TARGETS } from './ResultDrawerListSchema';
 
 
 export function useHandleTerraformCallComplete(actionCompleted, setActionCompleted, setExtractedData = null) {
@@ -192,7 +193,8 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 <Box sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={planAPI} terraformParams={terraformParams}
                         handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
-                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )"} confirm={false} />
+                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" + genTooManyLabel(nbUpdate)} confirm={false} 
+                        disabled={nbUpdate > NB_MAX_TARGETS}/>
                 </Box>
             )
         }
@@ -231,3 +233,11 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
     }, [actionCompleted, handleTerraformCallComplete, lastActionId, setLastActionId])
 }
 
+
+const genTooManyLabel = (genTooManyLabel) => {
+    if (genTooManyLabel > NB_MAX_TARGETS) {
+        return " (DISABLED: too many items)"
+    } else {
+        return ""
+    }
+}
