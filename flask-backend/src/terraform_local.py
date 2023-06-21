@@ -1,3 +1,4 @@
+import os
 import shutil
 
 import credentials
@@ -32,6 +33,64 @@ def merge_state_into_config(tenant_key_main, tenant_key_target):
             state_filename,
         ),
     )
+
+
+def remove_destroy_from_state(tenant_key_main, tenant_key_target, log_dict):
+    print("remove_destroy_from_state")
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+    state, path = load_state(
+        config_main, config_target, terraform_cli.get_path_terraform_config
+    )
+    new_resources = []
+
+    if ("resources") in state:
+        pass
+    else:
+        return False
+
+    for resource in state["resources"]:
+        type_trimmed = trim_module_name(resource["type"])
+        name = resource["name"]
+        if (
+            type_trimmed in log_dict["modules"]
+            and name in log_dict["modules"][type_trimmed]
+            and "action" in log_dict["modules"][type_trimmed][name]
+            and log_dict["modules"][type_trimmed][name]["action"]
+            == process_migrate_config.ACTION_DELETE
+        ):
+            print("Removing from state: ", type_trimmed, name)
+            continue
+
+        new_resources.append(resource)
+
+    state["resources"] = new_resources
+
+    with open(path, "w") as f:
+        f.write(json.dumps(state))
+
+    return True
+
+
+def trim_module_name(module_name):
+    module_name_trimmed = module_name
+    prefix = "dynatrace_"
+
+    if module_name.startswith(prefix):
+        module_name_trimmed = module_name[len(prefix) :]
+
+    return module_name_trimmed
+
+
+def load_state(config_main, config_target, path_func):
+    path = dirs.forward_slash_join(
+        path_func(config_main, config_target), "terraform.tfstate"
+    )
+
+    state = monaco_local_entity.get_cached_data(path, file_expected=False)
+
+    return state, path
 
 
 def get_address_map(tenant_key_main, tenant_key_target):
@@ -106,6 +165,9 @@ def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
                 "status": status_code,
             }
 
+            if resource["module_dir"] != module_key:
+                resource_data["module_dir"] = resource["module_dir"]
+
             module_stats = add_to_stats(module_stats, status_code)
             overall_stats = add_to_stats(overall_stats, status_code)
 
@@ -175,8 +237,8 @@ def load_plan_all_resource_diff(
     path = get_path_overall_diff(config_main, config_target)
     module_path = dirs.prep_dir(path, module)
     resource_path = dirs.get_file_path(module_path, unique_name, ".txt")
-    
-    with open(resource_path, 'r', encoding='UTF-8') as f:
+
+    with open(resource_path, "r", encoding="UTF-8") as f:
         lines = f.readlines()
 
     return lines

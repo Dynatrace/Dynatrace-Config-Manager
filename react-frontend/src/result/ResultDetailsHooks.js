@@ -6,6 +6,9 @@ import EfficientAccordion from './EfficientAccordion';
 import { NB_MAX_TARGETS } from './ResultDrawerListSchema';
 
 
+export const planActionLabel = "Terraform Plan"
+export const applyActionLabel = "Terraform Apply"
+
 export function useHandleTerraformCallComplete(actionCompleted, setActionCompleted, setExtractedData = null) {
 
 
@@ -49,19 +52,25 @@ export function useHandleTerraformCallComplete(actionCompleted, setActionComplet
             newActionCompleted['history'][id]['lastTerraformAction'] = terraformAction
 
             for (const columnUpdateInfo of Object.values(terraformParams)) {
-                const { module_trimmed: module, unique_name: uniqueName } = columnUpdateInfo
+                const { module, unique_name: uniqueName } = columnUpdateInfo
 
-                if (module in newActionCompleted) {
+                const prefix = "dynatrace_"
+                let module_trimmed = module                
+                if (module_trimmed.startsWith(prefix)) {
+                    module_trimmed = module_trimmed.slice(prefix.length)
+                }
+
+                if (module_trimmed in newActionCompleted) {
                     // pass
                 } else {
-                    newActionCompleted[module] = {}
+                    newActionCompleted[module_trimmed] = {}
                 }
-                if (uniqueName in newActionCompleted[module]) {
+                if (uniqueName in newActionCompleted[module_trimmed]) {
                     // pass
                 } else {
-                    newActionCompleted[module][uniqueName] = {}
+                    newActionCompleted[module_trimmed][uniqueName] = {}
                 }
-                newActionCompleted[module][uniqueName] = id
+                newActionCompleted[module_trimmed][uniqueName] = id
             }
 
             setActionCompleted(newActionCompleted)
@@ -87,8 +96,6 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
         }
 
-        const planActionLabel = "Terraform Plan"
-        const applyActionLabel = "Terraform Apply"
         let isPlanDone = false
         let isApplyDone = false
 
@@ -143,7 +150,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
             }
 
 
-            const actionList = [applyActionLabel, planActionLabel]
+            const actionList = [planActionLabel, applyActionLabel]
             for (const actionLabel of Object.values(actionList)) {
                 if (actionLabel in actionInfoObject) {
                     // pass

@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { useEntityFilter, useEntityFilterKey } from "../context/EntityFilterContext"
 import { backendDelete, backendGet, backendPost, MATCH_ENTITIES_V2, MIGRATE_SETTINGS_2_0 } from "./backend"
+import { useExecutionOptionsStateValue } from "../context/ExecutionContext"
 
 const entityFilterMap = {
     [MATCH_ENTITIES_V2]: true,
@@ -70,6 +71,8 @@ export function useEnhancedBackendFunctions(completeSearchParams) {
 }
 
 function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache) {
+
+    const options = useExecutionOptionsStateValue()
 
     const completeSearchParams = useMemo(() => {
         const completeSearchParamsFunction = (api_method, searchParams) => {
@@ -157,13 +160,23 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
                     completedSearchParams['pre_migration'] = false
                 }
 
+                const { enableDashboards, enableOmitDestroy } = options
+
+                if (enableDashboards === true) {
+                    completedSearchParams['enable_dashboards'] = JSON.stringify(enableDashboards)
+                }
+
+                if (enableOmitDestroy === true) {
+                    completedSearchParams['enable_omit_destroy'] = JSON.stringify(enableOmitDestroy)
+                }
+
             }
             return completedSearchParams
 
         }
 
         return completeSearchParamsFunction
-    }, [entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache])
+    }, [entityFilter, setEntityFilterApplyMigrationChecked, setEntityFilterUseEnvironmentCache, options])
 
     return completeSearchParams
 

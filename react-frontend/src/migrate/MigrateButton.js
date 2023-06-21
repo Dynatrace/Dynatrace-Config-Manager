@@ -62,7 +62,7 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
     const confirmDialog = React.useMemo(() => {
 
         if (confirm === true) {
-            const descLabel = "This will send API Requests, updating your tenant's configuration."
+            const descLabel = "Will send API Requests, updating your tenant's configuration."
             return (
                 <ConfirmAction open={open} handleClose={handleClose} label={label}
                     descLabel={descLabel} tenantLabel={tenantLabel} handlePost={handlePost} />

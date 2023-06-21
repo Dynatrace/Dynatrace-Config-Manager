@@ -3,6 +3,8 @@ import * as React from 'react';
 import EfficientAccordion from './EfficientAccordion';
 import { STATUS_COLORS, STATUS_LABELS } from '../extraction/HorizontalStackedBar';
 import TFAnsiText from './TFAnsiText';
+import { applyActionLabel } from './ResultDetailsHooks';
+
 
 
 export default function TFLog({ logs, other, actionLabel, actionId }) {
@@ -11,7 +13,7 @@ export default function TFLog({ logs, other, actionLabel, actionId }) {
         ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
             <Paper sx={{ ml: -1, mt: 2 }}>
                 <EfficientAccordion
-                    label={"Planned changes details " + actionLabel + ", based on action_" + actionId}
+                    label={genLabel(actionLabel, actionId)}
                     labelColor="secondary.dark"
                     labelVariant="h6"
                     defaultExpanded={false}
@@ -65,4 +67,13 @@ function genLogComponents(logMap) {
     }
 
     return resourceComponents
+}
+
+function genLabel(terraform_action_label, actionId) {
+    let prefix = "Planned changes details"
+    if(terraform_action_label === applyActionLabel) {
+        prefix = "Execution details"
+    }
+
+    return prefix + " for action_" + actionId
 }

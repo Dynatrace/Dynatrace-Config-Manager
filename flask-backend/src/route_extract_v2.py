@@ -4,6 +4,7 @@ import credentials
 import entity_v2
 import flask_utils
 import handler_api
+import process_utils
 import response_utils
 import settings_2_0
 import settings_2_0_schemas
@@ -45,13 +46,14 @@ def extract_configs_scope():
 def extract_entity_v2():
     use_cache = flask_utils.get_arg_bool('use_cache', False)
     tenant_key = flask_utils.get_arg('tenant_key', '0')
+    run_info = process_utils.get_run_info(tenant_key, tenant_key)
 
     def call_process():
         done = handler_api.pull(
-            tenant_key, entity_v2.extract_function, use_cache)
+            tenant_key, entity_v2.extract_function, use_cache, run_info=run_info)
         return done
 
-    return response_utils.call_and_get_response(call_process)
+    return response_utils.call_and_get_response(call_process, run_info)
 
 @blueprint_route_extract_v2.route('/test_connection', methods=['POST'])
 @cross_origin(origin='*')

@@ -56,7 +56,7 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
 
 def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity_filter=None, time_from=None, time_to=None,
                  use_environment_cache=None, forced_entity_id_main=None, forced_entity_id_target=None, forced_schema_id=None, forced_key_id=None,
-                 forced_keep_action_only=None, preemptive_config_copy=False):
+                 forced_keep_action_only=None, preemptive_config_copy=False, enable_dashboards=False, enable_omit_destroy=False):
     run_info = {}
 
     run_info = set_run_tags(
@@ -69,6 +69,8 @@ def get_run_info(tenant_key_main, tenant_key_target, context_params=None, entity
         run_info, entity_filter, time_from, time_to, use_environment_cache, forced_entity_id_main, forced_entity_id_target, forced_schema_id, forced_key_id)
     run_info['forced_keep_action_only'] = forced_keep_action_only
     run_info['preemptive_config_copy'] = preemptive_config_copy
+    run_info['enable_dashboards'] = enable_dashboards
+    run_info['enable_omit_destroy'] = enable_omit_destroy
 
     return run_info
 

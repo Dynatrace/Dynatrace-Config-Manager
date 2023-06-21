@@ -384,6 +384,27 @@ def apply_target(
 
 
 def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
+    log_dict = run_plan_all(run_info, tenant_key_main, tenant_key_target, action_id)
+
+    if run_info["enable_omit_destroy"] == True:
+        re_run_plan = terraform_local.remove_destroy_from_state(
+            tenant_key_main, tenant_key_target, log_dict
+        )
+        if re_run_plan:
+            log_dict = run_plan_all(
+                run_info, tenant_key_main, tenant_key_target, action_id
+            )
+
+    ui_payload = terraform_local.write_UI_payloads(
+        tenant_key_main, tenant_key_target, log_dict
+    )
+
+    del log_dict["modules"]
+
+    return ui_payload, log_dict
+
+
+def run_plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
     plan_filename = "action_" + action_id + ".plan"
 
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
@@ -401,11 +422,7 @@ def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
         return_log_content=True,
     )
 
-    ui_payload = terraform_local.write_UI_payloads(tenant_key_main, tenant_key_target, log_dict)
-
-    del log_dict['modules']
-    
-    return ui_payload, log_dict
+    return log_dict
 
 
 def apply_all(run_info, tenant_key_main, tenant_key_target, action_id):
@@ -445,11 +462,11 @@ def delete_old_dir(path, max_retries=5, delay=2, label="Terraform"):
     try:
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
-                file_path = os.path.join(dirpath, filename)
+                file_path = dirs.forward_slash_join(dirpath, filename)
                 retry_on_permission_error(os.unlink, file_path, max_retries, delay)
 
             for dirname in dirnames:
-                dir_path = os.path.join(dirpath, dirname)
+                dir_path = dirs.forward_slash_join(dirpath, dirname)
                 retry_on_permission_error(shutil.rmtree, dir_path, max_retries, delay)
 
     except FileNotFoundError as e:

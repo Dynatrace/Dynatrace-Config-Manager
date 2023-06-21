@@ -87,7 +87,8 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                         return status
                     }
                 },
-                'entity_list': null
+                'entity_list': null,
+                'module_dir ': null,
             }
 
             for (const [column_key, columnFunction] of Object.entries(columnParam)) {
@@ -148,13 +149,19 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                 }
                 const { module: moduleUpdate } = row
                 const { key_id: uniqueNameUpdate } = columnUpdate
+                const { module_dir: moduleDirUpdate } = columnUpdate
+
+                let moduleDir = moduleUpdate
+                if(moduleDirUpdate && moduleDirUpdate !== "") {
+                    moduleDir = moduleDirUpdate
+                }
 
                 if (moduleUpdate && uniqueNameUpdate) {
 
                     nbUpdate += 1
                     terraformParams.push({
                         'module': "dynatrace_" + moduleUpdate,
-                        'module_trimmed': moduleUpdate,
+                        'module_trimmed': moduleDir,
                         'unique_name': uniqueNameUpdate,
                     })
 
