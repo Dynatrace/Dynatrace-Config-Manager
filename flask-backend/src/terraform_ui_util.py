@@ -1,5 +1,7 @@
 import re
+
 import process_migrate_config
+import terraform_local
 
 # Regular expression pattern to match ANSI escape codes
 tf_module_pattern = re.compile(r"[^m]*module\.([^ .]*)\.([^ .]*)\.([^ .:]*)[\s:]*")
@@ -93,31 +95,33 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         )
         return
 
-    module_trimmed = match.group(1)
-    module = match.group(2)
+    module_dir = match.group(1)
+    module_name = match.group(2)
     resource = match.group(3)
+    
+    module_name_trimmed = terraform_local.trim_module_name(module_name)
 
-    if module_trimmed in modules_dict:
+    if module_name_trimmed in modules_dict:
         pass
     else:
-        modules_dict[module_trimmed] = {}
+        modules_dict[module_name_trimmed] = {}
 
-    if resource in modules_dict[module_trimmed]:
+    if resource in modules_dict[module_name_trimmed]:
         if (
-            modules_dict[module_trimmed][resource]["action"]
+            modules_dict[module_name_trimmed][resource]["action"]
             == process_migrate_config.ACTION_IDENTICAL
         ):
-            module_lines = modules_dict[module_trimmed][resource]['module_lines'] + [""] + module_lines
+            module_lines = modules_dict[module_name_trimmed][resource]['module_lines'] + [""] + module_lines
         else:
-            print("ERROR: Duplicate resource", module, module_trimmed, resource)
+            print("ERROR: Duplicate resource", module_name, module_name_trimmed, resource)
 
     action_code = None
     if action is not None:
         action_code = process_migrate_config.ACTION_MAP[action]
 
-    modules_dict[module_trimmed][resource] = {
-        "module": module,
-        "module_trimmed": module_trimmed,
+    modules_dict[module_name_trimmed][resource] = {
+        "module_name_trimmed": module_name_trimmed,
+        "module_dir": module_dir,
         "resource": resource,
         "action": action,
         "action_code": action_code,

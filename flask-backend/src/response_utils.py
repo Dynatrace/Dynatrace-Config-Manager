@@ -10,6 +10,9 @@ def call_and_get_response(call_process, run_info=None):
 
     try:
         result = call_process()
+        
+        if(result is None):
+            result = {}
 
         if (run_info is None):
             pass

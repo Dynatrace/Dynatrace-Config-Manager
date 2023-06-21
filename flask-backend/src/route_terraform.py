@@ -58,7 +58,7 @@ def terraform_plan_all():
     tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
     action_id = flask_utils.get_arg("action_id")
-    run_info = {"aggregate_error": [], "return_status": 200}
+    run_info = {"aggregate_error": [], "return_status": 200, "enable_omit_destroy": False}
 
     def call_process():
         ui_payload, log_dict = terraform_cli.plan_all(

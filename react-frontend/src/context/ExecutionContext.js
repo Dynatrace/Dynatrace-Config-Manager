@@ -69,7 +69,7 @@ function reducer(state, action) {
 }
 
 function initState() {
-    return { useCache: false }
+    return { enableDashboards: false, enableOmitDestroy: false }
 }
 
 export function useExecutionOptionsContextReducer() {
@@ -91,13 +91,14 @@ function useContextState() {
 export function useExecutionOptionsStateValue() {
     const contextState = useContextState()
 
-    const useCache = contextState['useCache']
+    const enableDashboards = contextState['enableDashboards'] === true
+    const enableOmitDestroy = contextState['enableOmitDestroy'] === true
 
-    return { useCache }
+    return { enableDashboards, enableOmitDestroy }
 }
 
 export function useExecutionOptionsState() {
-    const { useCache } = useExecutionOptionsStateValue()
+    const { enableDashboards, enableOmitDestroy } = useExecutionOptionsStateValue()
     const contextDispatch = useContextDispatch()
 
     const setProperty = (property, value) => {
@@ -105,10 +106,15 @@ export function useExecutionOptionsState() {
         contextDispatch(action)
     }
 
-    const setUseCache = (value) => {
-        setProperty("useCache", value)
+    const setEnableDashboards = (value) => {
+        setProperty("enableDashboards", value)
     }
 
 
-    return { useCache, setUseCache }
+    const setEnableOmitDestroy = (value) => {
+        setProperty("enableOmitDestroy", value)
+    }
+
+
+    return { enableDashboards, enableOmitDestroy, setEnableDashboards, setEnableOmitDestroy }
 }

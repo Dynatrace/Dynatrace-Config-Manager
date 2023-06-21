@@ -15,10 +15,11 @@ def get_file_path(dir_path, filename, file_extension=".json"):
 
     if is_path_too_long(path):
         filename = get_filename_hash(filename)
+        print("ERROR: PATH TOO LONG: ", path, "USING HASH: ", filename)
         path = forward_slash_join(dir_path, filename + file_extension)
 
-        if is_path_too_long:
-            raise OverflowError("Path exceeds maximum length (Windows protection)")
+        if is_path_too_long(path):
+            raise OverflowError("Path exceeds maximum length (Windows protection): " + path)
 
     return path
 
@@ -106,6 +107,7 @@ def list_files_in_dir(path):
 
 def forward_slash_join(path, *paths):
     path = os.path.join(path, *paths)
+    path = os.path.abspath(path)
     return to_forward_slash(path)
 
 

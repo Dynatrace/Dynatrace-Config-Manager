@@ -22,6 +22,7 @@ def gen_monaco_env(config, tenant_data):
 
 def handle_subprocess_error(run_info, result, command, options, stdout, stderr, log_label):
     process_utils.add_aggregate_error(run_info, f"The command {command}{options} did not fail, but did not finish")
+    run_info["return_status"] = 400
     if (stdout != ""):
         result['stdout'] = stdout
     if (stderr != ""):
