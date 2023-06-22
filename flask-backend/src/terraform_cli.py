@@ -244,9 +244,6 @@ def terraform_execute(
         log_filename, config_dir, is_config_creation, terraform_path
     )
 
-    print("IN : ", log_filename, config_dir, is_config_creation, terraform_path)
-    print("Out: ", terraform_path_output, export_output_dir, log_file_name)
-
     my_env = get_env_vars(
         run_info,
         tenant_data_current,
