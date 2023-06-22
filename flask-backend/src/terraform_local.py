@@ -7,10 +7,12 @@ import json
 import monaco_local_entity
 import process_migrate_config
 import terraform_cli
+import terraform_state
 
-state_filename = "terraform.tfstate"
 OVERALL_DIFF_DIR = "overall"
 UI_PAYLOAD_FILENAME = "uiPayload"
+MULTI_TARGET_DIR = "multi_target"
+MODULES_DIR = "modules"
 
 
 def get_path_overall_diff(config_main, config_target):
@@ -19,78 +21,10 @@ def get_path_overall_diff(config_main, config_target):
     )
 
 
-def merge_state_into_config(tenant_key_main, tenant_key_target):
-    config_main = credentials.get_api_call_credentials(tenant_key_main)
-    config_target = credentials.get_api_call_credentials(tenant_key_target)
-
-    shutil.copy2(
-        dirs.forward_slash_join(
-            terraform_cli.get_path_terraform_state_gen(config_main, config_target),
-            state_filename,
-        ),
-        dirs.forward_slash_join(
-            terraform_cli.get_path_terraform_config(config_main, config_target),
-            state_filename,
-        ),
+def get_path_terraform_multi_target(config_main, config_target):
+    return dirs.prep_dir(
+        terraform_cli.get_path_terraform(config_main, config_target), MULTI_TARGET_DIR
     )
-
-
-def remove_destroy_from_state(tenant_key_main, tenant_key_target, log_dict):
-    print("remove_destroy_from_state")
-    config_main = credentials.get_api_call_credentials(tenant_key_main)
-    config_target = credentials.get_api_call_credentials(tenant_key_target)
-
-    state, path = load_state(
-        config_main, config_target, terraform_cli.get_path_terraform_config
-    )
-    new_resources = []
-
-    if ("resources") in state:
-        pass
-    else:
-        return False
-
-    for resource in state["resources"]:
-        type_trimmed = trim_module_name(resource["type"])
-        name = resource["name"]
-        if (
-            type_trimmed in log_dict["modules"]
-            and name in log_dict["modules"][type_trimmed]
-            and "action" in log_dict["modules"][type_trimmed][name]
-            and log_dict["modules"][type_trimmed][name]["action"]
-            == process_migrate_config.ACTION_DELETE
-        ):
-            print("Removing from state: ", type_trimmed, name)
-            continue
-
-        new_resources.append(resource)
-
-    state["resources"] = new_resources
-
-    with open(path, "w") as f:
-        f.write(json.dumps(state))
-
-    return True
-
-
-def trim_module_name(module_name):
-    module_name_trimmed = module_name
-    prefix = "dynatrace_"
-
-    if module_name.startswith(prefix):
-        module_name_trimmed = module_name[len(prefix) :]
-
-    return module_name_trimmed
-
-
-def load_state(config_main, config_target, path_func):
-    path = dirs.forward_slash_join(
-        path_func(config_main, config_target), "terraform.tfstate"
-    )
-
-    state = monaco_local_entity.get_cached_data(path, file_expected=False)
-
-    return state, path
 
 
 def get_address_map(tenant_key_main, tenant_key_target):
@@ -242,3 +176,153 @@ def load_plan_all_resource_diff(
         lines = f.readlines()
 
     return lines
+
+
+PROVIDERS_FILES = "___providers___.tf"
+
+
+def plan_multi_target(
+    run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
+):
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+    path = get_path_terraform_multi_target(config_main, config_target)
+    terraform_cli.delete_old_dir(path, label="multi_target")
+    path_modules = dirs.prep_dir(path, MODULES_DIR)
+
+    path_config = terraform_cli.get_path_terraform_config(config_main, config_target)
+    path_config_modules = dirs.prep_dir(path_config, MODULES_DIR)
+
+    module_infos = {}
+
+    for param in terraform_params:
+        module = param["module"]
+        module_dir = param["module_trimmed"]
+        unique_name = param["unique_name"]
+        print("params: ", module_dir, unique_name)
+
+        if module_dir in module_infos:
+            pass
+        else:
+            path_module = dirs.prep_dir(path_modules, module_dir)
+            path_config_module = dirs.prep_dir(path_config_modules, module_dir)
+            module_infos[module_dir] = {
+                "path": path_module,
+                "path_config": path_config_module,
+                "unique_names": [],
+            }
+
+            shutil.copy2(
+                dirs.forward_slash_join(path_config_module, PROVIDERS_FILES),
+                dirs.forward_slash_join(path_module, PROVIDERS_FILES),
+            )
+
+        module_infos[module_dir]["unique_names"].append(unique_name)
+
+    module_to_remove = {}
+
+    main_tf_lines = []
+
+    for module_dir, module_info in module_infos.items():
+        path_module = module_info["path"]
+        path_config_module = module_info["path_config"]
+        unique_names = module_info["unique_names"]
+
+        main_tf_lines.append('module "' + module_dir + '" {')
+        main_tf_lines.append('  source = "./modules/' + module_dir + '"')
+        main_tf_lines.append("}")
+
+        module_to_remove[module_dir] = {"unique_names": []}
+
+        for dirpath, dirnames, filenames in os.walk(path_config_module):
+            for filename in filenames:
+                file_path = dirs.forward_slash_join(dirpath, filename)
+                output_path = dirs.forward_slash_join(path_module, filename)
+
+                has_variable, name = copy_resource_conditional(
+                    file_path, output_path, unique_names
+                )
+
+                if has_variable:
+                    module_to_remove[module_dir]["unique_names"].append(name)
+                    print("has variable: ", module_dir, name)
+
+    with open(dirs.forward_slash_join(path, "main.tf"), "w") as output_file:
+        output_file.writelines(main_tf_lines)
+
+    def remove_non_targetable(type_trimmed, name):
+        if (
+            type_trimmed in module_to_remove
+            and name in module_to_remove[type_trimmed]["unique_names"]
+        ):
+            return True
+
+        if (
+            type_trimmed in module_infos
+            and name in module_infos[type_trimmed]["unique_names"]
+        ):
+            return False
+
+        return True
+
+    terraform_state.remove_items_from_state(
+        tenant_key_main,
+        tenant_key_target,
+        terraform_cli.get_path_terraform_config,
+        remove_non_targetable,
+        get_path_terraform_multi_target,
+    )
+
+    item = ".terraform/"
+
+    shutil.copytree(
+        dirs.forward_slash_join(path_config, item),
+        dirs.forward_slash_join(path, item),
+    )
+
+    items_to_copy = [PROVIDERS_FILES, ".terraform.lock.hcl"]
+
+    for item in items_to_copy:
+        shutil.copy2(
+            dirs.forward_slash_join(path_config, item),
+            dirs.forward_slash_join(path, item),
+        )
+
+    return terraform_cli.run_plan_all(
+        run_info,
+        tenant_key_main,
+        tenant_key_target,
+        action_id,
+        config_dir=MULTI_TARGET_DIR,
+    )
+
+
+def copy_resource_conditional(file_path, output_path, strings_wanted):
+    dt_variable = "${var.dynatrace_"
+
+    has_variable = False
+    do_copy = False
+    name = ""
+
+    try:
+        with open(file_path, "r") as file:
+            contents = file.read()
+            for string in strings_wanted:
+                if string in contents:
+                    do_copy = True
+                    name = string
+                    break
+
+            if dt_variable in contents:
+                do_copy = False
+                has_variable = True
+
+    except FileNotFoundError:
+        print("File not found.")
+
+    if do_copy:
+        with open(output_path, "w") as output_file:
+            output_file.write(contents)
+
+    return has_variable, name

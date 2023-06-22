@@ -33,15 +33,15 @@ export function useEnhancedBackendSpecific(entityFilter) {
 
 export function useEnhancedBackendTerraform(terraformParams, getActionId) {
 
-    const completeSearchParams = useCompleteSearchParamsTerraform(terraformParams, getActionId)
+    const completeSearchParams = useCompleteSearchParamsTerraform(getActionId)
 
-    const enhancedBackendFunctions = useEnhancedBackendFunctions(completeSearchParams)
+    const enhancedBackendFunctions = useEnhancedBackendFunctions(completeSearchParams, terraformParams)
 
     return enhancedBackendFunctions
 
 }
 
-export function useEnhancedBackendFunctions(completeSearchParams) {
+export function useEnhancedBackendFunctions(completeSearchParams, payloadTerraform) {
 
     const enhancedBackendFunctions = useMemo(() => {
 
@@ -52,7 +52,7 @@ export function useEnhancedBackendFunctions(completeSearchParams) {
             },
             "backendPost": (api_method, payload, searchParams, thenFunction) => {
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
-                return backendPost(api_method, payload, completedSearchParams, thenFunction)
+                return backendPost(api_method, payloadTerraform, completedSearchParams, thenFunction)
 
             },
             "backendDelete": (api_method, payload, searchParams, thenFunction) => {
@@ -64,7 +64,7 @@ export function useEnhancedBackendFunctions(completeSearchParams) {
 
         return functions
 
-    }, [completeSearchParams])
+    }, [completeSearchParams, payloadTerraform])
 
     return enhancedBackendFunctions
 
@@ -182,7 +182,7 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
 
 }
 
-function useCompleteSearchParamsTerraform(terraformParams, getActionId) {
+function useCompleteSearchParamsTerraform(getActionId) {
 
     const completeSearchParams = useMemo(() => {
         const completeSearchParamsFunction = (api_method, searchParams) => {
@@ -193,12 +193,6 @@ function useCompleteSearchParamsTerraform(terraformParams, getActionId) {
                 completedSearchParams = { ...searchParams }
             }
 
-            if (terraformParams) {
-
-                completedSearchParams['terraform_params'] = JSON.stringify(terraformParams)
-
-            }
-
             const action_id = getActionId()
             completedSearchParams['action_id'] = action_id
 
@@ -207,7 +201,7 @@ function useCompleteSearchParamsTerraform(terraformParams, getActionId) {
         }
 
         return completeSearchParamsFunction
-    }, [terraformParams, getActionId])
+    }, [getActionId])
 
     return completeSearchParams
 

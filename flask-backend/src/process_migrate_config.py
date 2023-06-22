@@ -1,17 +1,18 @@
+import json
+
+import api_v2
 import compare
-import dirs
+import credentials
+import entity_utils
 import monaco_cli_match
 import process_match_entities
 import process_match_settings_2_0
 import process_utils
-import credentials
-import api_v2
-import json
-import monaco_local_entity
 import terraform_cli
 import terraform_local
+import terraform_state
 import ui_api_entity_config
-import entity_utils
+
 from exception import SettingsValidationError
 
 ACTION_ADD = "Add"
@@ -79,10 +80,17 @@ def get_match_dict(
     )
 
     if run_legacy_match:
-        print("Using Legacy Matching")
+        print("Legacy Entity Matching Disabled")
+        process_utils.add_aggregate_error(
+            run_info,
+            f"ERROR: Entities not downloaded?",
+        )
+        run_info["return_status"] = 400
+        """
         matched_entities_dict, entities_dict = process_match_entities.get_entities_dict(
             run_info, active_rules, context_params
         )
+        """
 
     return matched_entities_dict, entities_dict, run_legacy_match
 
@@ -111,8 +119,13 @@ def get_config_dict(
         if run_info["forced_match"]:
             all_tenant_config_dict = config_function(run_info)
         else:
-            print("TODO: Send Error to the UI")
             print("Legacy Config Matching disabled for complete tenant matching")
+
+            process_utils.add_aggregate_error(
+                run_info,
+                f"ERROR: Entities or Configs not downloaded?",
+            )
+            run_info["return_status"] = 400
             run_legacy_match = False
 
     else:
@@ -132,7 +145,7 @@ def get_config_dict(
                 run_info, tenant_key_main, tenant_key_target
             )
             terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
-            terraform_local.merge_state_into_config(tenant_key_main, tenant_key_target)
+            terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
             ui_payload, log_dict = terraform_cli.plan_all(
                 run_info, tenant_key_main, tenant_key_target, "0"
             )

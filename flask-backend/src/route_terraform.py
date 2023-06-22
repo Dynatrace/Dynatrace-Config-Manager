@@ -13,14 +13,31 @@ blueprint_route_terraform = Blueprint("blueprint_route_terraform", __name__)
 def terraform_plan_target():
     tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
-    terraform_params = flask_utils.get_arg_json("terraform_params")
     action_id = flask_utils.get_arg("action_id")
+
+    terraform_params = request.get_json()
+
     run_info = {"aggregate_error": [], "return_status": 200}
 
     def call_process():
-        log_dict = terraform_cli.plan_target(
-            run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
-        )
+        log_dict = {}
+
+        if len(terraform_params) > 40:
+            log_dict = terraform_local.plan_multi_target(
+                run_info,
+                tenant_key_main,
+                tenant_key_target,
+                terraform_params,
+                action_id,
+            )
+        else:
+            log_dict = terraform_cli.plan_target(
+                run_info,
+                tenant_key_main,
+                tenant_key_target,
+                terraform_params,
+                action_id,
+            )
 
         result = {}
         result["log_dict"] = log_dict
@@ -35,14 +52,31 @@ def terraform_plan_target():
 def terraform_apply_target():
     tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
-    terraform_params = flask_utils.get_arg_json("terraform_params")
     action_id = flask_utils.get_arg("action_id")
+
+    terraform_params = request.get_json()
+
     run_info = {"aggregate_error": [], "return_status": 200}
 
     def call_process():
-        log_dict = terraform_cli.apply_target(
-            run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
-        )
+        log_dict = None
+
+        if len(terraform_params) > 40:
+            log_dict = terraform_cli.apply_multi_target(
+                run_info,
+                tenant_key_main,
+                tenant_key_target,
+                terraform_params,
+                action_id,
+            )
+        else:
+            log_dict = terraform_cli.apply_target(
+                run_info,
+                tenant_key_main,
+                tenant_key_target,
+                terraform_params,
+                action_id,
+            )
 
         result = {}
         result["log_dict"] = log_dict
@@ -58,7 +92,11 @@ def terraform_plan_all():
     tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
     action_id = flask_utils.get_arg("action_id")
-    run_info = {"aggregate_error": [], "return_status": 200, "enable_omit_destroy": False}
+    run_info = {
+        "aggregate_error": [],
+        "return_status": 200,
+        "enable_omit_destroy": False,
+    }
 
     def call_process():
         ui_payload, log_dict = terraform_cli.plan_all(
