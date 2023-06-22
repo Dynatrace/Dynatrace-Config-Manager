@@ -197,10 +197,9 @@ def plan_multi_target(
     module_infos = {}
 
     for param in terraform_params:
-        module = param["module"]
+        # module = param["module"]
         module_dir = param["module_trimmed"]
         unique_name = param["unique_name"]
-        print("params: ", module_dir, unique_name)
 
         if module_dir in module_infos:
             pass
@@ -246,7 +245,6 @@ def plan_multi_target(
 
                 if has_variable:
                     module_to_remove[module_dir]["unique_names"].append(name)
-                    print("has variable: ", module_dir, name)
 
     with open(dirs.forward_slash_join(path, "main.tf"), "w") as output_file:
         output_file.writelines(main_tf_lines)
