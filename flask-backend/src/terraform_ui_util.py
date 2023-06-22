@@ -1,7 +1,6 @@
 import re
 
 import process_migrate_config
-import terraform_local
 
 # Regular expression pattern to match ANSI escape codes
 tf_module_pattern = re.compile(r"[^m]*module\.([^ .]*)\.([^ .]*)\.([^ .:]*)[\s:]*")
@@ -98,8 +97,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
     module_dir = match.group(1)
     module_name = match.group(2)
     resource = match.group(3)
-    
-    module_name_trimmed = terraform_local.trim_module_name(module_name)
+
+    module_name_trimmed = trim_module_name(module_name)
 
     if module_name_trimmed in modules_dict:
         pass
@@ -111,9 +110,15 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
             modules_dict[module_name_trimmed][resource]["action"]
             == process_migrate_config.ACTION_IDENTICAL
         ):
-            module_lines = modules_dict[module_name_trimmed][resource]['module_lines'] + [""] + module_lines
+            module_lines = (
+                modules_dict[module_name_trimmed][resource]["module_lines"]
+                + [""]
+                + module_lines
+            )
         else:
-            print("ERROR: Duplicate resource", module_name, module_name_trimmed, resource)
+            print(
+                "ERROR: Duplicate resource", module_name, module_name_trimmed, resource
+            )
 
     action_code = None
     if action is not None:
@@ -127,3 +132,13 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         "action_code": action_code,
         "module_lines": module_lines,
     }
+
+
+def trim_module_name(module_name):
+    module_name_trimmed = module_name
+    prefix = "dynatrace_"
+
+    if module_name.startswith(prefix):
+        module_name_trimmed = module_name[len(prefix) :]
+
+    return module_name_trimmed

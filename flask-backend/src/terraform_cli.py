@@ -5,11 +5,13 @@ import time
 
 import credentials
 import dirs
+import process_migrate_config
 import process_utils
 import tenant
 import terraform_cli_env
 import terraform_cli_cmd
 import terraform_local
+import terraform_state
 import terraform_ui_util
 import util_remove_ansi
 
@@ -159,7 +161,9 @@ def execute_terraform_cmd(
     execution_log_file_name = log_file_name + ".log"
 
     log_dict = {}
-    log_file_path = dirs.forward_slash_join(terraform_path, execution_log_file_name)
+    log_file_path = dirs.forward_slash_join(
+        terraform_path, execution_log_file_name, absolute=False
+    )
     print(
         log_label,
         "running, see ",
@@ -199,7 +203,7 @@ def execute_terraform_cmd(
         if os.path.exists(log_file_path):
             cleaned_file_name = log_file_name + "_cleaned" + ".log"
             cleaned_log_file_path = dirs.forward_slash_join(
-                terraform_path, cleaned_file_name
+                terraform_path, cleaned_file_name, absolute=False
             )
 
             log_content, log_content_cleaned = util_remove_ansi.remove_ansi_colors(
@@ -240,6 +244,9 @@ def terraform_execute(
         log_filename, config_dir, is_config_creation, terraform_path
     )
 
+    print("IN : ", log_filename, config_dir, is_config_creation, terraform_path)
+    print("Out: ", terraform_path_output, export_output_dir, log_file_name)
+
     my_env = get_env_vars(
         run_info,
         tenant_data_current,
@@ -271,7 +278,7 @@ def gen_exec_path(log_filename, config_dir, is_config_creation, terraform_path):
     return (
         dirs.forward_slash_join(terraform_path, config_dir),
         None,
-        dirs.forward_slash_join("..", log_filename),
+        dirs.forward_slash_join("..", log_filename, absolute=False),
     )
 
 
@@ -369,7 +376,7 @@ def apply_target(
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
-    return terraform_execute(
+    log_dict = terraform_execute(
         run_info,
         tenant_key_main,
         tenant_key_target,
@@ -382,13 +389,58 @@ def apply_target(
         return_log_content=True,
     )
 
+    return log_dict
+
+
+def apply_multi_target(
+    run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
+):
+    plan_filename = "action_" + action_id + ".plan"
+
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
+
+    log_dict = terraform_execute(
+        run_info,
+        tenant_key_main,
+        tenant_key_target,
+        tenant_key_target,
+        cmd_list,
+        "apply_multi_target_" + "action_" + action_id,
+        "apply Multi Target",
+        terraform_local.MULTI_TARGET_DIR,
+        use_cache=False,
+        return_log_content=True,
+    )
+
+    terraform_state.update_state_with_multi_target_state(
+        run_info, tenant_key_main, tenant_key_target
+    )
+
+    return log_dict
+
 
 def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
     log_dict = run_plan_all(run_info, tenant_key_main, tenant_key_target, action_id)
 
+    def remove_destroy(type_trimmed, name):
+        if (
+            type_trimmed in log_dict["modules"]
+            and name in log_dict["modules"][type_trimmed]
+            and "action" in log_dict["modules"][type_trimmed][name]
+            and log_dict["modules"][type_trimmed][name]["action"]
+            == process_migrate_config.ACTION_DELETE
+        ):
+            return True
+
+        return False
+
     if run_info["enable_omit_destroy"] == True:
-        re_run_plan = terraform_local.remove_destroy_from_state(
-            tenant_key_main, tenant_key_target, log_dict
+        re_run_plan = terraform_state.remove_items_from_state(
+            tenant_key_main,
+            tenant_key_target,
+            get_path_terraform_config,
+            remove_destroy,
+            get_path_terraform_config,
         )
         if re_run_plan:
             log_dict = run_plan_all(
@@ -404,10 +456,25 @@ def plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
     return ui_payload, log_dict
 
 
-def run_plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
-    plan_filename = "action_" + action_id + ".plan"
+def run_plan_all(
+    run_info,
+    tenant_key_main,
+    tenant_key_target,
+    action_id,
+    config_dir=CONFIG_DIR,
+    multi_target=False,
+):
+    filename = "action_" + action_id
+    fileType = ".plan"
 
+    plan_filename = dirs.get_file_path(".", filename, fileType, absolute=False)
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
+
+    log_filename_prefix = "plan_all_"
+    log_label = "Plan All"
+    if multi_target:
+        log_filename_prefix = "plan_multi_target_"
+        log_label = "Plan Multi Target"
 
     log_dict = terraform_execute(
         run_info,
@@ -415,9 +482,9 @@ def run_plan_all(run_info, tenant_key_main, tenant_key_target, action_id):
         tenant_key_target,
         tenant_key_target,
         cmd_list,
-        "plan_all_" + "action_" + action_id,
-        "Plan All",
-        CONFIG_DIR,
+        log_filename_prefix + "action_" + action_id,
+        log_label,
+        config_dir,
         use_cache=False,
         return_log_content=True,
     )

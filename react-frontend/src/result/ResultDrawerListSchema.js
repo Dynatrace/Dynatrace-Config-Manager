@@ -16,7 +16,7 @@ export default function ResultDrawerListSchema({ status, list, nbMax, keys, chec
                 control={<Checkbox checked={checkAllStatus === status}
                     onChange={() => { handleSetCheckAllStatus(status, keys) }}
                     icon={<RadioButtonUncheckedIcon />} checkedIcon={<RadioButtonCheckedIcon />}
-                    disabled={keys.length > NB_MAX_TARGETS} />}
+                />}
                 label={"Select All" + genTooManyLabel(keys.length)} />
         </FormControl>
     )
@@ -35,7 +35,7 @@ export default function ResultDrawerListSchema({ status, list, nbMax, keys, chec
 
 export const genTooManyLabel = (genTooManyLabel) => {
     if (genTooManyLabel > NB_MAX_TARGETS) {
-        return " (DISABLED: too many items)"
+        return " ( More than 40 items: items with dependencies will not be pushed )"
     } else {
         return ""
     }

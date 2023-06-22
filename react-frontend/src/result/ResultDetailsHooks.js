@@ -51,11 +51,15 @@ export function useHandleTerraformCallComplete(actionCompleted, setActionComplet
             }
             newActionCompleted['history'][id]['lastTerraformAction'] = terraformAction
 
+            if (terraformAction === planActionLabel) {
+                newActionCompleted['history'][id]['lastTerraformParams'] = terraformParams
+            }
+
             for (const columnUpdateInfo of Object.values(terraformParams)) {
                 const { module, unique_name: uniqueName } = columnUpdateInfo
 
                 const prefix = "dynatrace_"
-                let module_trimmed = module                
+                let module_trimmed = module
                 if (module_trimmed.startsWith(prefix)) {
                     module_trimmed = module_trimmed.slice(prefix.length)
                 }
@@ -75,7 +79,7 @@ export function useHandleTerraformCallComplete(actionCompleted, setActionComplet
 
             setActionCompleted(newActionCompleted)
 
-            const {ui_payload} = data
+            const { ui_payload } = data
             if (ui_payload) {
                 if (setExtractedData) {
                     setExtractedData(ui_payload)
@@ -89,7 +93,7 @@ export function useHandleTerraformCallComplete(actionCompleted, setActionComplet
 export function useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionId, setLastActionId) {
 
     return React.useCallback((actionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, planAPI, applyAPI) => {
-        
+
         if (module && uniqueName && actionCompleted && actionCompleted[module] && actionCompleted[module][uniqueName]) {
 
             actionId = actionCompleted[module][uniqueName]
@@ -101,6 +105,8 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
         let actionDetails = []
         let updateObjectList = []
+
+        let previousPlanTerraformParams = terraformParams
 
         if (actionId
             && actionId > 0
@@ -122,7 +128,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                     <Typography sx={{ ml: 3 }} color="error.light">{actionInfo['aggregate_error']}</Typography>
                 )
             }
-            
+
             if ('log' in actionInfo) {
 
                 const { is_plan_done, no_changes, apply_complete, modules } = actionInfo['log']
@@ -149,6 +155,11 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
             }
 
+            const { lastTerraformParams } = actionInfoObject
+
+            if (lastTerraformParams) {
+                previousPlanTerraformParams = lastTerraformParams
+            }
 
             const actionList = [planActionLabel, applyActionLabel]
             for (const actionLabel of Object.values(actionList)) {
@@ -158,14 +169,14 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                     continue
                 }
                 const actionInfo = actionInfoObject[actionLabel]
-                
-                if(actionInfo) {
+
+                if (actionInfo) {
                     // pass
                 } else {
                     continue
                 }
                 const { log } = actionInfo
-                if(log) {
+                if (log) {
                     // pass
                 } else {
                     continue
@@ -200,8 +211,8 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 <Box sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={planAPI} terraformParams={terraformParams}
                         handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
-                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" + genTooManyLabel(nbUpdate)} confirm={false} 
-                        disabled={nbUpdate > NB_MAX_TARGETS}/>
+                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" + genTooManyLabel(nbUpdate)} confirm={false}
+                    />
                 </Box>
             )
         }
@@ -210,9 +221,10 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
             const getActionIdApply = () => {
                 return actionId
             }
+
             updateObjectList.push(
                 <Box sx={{ ml: -1 }}>
-                    <TerraformButton terraformAPI={applyAPI} terraformParams={terraformParams}
+                    <TerraformButton terraformAPI={applyAPI} terraformParams={previousPlanTerraformParams}
                         handleChange={handleTerraformCallCompleteApply} getActionId={getActionIdApply}
                         label={"Terraform Apply action_" + actionId + " ( Will apply the plan below, regardless of the current selection )"} confirm={true}
                         disabled={!isPlanDone || isApplyDone} />
@@ -243,7 +255,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
 const genTooManyLabel = (genTooManyLabel) => {
     if (genTooManyLabel > NB_MAX_TARGETS) {
-        return " (DISABLED: too many items)"
+        return " ( More than 40 items: items with dependencies will not be pushed )"
     } else {
         return ""
     }
