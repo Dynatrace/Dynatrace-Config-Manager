@@ -19,6 +19,12 @@ def get_path_configs(config):
 def extract_entities(run_info, tenant_key):
     options_prefix = ["download", "entities"]
     options_suffix = []
+    if run_info["time_from_minutes"] != None:
+        options_suffix.append("--time-from-minutes")
+        options_suffix.append(run_info["time_from_minutes"])
+    if run_info["time_to_minutes"] != None:
+        options_suffix.append("--time-to-minutes")
+        options_suffix.append(run_info["time_to_minutes"])
     get_path_func = get_path_entities
     delete_cache_func = delete_old_cache_entities
     log_label = "entities"

@@ -26,8 +26,9 @@ def get_env_vars_base(tenant_data_target, terraform_path):
         "DYNATRACE_PROVIDER_SOURCE": "dynatrace.com/com/dynatrace",
         "DYNATRACE_PROVIDER_VERSION": terraform_cli.DYNATRACE_PROVIDER_VERSION,
         "DYNATRACE_HEREDOC": "false",
+        "DYNATRACE_NO_REFRESH_ON_IMPORT": "true",
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
-        #"TF_LOG": "TRACE" # DO NOT COMMIT!!!
+        # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
     }
 
     return env_vars
@@ -58,7 +59,7 @@ def get_env_vars_export_extras(
     cache_strict = TERRAFORM_FALSE
     if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
         cache_strict = TERRAFORM_TRUE
-        
+
     enable_dashboards = TERRAFORM_FALSE
     if run_info["enable_dashboards"] != None and run_info["enable_dashboards"] is True:
         enable_dashboards = TERRAFORM_TRUE

@@ -8,7 +8,7 @@ export const TenantListContextState = React.createContext();
 export const TenantListContextDispatch = React.createContext();
 
 function getDefaultTenant() {
-    const tenant = { label: "", headers:"", APIKey: "", url: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, notes: "" }
+    const tenant = { label: "", headers: "", APIKey: "", url: "", clientID: "", accountID: "", clientSecret: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, notes: "" }
     return { ...tenant }
 }
 
@@ -73,12 +73,12 @@ function reducer(state, action) {
             break
         case 'updateTenant':
             newState = { ...state }
-            newState['tenants'][action.key] = {...state['tenants'][action.key]}
+            newState['tenants'][action.key] = { ...state['tenants'][action.key] }
             newState['tenants'][action.key] = action.tenant
             break
         case 'updateTenantProperty':
             newState = { ...state }
-            newState['tenants'][action.key] = {...state['tenants'][action.key]}
+            newState['tenants'][action.key] = { ...state['tenants'][action.key] }
             newState['tenants'][action.key][action.property] = action.value
             break
         default:
@@ -146,10 +146,10 @@ export function useTenantList() {
         });
     }
 
-    const addTenant = (inputTenantData=null) => {
+    const addTenant = (inputTenantData = null) => {
         const newTenantId = maxId + 1
         let tenantData = undefined
-        if(inputTenantData) {
+        if (inputTenantData) {
             tenantData = inputTenantData
         } else {
             tenantData = getDefaultTenant()
@@ -193,6 +193,18 @@ export function useTenant(key) {
             setTenantProperty("headers", value)
         }
 
+        const setTenantClientID = (value) => {
+            setTenantProperty("clientID", value)
+        }
+
+        const setTenantAccountID = (value) => {
+            setTenantProperty("accountID", value)
+        }
+
+        const setTenantClientSecret = (value) => {
+            setTenantProperty("clientSecret", value)
+        }
+
         const setTenantAPIKey = (value) => {
             setTenantProperty("APIKey", value)
         }
@@ -213,7 +225,7 @@ export function useTenant(key) {
             setTenantProperty("notes", value)
         }
 
-        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantNotes }
+        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantClientID, setTenantAccountID, setTenantClientSecret, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantNotes }
     }
     return {}
 }

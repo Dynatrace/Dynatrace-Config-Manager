@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Grid, Paper } from '@mui/material';
 import * as React from 'react';
 import TenantMigrationSelector from '../credentials/TenantMigrationSelector';
 import { useMigrationGridConfig } from '../migrationGrid/useMigrationGridConfig';
@@ -34,11 +34,15 @@ export default function ExtractionPanel() {
     return (
         <React.Fragment>
             <TenantMigrationSelector />
-            <ExecutionOptions/>
-            <MigrateButtonControlled handleChange={() => { }} entityFilter={{ 'applyMigrationChecked': true }} label={"Post-Process extracted files, will delete current cache, do this when extractions are completed (Terraform cli)"} confirm={true} />
-            <Grid container>
-                {extractionGridComponentList}
-            </Grid>
+            <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
+                <ExecutionOptions />
+                <MigrateButtonControlled handleChange={() => { }} entityFilter={{ 'applyMigrationChecked': true }} label={"Post-Process extracted files, will delete current cache, do this when extractions are completed (Terraform cli)"} confirm={true} descLabel={""} />
+            </Paper>
+            <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
+                <Grid container>
+                    {extractionGridComponentList}
+                </Grid>
+            </Paper>
         </React.Fragment>
     );
 }

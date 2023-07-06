@@ -8,7 +8,9 @@ import { genTenantLabel } from '../credentials/TenantSelector';
 import ConfirmAction from '../action/ConfirmAction';
 import { useConfirmAction } from './ConfirmHook';
 
-export default function MigrateButton({ label, handlePost, confirm = false, disabled = false, progressComponent = null, runOnce = false }) {
+export default function MigrateButton({ label, handlePost, confirm = false, disabled = false,
+    progressComponent = null, runOnce = false,
+    descLabel = "Will send API Requests, updating your tenant's configuration." }) {
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
@@ -62,17 +64,22 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
     const confirmDialog = React.useMemo(() => {
 
         if (confirm === true) {
-            const descLabel = "Will send API Requests, updating your tenant's configuration."
+
+            let descLabelShown = descLabel
+            if (descLabelShown === undefined) {
+                descLabelShown = "Will send API Requests, updating your tenant's configuration."
+            }
+
             return (
                 <ConfirmAction open={open} handleClose={handleClose} label={label}
-                    descLabel={descLabel} tenantLabel={tenantLabel} handlePost={handlePost} />
+                    descLabel={descLabelShown} tenantLabel={tenantLabel} handlePost={handlePost} />
             )
         }
 
         return null
 
 
-    }, [confirm, handleClose, handlePost, label, open, tenantLabel])
+    }, [confirm, handleClose, handlePost, label, open, tenantLabel, descLabel])
 
     return (
         <Box sx={{ my: 1 }}>
