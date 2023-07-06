@@ -11,7 +11,7 @@ import { useProgress } from '../progress/ProgressHook';
 
 export default function ExtractButton({ handleChange, api, label,
     descLabel = "This action will OVERWRITE your last extraction, if any.",
-    tenantType = TENANT_KEY_TYPE_MAIN }) {
+    tenantType = TENANT_KEY_TYPE_MAIN, extraSearchParams = {} }) {
 
     const { tenantKey } = useTenantKey(tenantType)
     const { tenant: tenantTarget } = useTenant(tenantKey)
@@ -24,7 +24,7 @@ export default function ExtractButton({ handleChange, api, label,
     const { open, handleClickOpen, handleClose } = useConfirmAction()
 
     const handleExtract = () => {
-        const searchParams = { 'tenant_key': tenantKey, 'use_cache': false }
+        const searchParams = { 'tenant_key': tenantKey, 'use_cache': false, ...extraSearchParams }
         handleChange(null)
 
         setLoading(true)

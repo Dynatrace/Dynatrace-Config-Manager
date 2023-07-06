@@ -14,6 +14,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
     const { tenantKey } = useTenantKey(tenantType)
     const {
         tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey,
+        setTenantClientID, setTenantAccountID, setTenantClientSecret,
         setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification,
         setTenantDisableSystemProxies, setTenantNotes
     } = useTenant(tenantKey)
@@ -64,6 +65,51 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         setTenantAPIKey("")
     }
 
+    const pasteClientID = () => {
+        navigator.clipboard.readText()
+            .then(text => {
+                setTenantClientID(text)
+            })
+            .catch(err => {
+                console.error('Failed to read clipboard contents: ', err);
+            });
+
+    }
+
+    const clearClientID = () => {
+        setTenantClientID("")
+    }
+
+    const pasteAccountID = () => {
+        navigator.clipboard.readText()
+            .then(text => {
+                setTenantAccountID(text)
+            })
+            .catch(err => {
+                console.error('Failed to read clipboard contents: ', err);
+            });
+
+    }
+
+    const clearAccountID = () => {
+        setTenantAccountID("")
+    }
+
+    const pasteClientSecret = () => {
+        navigator.clipboard.readText()
+            .then(text => {
+                setTenantClientSecret(text)
+            })
+            .catch(err => {
+                console.error('Failed to read clipboard contents: ', err);
+            });
+
+    }
+
+    const clearClientSecret = () => {
+        setTenantClientSecret("")
+    }
+
     const handleChangeLabel = (event) => {
         setTenantLabel(event.target.value)
     }
@@ -78,6 +124,18 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
 
     const handleChangeAPIKey = (event) => {
         setTenantAPIKey(event.target.value)
+    }
+
+    const handleChangeClientID = (event) => {
+        setTenantClientID(event.target.value)
+    }
+
+    const handleChangeAccountID = (event) => {
+        setTenantAccountID(event.target.value)
+    }
+
+    const handleChangeClientSecret = (event) => {
+        setTenantClientSecret(event.target.value)
     }
 
     const handleChangeMonacoConcurrentRequests = (event) => {
@@ -146,25 +204,6 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                 </Box>
             </Box>
             <Box sx={{ mt: 2 }}>
-                <Typography>Optional credentials:</Typography>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"headers-text-field" + tenantKey} variant="standard" type="password"
-                                label="UI Headers for unofficial APIs" value={tenant.headers} onChange={handleChangeHeaders} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <IconButton onClick={pasteHeaders}>
-                            <ContentPasteIcon />
-                        </IconButton>
-                        <IconButton onClick={clearHeaders}>
-                            <ClearIcon />
-                        </IconButton>
-                    </React.Fragment>
-                </Box>
-            </Box>
-            <Box sx={{ mt: 2 }}>
                 <Typography>Optional Connection Options:</Typography>
                 <Box sx={{ ml: 2 }}>
                     <React.Fragment>
@@ -195,3 +234,81 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         </Fragment>
     );
 }
+
+
+/*
+
+            <Box sx={{ mt: 2 }}>
+                <Typography>Optional OAuth:</Typography>
+                <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"clientID-text-field" + tenantKey} variant="standard"
+                                label="Client ID" value={tenant.clientID} onChange={handleChangeClientID} />
+                        </FormControl>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <IconButton onClick={pasteClientID}>
+                            <ContentPasteIcon />
+                        </IconButton>
+                        <IconButton onClick={clearClientID}>
+                            <ClearIcon />
+                        </IconButton>
+                    </React.Fragment>
+                </Box>
+                <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"clientSecret-text-field" + tenantKey} variant="standard" type="password"
+                                label="Client Secret" value={tenant.clientSecret} onChange={handleChangeClientSecret} />
+                        </FormControl>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <IconButton onClick={pasteClientSecret}>
+                            <ContentPasteIcon />
+                        </IconButton>
+                        <IconButton onClick={clearClientSecret}>
+                            <ClearIcon />
+                        </IconButton>
+                    </React.Fragment>
+                </Box>
+                <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"accountID-text-field" + tenantKey} variant="standard"
+                                label="Dynatrace Account URN" value={tenant.accountID} onChange={handleChangeAccountID} />
+                        </FormControl>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <IconButton onClick={pasteAccountID}>
+                            <ContentPasteIcon />
+                        </IconButton>
+                        <IconButton onClick={clearAccountID}>
+                            <ClearIcon />
+                        </IconButton>
+                    </React.Fragment>
+                </Box>
+            </Box>
+*/
+
+/*
+<Box sx={{ mt: 2 }}>
+    <Typography>Optional credentials:</Typography>
+    <Box sx={{ ml: 2 }}>
+        <React.Fragment>
+            <FormControl fullWidth>
+                <TextField id={"headers-text-field" + tenantKey} variant="standard" type="password"
+                    label="UI Headers for unofficial APIs" value={tenant.headers} onChange={handleChangeHeaders} />
+            </FormControl>
+        </React.Fragment>
+        <React.Fragment>
+            <IconButton onClick={pasteHeaders}>
+                <ContentPasteIcon />
+            </IconButton>
+            <IconButton onClick={clearHeaders}>
+                <ClearIcon />
+            </IconButton>
+        </React.Fragment>
+    </Box>
+</Box>
+*/
