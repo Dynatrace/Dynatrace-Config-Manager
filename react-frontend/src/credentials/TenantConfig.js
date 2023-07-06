@@ -204,6 +204,41 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                 </Box>
             </Box>
             <Box sx={{ mt: 2 }}>
+                <Typography>Optional Connection Options:</Typography>
+                <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <FormControlLabel control={<Checkbox checked={tenant.disableSSLVerification === true}
+                                onChange={handleChangeDisableSSLVerification} />} label={"Disable SSL Verification"} />
+                        </FormControl>
+                    </React.Fragment>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <FormControlLabel control={<Checkbox checked={tenant.disableSystemProxies === true}
+                                onChange={handleChangeDisableSystemProxies} />} label={"Disable Proxies (HTTP_PROXY & HTTPS_PROXY)"} />
+                        </FormControl>
+                    </React.Fragment>
+                </Box>
+            </Box>
+            <Box sx={{ mt: 2 }}>
+                <Typography>Other:</Typography>
+                <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"notes-text-field" + tenantKey} variant="standard"
+                                label="Notes" value={tenant.notes} onChange={handleChangeNotes} />
+                        </FormControl>
+                    </React.Fragment>
+                </Box>
+            </Box>
+        </Fragment>
+    );
+}
+
+
+/*
+
+            <Box sx={{ mt: 2 }}>
                 <Typography>Optional OAuth:</Typography>
                 <Box sx={{ ml: 2 }}>
                     <React.Fragment>
@@ -254,38 +289,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                     </React.Fragment>
                 </Box>
             </Box>
-            <Box sx={{ mt: 2 }}>
-                <Typography>Optional Connection Options:</Typography>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <FormControlLabel control={<Checkbox checked={tenant.disableSSLVerification === true}
-                                onChange={handleChangeDisableSSLVerification} />} label={"Disable SSL Verification"} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <FormControlLabel control={<Checkbox checked={tenant.disableSystemProxies === true}
-                                onChange={handleChangeDisableSystemProxies} />} label={"Disable Proxies (HTTP_PROXY & HTTPS_PROXY)"} />
-                        </FormControl>
-                    </React.Fragment>
-                </Box>
-            </Box>
-            <Box sx={{ mt: 2 }}>
-                <Typography>Other:</Typography>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"notes-text-field" + tenantKey} variant="standard"
-                                label="Notes" value={tenant.notes} onChange={handleChangeNotes} />
-                        </FormControl>
-                    </React.Fragment>
-                </Box>
-            </Box>
-        </Fragment>
-    );
-}
-
+*/
 
 /*
 <Box sx={{ mt: 2 }}>
