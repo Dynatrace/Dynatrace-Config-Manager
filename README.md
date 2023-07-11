@@ -6,7 +6,7 @@ Moving configs from tenant to tenant is not a simple task.
 
 ## Getting started
 Click here: [Youtube quick start from Omar Zaal](https://www.youtube.com/watch?v=h__0826oJ5o).
-You can download the tool from the [Latest Release page](https://github.com/dcryans/Dynatrace-Config-Manager/releases/latest)
+<br>You can download the tool from the [Latest Release page](https://github.com/dcryans/Dynatrace-Config-Manager/releases/latest)
 
 ## Access Token hygiene
 This tool is not using a Vault to store your access tokens.
