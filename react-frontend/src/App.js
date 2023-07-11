@@ -1,9 +1,9 @@
 import './App.css';
-import BasicTabs from './navigation/TabPanel.js';
 import AppContext from './context/AppContext';
 import React from 'react';
 import LoadContext from './context/LoadContext';
 import ContextMenu from './menu/ContextMenu';
+import TabPanelMain from './navigation/TabPanelMain';
 //"@dynatrace/openkit-js": "^1.3.0",     <-- package.json
 //import './dynatrace/openkit';
 
@@ -13,7 +13,7 @@ function App() {
       <AppContext>
         <LoadContext>
           <ContextMenu>
-            <BasicTabs />
+            <TabPanelMain />
           </ContextMenu>
         </LoadContext>
       </AppContext>
