@@ -15,5 +15,5 @@ This tool is not using a Vault to store your access tokens.
 ## Support policy
 THIS IS NOT PART OF THE DYNATRACE PRODUCT. It is provided without any representations, warranties, or formal support whatsoever. If you post on this repo's [issues section](https://github.com/dcryans/Dynatrace-Config-Manager/issues) We will try to help you whenever possible.
 
-## Feeling creative
+## Feeling creative?
 You can also [install the tool Locally](https://github.com/dcryans/Dynatrace-Config-Manager/blob/master/documentation/gifs/Install%20Locally.md), but this is only meant for commiters.
