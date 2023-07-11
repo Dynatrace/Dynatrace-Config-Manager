@@ -6,7 +6,7 @@ Moving configs from tenant to tenant is not a simple task.
 
 ## Getting started
 [Download terraform.exe](https://developer.hashicorp.com/terraform/downloads) and [add it to your path](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows)
-Click here: [Youtube quick start from Omar Zaal](https://www.youtube.com/watch?v=h__0826oJ5o).
+<br>Watch the [Youtube quick start from Omar Zaal](https://www.youtube.com/watch?v=h__0826oJ5o).
 <br>You can download the tool from the [Latest Release page](https://github.com/dcryans/Dynatrace-Config-Manager/releases/latest)
 
 ## Access Token hygiene
