@@ -75,5 +75,5 @@ function genLabel(terraform_action_label, actionId) {
         prefix = "Execution details"
     }
 
-    return prefix + " for action_" + actionId
+    return prefix + " for '" + actionId + "'"
 }

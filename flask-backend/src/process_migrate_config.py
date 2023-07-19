@@ -147,7 +147,7 @@ def get_config_dict(
             terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
             terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
             ui_payload, log_dict = terraform_cli.plan_all(
-                run_info, tenant_key_main, tenant_key_target, "0"
+                run_info, tenant_key_main, tenant_key_target
             )
 
         if ui_payload is None:

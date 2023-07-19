@@ -7,6 +7,7 @@ cd ../react-frontend/
 call win_build_dist.bat
 
 cd ..
-7z u -tzip Dynatrace_Config_Manager-win64.zip Dynatrace_Config_Manager-win64 -xr!data -uq0
+cd Dynatrace_Config_Manager-win64
+7z u -tzip ../DTCM_win64.zip * -xr!data -uq0
 
-cd build_scripts
+cd ../build_scripts

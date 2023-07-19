@@ -17,11 +17,28 @@ def write_env_cmd_base(tenant_data_current, terraform_path):
     return command_file_name
 
 
-def get_env_vars_base(tenant_data_target, terraform_path):
+def get_env_vars_base(
+    tenant_data_current,
+    terraform_path,
+    run_info=None,
+    history_log_path="",
+    history_log_prefix="",
+):
+    log_file_path = "terraform-provider-dynatrace.http.log"
+    if history_log_prefix == "":
+        pass
+    else:
+        log_file_path = history_log_prefix + ".http.log"
+
+    if history_log_path == "":
+        pass
+    else:
+        log_file_path = dirs.forward_slash_join(history_log_path, log_file_path)
+
     env_vars = {
-        "DYNATRACE_ENV_URL": tenant_data_target["url"],
-        "DYNATRACE_API_TOKEN": tenant_data_target["APIKey"],
-        "DYNATRACE_LOG_HTTP": "terraform-provider-dynatrace.http.log",
+        "DYNATRACE_ENV_URL": tenant_data_current["url"],
+        "DYNATRACE_API_TOKEN": tenant_data_current["APIKey"],
+        "DYNATRACE_LOG_HTTP": log_file_path,
         "DT_CACHE_FOLDER": dirs.prep_dir(terraform_path, ".cache"),
         "DYNATRACE_PROVIDER_SOURCE": "dynatrace.com/com/dynatrace",
         "DYNATRACE_PROVIDER_VERSION": terraform_cli.DYNATRACE_PROVIDER_VERSION,
@@ -42,11 +59,15 @@ def get_env_vars_export_dict(
     config_target,
     cache_dir,
     terraform_path_output,
+    history_log_path="",
+    history_log_prefix="",
 ):
     env_vars_export_extras = get_env_vars_export_extras(
         run_info, config_main, config_target, cache_dir, terraform_path_output
     )
-    env_vars_base = get_env_vars_base(tenant_data_current, terraform_path)
+    env_vars_base = get_env_vars_base(
+        tenant_data_current, terraform_path, run_info, history_log_path, history_log_prefix
+    )
 
     env_vars = {**env_vars_base, **env_vars_export_extras}
 

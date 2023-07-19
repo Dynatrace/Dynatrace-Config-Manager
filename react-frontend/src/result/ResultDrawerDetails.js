@@ -12,8 +12,8 @@ export default function ResultDrawerDetails() {
     const { result } = useResult(resultKey)
     const [actionCompleted, setActionCompleted] = React.useState({})
     const handleTerraformCallComplete = useHandleTerraformCallComplete(actionCompleted, setActionCompleted)
-    const [lastActionId, setLastActionId] = React.useState({})
-    const genTerraformActionComponent = useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionId, setLastActionId)
+    const [lastActionsInfo, setLastActionsInfo] = React.useState({})
+    const genTerraformActionComponent = useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo)
 
     const detailsComponent = useMemo(() => {
 
