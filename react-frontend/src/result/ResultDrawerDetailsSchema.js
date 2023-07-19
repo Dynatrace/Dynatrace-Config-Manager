@@ -11,6 +11,7 @@ import EfficientAccordion from './EfficientAccordion';
 import TFAnsiText from './TFAnsiText';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import { STATUS_COLORS, STATUS_LABELS, STATUS_PREFIX } from '../extraction/HorizontalStackedBar';
+import { useHistoryState } from '../context/HistoryContext';
 
 const keyColumns = [
     'scope',
@@ -22,6 +23,7 @@ const keyColumns = [
 export default function ResultDrawerDetailsSchema({ contextNode, setContextNode, result, genTerraformActionComponent }) {
 
     const [logList, setLogList] = React.useState([])
+    const { lastActionId, setLastActionId } = useHistoryState()
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
@@ -152,7 +154,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                 const { module_dir: moduleDirUpdate } = columnUpdate
 
                 let moduleDir = moduleUpdate
-                if(moduleDirUpdate && moduleDirUpdate !== "") {
+                if (moduleDirUpdate && moduleDirUpdate !== "") {
                     moduleDir = moduleDirUpdate
                 }
 
@@ -177,10 +179,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                 )
             }
 
-
-            let actionId = 0
-
-            updateComponent = genTerraformActionComponent(actionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, TERRAFORM_PLAN_TARGET, TERRAFORM_APPLY_TARGET);
+            updateComponent = genTerraformActionComponent(lastActionId, setLastActionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, TERRAFORM_PLAN_TARGET, TERRAFORM_APPLY_TARGET);
         }
 
         const drawerList = (
@@ -208,7 +207,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
 
         return [drawerList, resourceInfo, columnLabelList, module, uniqueName, key_id, status]
 
-    }, [contextNode, result, setContextNode, genTerraformActionComponent])
+    }, [contextNode, result, setContextNode, genTerraformActionComponent, lastActionId, setLastActionId])
 
     React.useEffect(() => {
 

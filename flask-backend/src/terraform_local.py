@@ -182,7 +182,7 @@ PROVIDERS_FILES = "___providers___.tf"
 
 
 def plan_multi_target(
-    run_info, tenant_key_main, tenant_key_target, terraform_params, action_id
+    run_info, tenant_key_main, tenant_key_target, terraform_params
 ):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
@@ -291,8 +291,8 @@ def plan_multi_target(
         run_info,
         tenant_key_main,
         tenant_key_target,
-        action_id,
         config_dir=MULTI_TARGET_DIR,
+        multi_target=True,
     )
 
 

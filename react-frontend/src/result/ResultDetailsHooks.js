@@ -4,6 +4,8 @@ import TFLog from './TFLog';
 import TerraformButton from '../terraform/TerraformButton';
 import EfficientAccordion from './EfficientAccordion';
 import { NB_MAX_TARGETS } from './ResultDrawerListSchema';
+import { ALL } from './ResultDrawerDetailsAll';
+import { getTimestampActionId } from '../date/DateFormatter';
 
 
 export const planActionLabel = "Terraform Plan"
@@ -90,14 +92,15 @@ export function useHandleTerraformCallComplete(actionCompleted, setActionComplet
 }
 
 
-export function useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionId, setLastActionId) {
+export function useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo) {
 
-    return React.useCallback((actionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, planAPI, applyAPI) => {
+    return React.useCallback((lastActionId, setActionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, planAPI, applyAPI) => {
 
+        let actionId = ""
         if (module && uniqueName && actionCompleted && actionCompleted[module] && actionCompleted[module][uniqueName]) {
-
             actionId = actionCompleted[module][uniqueName]
-
+        } else if (module === ALL) {
+            actionId = lastActionId
         }
 
         let isPlanDone = false
@@ -109,7 +112,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
         let previousPlanTerraformParams = terraformParams
 
         if (actionId
-            && actionId > 0
+            && actionId !== ""
             && 'history' in actionCompleted
             && actionId in actionCompleted['history']) {
 
@@ -127,6 +130,9 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 actionDetails.push(
                     <Typography sx={{ ml: 3 }} color="error.light">{actionInfo['aggregate_error']}</Typography>
                 )
+                if (terraformActionCompletedLabel === applyActionLabel) {
+                    isApplyDone = true
+                }
             }
 
             if ('log' in actionInfo) {
@@ -193,19 +199,20 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
         if (nbUpdate > 0) {
             const handleTerraformCallCompletePlan = (data) => { handleTerraformCallComplete(data, planActionLabel, terraformParams) }
             const getActionId = () => {
-                const newLastActionId = { ...lastActionId }
-                const newActionIdLabel = "newActionId"
-                if (newActionIdLabel in newLastActionId) {
+                const newLastActionsInfo = { ...lastActionsInfo }
+                const newActionInfoLabel = "newLastActionsInfo"
+                if (newActionInfoLabel in newLastActionsInfo) {
                     // pass
                 } else {
-                    newLastActionId[newActionIdLabel] = 0
+                    newLastActionsInfo[newActionInfoLabel] = lastActionId
                 }
-                newLastActionId[newActionIdLabel]++
-                newLastActionId[module] = newLastActionId[newActionIdLabel]
+                newLastActionsInfo[newActionInfoLabel] = getTimestampActionId()
+                setActionId(newLastActionsInfo[newActionInfoLabel])
+                newLastActionsInfo[module] = newLastActionsInfo[newActionInfoLabel]
 
-                setLastActionId(newLastActionId)
+                setLastActionsInfo(newLastActionsInfo)
 
-                return newLastActionId[newActionIdLabel]
+                return newLastActionsInfo[newActionInfoLabel]
             }
             updateObjectList.push(
                 <Box sx={{ ml: -1 }}>
@@ -216,18 +223,34 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 </Box>
             )
         }
-        if (actionId > 0) {
+        if (actionId !== "") {
             const handleTerraformCallCompleteApply = (data) => { handleTerraformCallComplete(data, applyActionLabel, terraformParams) }
             const getActionIdApply = () => {
                 return actionId
+            }
+
+            let applyDisabled = false
+            let applyParenthesisLabel = "Will apply the plan below, regardless of the current selection"
+
+            if (isApplyDone) {
+                applyDisabled = true
+                applyParenthesisLabel = "Disabled, already applied"
+
+            } else if (!isPlanDone) {
+                applyDisabled = true
+                applyParenthesisLabel = "Disabled, a plan must be run before a plan is applied"
+
+            } else if ("" + lastActionId !== "" + actionId) {
+                applyDisabled = true
+                applyParenthesisLabel = "Disabled, is not the latest action"
             }
 
             updateObjectList.push(
                 <Box sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={applyAPI} terraformParams={previousPlanTerraformParams}
                         handleChange={handleTerraformCallCompleteApply} getActionId={getActionIdApply}
-                        label={"Terraform Apply action_" + actionId + " ( Will apply the plan below, regardless of the current selection )"} confirm={true}
-                        disabled={!isPlanDone || isApplyDone} />
+                        label={"Terraform Apply '" + actionId + "' ( " + applyParenthesisLabel + " )"} confirm={true}
+                        disabled={applyDisabled} />
                 </Box>
             )
         }
@@ -249,7 +272,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
             </React.Fragment>
         )
         return updateComponent
-    }, [actionCompleted, handleTerraformCallComplete, lastActionId, setLastActionId])
+    }, [actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo])
 }
 
 

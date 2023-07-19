@@ -86,6 +86,7 @@ def get_run_info(
     enable_omit_destroy=False,
     time_from_minutes=None,
     time_to_minutes=None,
+    action_id=None,
 ):
     run_info = {}
 
@@ -114,6 +115,7 @@ def get_run_info(
     run_info["enable_omit_destroy"] = enable_omit_destroy
     run_info["time_from_minutes"] = time_from_minutes
     run_info["time_to_minutes"] = time_to_minutes
+    run_info["action_id"] = action_id
 
     return run_info
 
@@ -225,6 +227,9 @@ def is_filtered_out_action(run_info, action):
             return False
 
     return True
+
+def add_action_id_to_filename(run_info, filename):
+    return run_info["action_id"] + "_" + filename
 
 
 def get_tenant_param_dict(

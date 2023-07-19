@@ -160,6 +160,10 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
                     completedSearchParams['pre_migration'] = false
                 }
 
+                if (entityFilter.getActionIdFunc) {
+                    completedSearchParams['action_id'] = entityFilter.getActionIdFunc()
+                }
+
                 const { enableDashboards, enableOmitDestroy } = options
 
                 if (enableDashboards === true) {
