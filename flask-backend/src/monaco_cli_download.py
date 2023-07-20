@@ -6,7 +6,11 @@ import process_utils
 import shutil
 import subprocess
 import tenant
+import terraform_cli
 
+
+def get_path_monaco_logs(config):
+    return dirs.get_tenant_data_cache_sub_dir(config, "monaco_logs")
 
 def get_path_entities(config):
     return dirs.get_tenant_data_cache_sub_dir(config, "ent_mon")
@@ -76,11 +80,19 @@ def extract(
 
     config = credentials.get_api_call_credentials(tenant_key)
     path = get_path_func(config)
+    
+    log_file_path = terraform_cli.add_timestamp_to_log_filename(
+        path, "monaco_download_" + log_label + ".log"
+    )
 
     delete_cache_func(config, path)
+        
+    log_file_path = terraform_cli.add_timestamp_to_log_filename(
+        get_path_monaco_logs(config), "monaco_download_" + log_label + ".log"
+    )
 
     tenant_data = tenant.load_tenant(tenant_key)
-    my_env = monaco_cli.gen_monaco_env(config, tenant_data)
+    my_env = monaco_cli.gen_monaco_env(config, tenant_data, log_file_path)
 
     command = monaco_cli.MONACO_EXEC
     options = options_prefix
@@ -105,7 +117,7 @@ def extract(
         "Downloading",
         log_label,
         "using Monaco, see ",
-        dirs.forward_slash_join(monaco_exec_dir, ".logs"),
+        log_file_path,
     )
 
     try:

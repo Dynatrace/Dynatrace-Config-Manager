@@ -238,7 +238,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
             } else if (!isPlanDone) {
                 applyDisabled = true
-                applyParenthesisLabel = "Disabled, a plan must be run before a plan is applied"
+                applyParenthesisLabel = "Disabled, a plan must be run before it is applied"
 
             } else if ("" + lastActionId !== "" + actionId) {
                 applyDisabled = true

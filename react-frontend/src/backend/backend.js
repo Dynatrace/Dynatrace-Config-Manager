@@ -24,6 +24,8 @@ export const PLAN_ALL_RESOURCE_DIFF = 'terraform_plan_all_resource_diff'
 
 export const TERRAFORM_HISTORY = 'terraform_history_configs'
 
+export const TERRAFORM_LOAD_HISTORY_LIST = 'terraform_load_history_list'
+
 
 export function backendGet(api_method, searchParams, thenFunction, catchFunction) {
 

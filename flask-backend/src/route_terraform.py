@@ -120,9 +120,7 @@ def terraform_apply_all():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        log_dict = terraform_cli.apply_all(
-            run_info, tenant_key_main, tenant_key_target
-        )
+        log_dict = terraform_cli.apply_all(run_info, tenant_key_main, tenant_key_target)
 
         result = {}
         result["log_dict"] = log_dict
@@ -177,10 +175,10 @@ def get_terraform_history_configs():
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
 
     def call_process():
-        execution_options = terraform_history.load_history_configs(
+        history = terraform_history.load_history_configs(
             tenant_key_main, tenant_key_target
         )
-        return execution_options
+        return history
 
     return response_utils.call_and_get_response(call_process)
 
@@ -198,5 +196,20 @@ def save_terraform_history_configs():
             tenant_key_main, tenant_key_target, payload
         )
         return payload
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_load_history_list", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_load_history_list():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+
+    def call_process():
+        history = terraform_history.load_history_list(
+            tenant_key_main, tenant_key_target
+        )
+        return history
 
     return response_utils.call_and_get_response(call_process)

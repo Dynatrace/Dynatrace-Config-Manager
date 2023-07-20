@@ -6,6 +6,7 @@ import MatchPanel from '../match/MatchPanel';
 import Setting from '../setting/Setting';
 import MigratePanel from '../migrate/MigratePanel';
 import TabPanelBar, { genTabConfig } from './TabPanelBar';
+import HistoryPanel from '../history/HistoryPanel';
 
 
 const tabConfig = [
@@ -13,6 +14,7 @@ const tabConfig = [
   genTabConfig("Extract", <ExtractionPanel />),
   //genTabConfig("Match", <MatchPanel />),
   genTabConfig("Manage Configs", <MigratePanel />),
+  genTabConfig("History", <HistoryPanel />),
   //genTabConfig("Settings", <Setting />),
   genTabConfig("Documentation", <DocumPanel />),
 ]
