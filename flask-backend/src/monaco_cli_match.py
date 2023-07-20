@@ -10,6 +10,8 @@ import process_utils
 import tenant
 import yaml
 import subprocess
+import terraform_cli
+import terraform_history
 
 
 def get_path_match_entities(config_main, config_target):
@@ -136,7 +138,15 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
     options = ["match", match_yaml_path]
 
     tenant_data = tenant.load_tenant(tenant_key_target)
-    my_env = monaco_cli.gen_monaco_env(config_target, tenant_data)
+
+    history_log_path = terraform_history.get_terraform_history_log_path(
+        run_info, False, config_main, config_target
+    )
+    log_file_path = terraform_cli.add_timestamp_to_log_filename(
+        history_log_path, "monaco_match_" + match_type + ".log"
+    )
+
+    my_env = monaco_cli.gen_monaco_env(config_target, tenant_data, log_file_path)
 
     try:
         monaco_exec_dir = dirs.get_monaco_exec_dir()
@@ -144,7 +154,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
             "Match",
             match_type,
             "using Monaco, see ",
-            dirs.forward_slash_join(monaco_exec_dir, ".logs"),
+            log_file_path,
         )
         call_result = subprocess.run(
             [command] + options,
@@ -280,7 +290,6 @@ def try_monaco_match_configs(
 ):
     match_type = "configs"
 
-    print("Always re-run config matching (FOR DEBUG PURPOSES):")
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 

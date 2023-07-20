@@ -4,8 +4,10 @@ import ExtractButton from './ExtractButton';
 import { Box, TextField } from '@mui/material';
 import { FormControl } from '@mui/base';
 
+const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
+
 export default function ExtractEntities({ tenantType }) {
-    const [timeFromMinute, setTimeFromMinute] = React.useState(8400)
+    const [timeFromMinute, setTimeFromMinute] = React.useState(timeFrom7WeeksMinutes)
     const [timeToMinute, setTimeToMinute] = React.useState(0)
 
     const handleTimeFromMinute = (event) => {
@@ -30,7 +32,7 @@ export default function ExtractEntities({ tenantType }) {
                             InputLabelProps={{
                                 shrink: true,
                             }}
-                            label="Entities FROM, minutes in the past (Special Use Cases, defaults to 7 weeks, or 8400 minutes)"
+                            label={"Entities FROM, minutes in the past (Special Use Cases, defaults to 7 weeks, or " + timeFrom7WeeksMinutes + " minutes)"}
                             value={timeFromMinute}
                             onChange={handleTimeFromMinute} />
                     </FormControl>

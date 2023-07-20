@@ -300,11 +300,7 @@ def gen_exec_path(
     terraform_path,
 ):
     
-    timestamp = datetime.now()
-    formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
-    
-    seasoned_log_filename = formatted_timestamp + "_" + log_filename
-    log_file_path = dirs.forward_slash_join(log_path, seasoned_log_filename)
+    log_file_path = add_timestamp_to_log_filename(log_path, log_filename)
 
     if is_config_creation:
         return (terraform_path, config_dir, log_file_path)
@@ -314,6 +310,14 @@ def gen_exec_path(
         None,
         log_file_path,
     )
+
+def add_timestamp_to_log_filename(log_path, log_filename):
+    timestamp = datetime.now()
+    formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
+    
+    seasoned_log_filename = formatted_timestamp + "_" + log_filename
+    log_file_path = dirs.forward_slash_join(log_path, seasoned_log_filename)
+    return log_file_path
 
 
 def create_target_current_state(run_info, tenant_key_main, tenant_key_target):

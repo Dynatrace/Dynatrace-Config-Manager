@@ -12,11 +12,17 @@ def get_path_finished_file(type_path):
     return dirs.get_file_path(type_path, 'finished')
 
 
-def gen_monaco_env(config, tenant_data):
+def gen_monaco_env(config, tenant_data, log_path=None):
     my_env = os.environ.copy()
     my_env[TOKEN_NAME] = tenant_data['APIKey']
     my_env['CONCURRENT_REQUESTS'] = str(config['monaco_concurrent_requests'])
     my_env['MONACO_FEAT_ENTITIES'] = "1"
+    
+    if log_path is None:
+        pass
+    else:
+        my_env['MONACO_LOG_PATH'] = log_path
+    
     return my_env
 
 
