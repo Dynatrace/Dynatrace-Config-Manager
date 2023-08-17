@@ -268,7 +268,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
         config_main, config_target
     )
 
-    with open(match_yaml_path, "w") as f:
+    with open(match_yaml_path, "w", encoding='UTF-8') as f:
         f.write(yaml.dump(match_config))
 
     return match_yaml_path

@@ -54,7 +54,7 @@ def get_history_file(tenant_key_main, tenant_key_target):
 def load_history_configs(tenant_key_main, tenant_key_target):
     history_configs = {}
     try:
-        with open(get_history_file(tenant_key_main, tenant_key_target), "r") as file:
+        with open(get_history_file(tenant_key_main, tenant_key_target), "r", encoding='UTF-8') as file:
             history_configs = json.load(file)
     except:
         pass
@@ -63,7 +63,7 @@ def load_history_configs(tenant_key_main, tenant_key_target):
 
 
 def save_history_configs(tenant_key_main, tenant_key_target, payload):
-    with open(get_history_file(tenant_key_main, tenant_key_target), "w") as file:
+    with open(get_history_file(tenant_key_main, tenant_key_target), "w", encoding='UTF-8') as file:
         file.write(json.dumps(payload))
 
 

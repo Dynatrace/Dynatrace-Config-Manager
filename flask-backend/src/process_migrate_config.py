@@ -20,6 +20,7 @@ ACTION_DELETE = "Delete"
 ACTION_UPDATE = "Update"
 ACTION_IDENTICAL = "Identical"
 ACTION_PREEMPTIVE = "Preemptive"
+ACTION_REFRESH = "Refresh"
 
 ACTION_MAP = {
     ACTION_DELETE: "D",
@@ -27,6 +28,7 @@ ACTION_MAP = {
     ACTION_UPDATE: "U",
     ACTION_IDENTICAL: "I",
     ACTION_PREEMPTIVE: "P",
+    ACTION_REFRESH: "R",
 }
 
 

@@ -4,6 +4,7 @@ export const TENANT_LIST = 'tenant_list'
 export const EXECUTION_OPTIONS = 'execution_options'
 export const GLOBAL_SETTINGS = 'global_settings'
 export const ENTITY_FILTER = 'entity_filter'
+export const PROXY_GET_ENV = 'proxy_get_env'
 
 export const TEST_CONNECTION = 'test_connection'
 export const EXTRACT_CONFIGS = 'extract_configs'

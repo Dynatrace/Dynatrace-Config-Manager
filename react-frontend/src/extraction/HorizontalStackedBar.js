@@ -9,6 +9,7 @@ export const STATUS_PREFIX = {
     "U": "~",
     "A": "+",
     "D": "-",
+    "R": "",
     "Other": "?",
 }
 
@@ -17,6 +18,7 @@ export const STATUS_LABELS = {
     "U": "~ Change",
     "A": "+ Add",
     "D": "- Destroy",
+    "R": "Refresh state",
     "Other": "? Other",
 }
 
@@ -25,6 +27,7 @@ export const STATUS_COLORS = {
     "U": "DarkGoldenRod",
     "A": "ForestGreen",
     "D": "FireBrick",
+    "R": "black",
     "Other": "black",
 }
 
@@ -33,6 +36,7 @@ const statusColorsPale = {
     "U": "LemonChiffon",
     "A": "Honeydew",
     "D": "MistyRose",
+    "R": "WhiteSmoke",
     "Other": "WhiteSmoke",
 }
 
