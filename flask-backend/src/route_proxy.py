@@ -11,7 +11,6 @@ blueprint_route_proxy = Blueprint("blueprint_route_proxy", __name__)
 @cross_origin(origin="*")
 def proxy_get_env():
     run_info = {"aggregate_error": [], "return_status": 200}
-    print(run_info)
 
     def call_process():
         return {"proxy": proxy.get_proxy_from_env()}
