@@ -213,3 +213,61 @@ def terraform_load_history_list():
         return history
 
     return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_load_history_item", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_load_history_item():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+
+    def call_process():
+        history = terraform_history.load_history_item(
+            tenant_key_main, tenant_key_target, history_type, history_name
+        )
+
+        return history
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_load_history_item_log", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_load_history_item_log():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+    history_log = flask_utils.get_arg("history_log")
+
+    def call_process():
+        log_dict = terraform_history.load_history_item_log(
+            tenant_key_main, tenant_key_target, history_type, history_name, history_log
+        )
+
+        return log_dict
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_open_history_log_in_vscode", methods=["POST"])
+@cross_origin(origin="*")
+def terraform_open_history_log_in_vscode():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+    history_log = flask_utils.get_arg("history_log")
+
+    def call_process():
+        terraform_history.open_history_item_log_vscode(
+            tenant_key_main, tenant_key_target, history_type, history_name, history_log
+        )
+
+        result = {}
+
+        return result
+
+    return response_utils.call_and_get_response(call_process)

@@ -81,6 +81,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         action = process_migrate_config.ACTION_UPDATE
     elif first_line_cleaned.endswith("will be destroyed"):
         action = process_migrate_config.ACTION_DELETE
+    elif first_line_cleaned.endswith("has changed"):
+        action = process_migrate_config.ACTION_REFRESH
     elif ": Refreshing state..." in first_line_cleaned:
         action = process_migrate_config.ACTION_IDENTICAL
 

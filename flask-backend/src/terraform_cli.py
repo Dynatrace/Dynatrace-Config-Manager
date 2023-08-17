@@ -24,6 +24,7 @@ CACHE_DIR = "cache"
 PLAN_FILE = "terraform.plan"
 STATE_GEN_DIR = "state_gen"
 CONFIG_DIR = "config"
+CLEANED_SUFFIX = "_cleaned"
 
 
 def get_path_terraform(config_main, config_target):
@@ -112,13 +113,16 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
     if pre_migration:
         pass
     else:
-        vscodeExecutable = "code.cmd"
-        try:
-            subprocess.Popen(
-                [vscodeExecutable, "."], cwd=dirs.to_backward_slash(terraform_path)
-            )
-        except FileNotFoundError as e:
-            print("Can't open VSCode as", vscodeExecutable, "isn't found.")
+        open_in_vscode(terraform_path)
+
+
+def open_in_vscode(dir, path="."):
+    vscodeExecutable = "code.cmd"
+    try:
+        print(path)
+        subprocess.Popen([vscodeExecutable, path], cwd=dirs.to_backward_slash(dir))
+    except FileNotFoundError as e:
+        print("Can't open VSCode as", vscodeExecutable, "isn't found.")
 
 
 def get_env_vars(
@@ -173,9 +177,7 @@ def execute_terraform_cmd(
     execution_log_file_name = log_file_name + ".log"
 
     log_dict = {}
-    log_file_path = dirs.forward_slash_join(
-        terraform_path, execution_log_file_name
-    )
+    log_file_path = dirs.forward_slash_join(terraform_path, execution_log_file_name)
     print(
         log_label,
         "running, see ",
@@ -212,7 +214,7 @@ def execute_terraform_cmd(
 
     if return_log_content:
         if os.path.exists(log_file_path):
-            cleaned_file_name = log_file_name + "_cleaned" + ".log"
+            cleaned_file_name = log_file_name + CLEANED_SUFFIX + ".log"
             cleaned_log_file_path = dirs.forward_slash_join(
                 terraform_path, cleaned_file_name
             )
@@ -299,7 +301,6 @@ def gen_exec_path(
     is_config_creation,
     terraform_path,
 ):
-    
     log_file_path = add_timestamp_to_log_filename(log_path, log_filename)
 
     if is_config_creation:
@@ -311,10 +312,11 @@ def gen_exec_path(
         log_file_path,
     )
 
+
 def add_timestamp_to_log_filename(log_path, log_filename):
     timestamp = datetime.now()
     formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
-    
+
     seasoned_log_filename = formatted_timestamp + "_" + log_filename
     log_file_path = dirs.forward_slash_join(log_path, seasoned_log_filename)
     return log_file_path
@@ -338,8 +340,10 @@ def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
 
 
 def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "refresh" + ".plan")
-    
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "refresh" + ".plan"
+    )
+
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=True)
     terraform_execute(
         run_info,
@@ -355,8 +359,10 @@ def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
 
 
 def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "refresh" + ".plan")
-    
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "refresh" + ".plan"
+    )
+
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=True)
     terraform_execute(
         run_info,
@@ -389,7 +395,9 @@ def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
 
 
 def plan_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "targeted" + ".plan")
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "targeted" + ".plan"
+    )
 
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(
         plan_filename, is_refresh=False, target_info=terraform_params
@@ -411,7 +419,9 @@ def plan_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
 
 
 def apply_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "targeted" + ".plan")
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "targeted" + ".plan"
+    )
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
@@ -433,7 +443,9 @@ def apply_target(run_info, tenant_key_main, tenant_key_target, terraform_params)
 
 
 def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "targeted" + ".plan")
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "targeted" + ".plan"
+    )
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
@@ -509,7 +521,7 @@ def run_plan_all(
         log_label = "Plan Multi Target"
 
     fileType = ".plan"
-    
+
     filename = process_utils.add_action_id_to_filename(run_info, filename)
 
     plan_filename = dirs.get_file_path(".", filename, fileType, absolute=False)
@@ -533,7 +545,9 @@ def run_plan_all(
 
 
 def apply_all(run_info, tenant_key_main, tenant_key_target):
-    plan_filename = process_utils.add_action_id_to_filename(run_info, "complete" + ".plan")
+    plan_filename = process_utils.add_action_id_to_filename(
+        run_info, "complete" + ".plan"
+    )
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 

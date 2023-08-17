@@ -7,7 +7,7 @@ import { applyActionLabel } from './ResultDetailsHooks';
 
 
 
-export default function TFLog({ logs, other, actionLabel, actionId }) {
+export default function TFLog({ logs, other, actionLabel, actionId, defaultExpanded=false }) {
 
     return (
         ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
@@ -16,7 +16,7 @@ export default function TFLog({ logs, other, actionLabel, actionId }) {
                     label={genLabel(actionLabel, actionId)}
                     labelColor="secondary.dark"
                     labelVariant="h6"
-                    defaultExpanded={false}
+                    defaultExpanded={defaultExpanded}
                     componentList={
                         [
                             other == null ? null :

@@ -10,15 +10,24 @@ import terraform_cli
 import terraform_state
 
 OVERALL_DIFF_DIR = "overall"
+OVERALL_DIFF_DIR_TEMP = "ovral_hist_tmp"
 UI_PAYLOAD_FILENAME = "uiPayload"
 MULTI_TARGET_DIR = "multi_target"
 MODULES_DIR = "modules"
 
 
-def get_path_overall_diff(config_main, config_target):
-    return dirs.prep_dir(
-        dirs.get_tenant_work_cache_sub_dir(config_main, config_target, OVERALL_DIFF_DIR)
+def get_path_overall_diff(config_main, config_target, temp=False):
+    
+    overall_dir = OVERALL_DIFF_DIR
+    
+    if(temp):
+        overall_dir = OVERALL_DIFF_DIR_TEMP
+    
+    path = dirs.prep_dir(
+        dirs.get_tenant_work_cache_sub_dir(config_main, config_target, overall_dir)
     )
+    
+    return path
 
 
 def get_path_terraform_multi_target(config_main, config_target):
