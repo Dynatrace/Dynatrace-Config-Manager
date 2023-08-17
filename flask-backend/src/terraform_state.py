@@ -123,7 +123,7 @@ def write_state(path_func_dest, config_main, config_target, state):
         path_func_dest(config_main, config_target), "terraform.tfstate"
     )
 
-    with open(dest_path, "w") as f:
+    with open(dest_path, "w", encoding='UTF-8') as f:
         f.write(json.dumps(state))
 
 

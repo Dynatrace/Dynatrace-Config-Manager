@@ -142,7 +142,7 @@ def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
     }
 
     ui_payload_path = dirs.get_file_path(path, UI_PAYLOAD_FILENAME)
-    with open(ui_payload_path, "w") as f:
+    with open(ui_payload_path, "w", encoding='UTF-8') as f:
         f.write(json.dumps(ui_payload))
 
     return ui_payload
@@ -311,9 +311,18 @@ def copy_resource_conditional(file_path, output_path, strings_wanted):
     has_variable = False
     do_copy = False
     name = ""
+    
+    if ("___variables___.tf" in file_path):
+        print("Exluding ___variables___.tf file")
+        return has_variable, name
+        
+    if ("___resources___.tf" in file_path):
+        print("Exluding ___resources___.tf file")
+        return has_variable, name
+
 
     try:
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding='UTF-8') as file:
             contents = file.read()
             for string in strings_wanted:
                 if string in contents:
@@ -329,7 +338,7 @@ def copy_resource_conditional(file_path, output_path, strings_wanted):
         print("File not found.")
 
     if do_copy:
-        with open(output_path, "w") as output_file:
+        with open(output_path, "w", encoding='UTF-8') as output_file:
             output_file.write(contents)
 
     return has_variable, name

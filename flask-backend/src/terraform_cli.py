@@ -8,6 +8,7 @@ import credentials
 import dirs
 import process_migrate_config
 import process_utils
+import proxy
 import tenant
 import terraform_cli_env
 import terraform_cli_cmd
@@ -162,6 +163,11 @@ def get_env_vars(
 
     my_env = os.environ.copy()
     my_env = {**my_env, **env_vars}
+
+    config_proxy = {}
+    credentials.set_tenant_proxy(tenant_data_current, config_proxy)
+    my_env = proxy.apply_proxy_to_env_dict(my_env, config_proxy)
+
     return my_env
 
 

@@ -1,7 +1,7 @@
 def write_lines_to_file(path, lines):
     lines = add_line_changes(lines)
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding='UTF-8') as f:
         f.writelines(lines)
 
 

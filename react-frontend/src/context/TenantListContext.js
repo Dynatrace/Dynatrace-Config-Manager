@@ -8,7 +8,7 @@ export const TenantListContextState = React.createContext();
 export const TenantListContextDispatch = React.createContext();
 
 function getDefaultTenant() {
-    const tenant = { label: "", headers: "", APIKey: "", url: "", clientID: "", accountID: "", clientSecret: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, notes: "" }
+    const tenant = { label: "", headers: "", APIKey: "", url: "", clientID: "", accountID: "", clientSecret: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, proxyURL: "", notes: "" }
     return { ...tenant }
 }
 
@@ -221,11 +221,15 @@ export function useTenant(key) {
             setTenantProperty("disableSystemProxies", value)
         }
 
+        const setTenantProxyURL = (value) => {
+            setTenantProperty("proxyURL", value)
+        }
+
         const setTenantNotes = (value) => {
             setTenantProperty("notes", value)
         }
 
-        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantClientID, setTenantAccountID, setTenantClientSecret, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantNotes }
+        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantClientID, setTenantAccountID, setTenantClientSecret, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantProxyURL, setTenantNotes }
     }
     return {}
 }
