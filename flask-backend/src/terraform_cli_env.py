@@ -66,7 +66,11 @@ def get_env_vars_export_dict(
         run_info, config_main, config_target, cache_dir, terraform_path_output
     )
     env_vars_base = get_env_vars_base(
-        tenant_data_current, terraform_path, run_info, history_log_path, history_log_prefix
+        tenant_data_current,
+        terraform_path,
+        run_info,
+        history_log_path,
+        history_log_prefix,
     )
 
     env_vars = {**env_vars_base, **env_vars_export_extras}
