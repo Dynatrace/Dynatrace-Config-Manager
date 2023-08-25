@@ -57,7 +57,7 @@ def load_finished(path):
     path = get_path_finished_file(path)
 
     if os.path.exists(path) and os.path.isfile(path):
-        with open(path, "r") as f:
+        with open(path, "r", encoding='UTF-8') as f:
             finished_file = json.load(f)
 
     return finished_file

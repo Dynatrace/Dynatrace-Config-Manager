@@ -13,7 +13,8 @@ def remove_ansi_colors(
 ):
     if log_content == "" and log_file_path != "":
         with open(log_file_path, "rb") as log_file:
-            log_content = log_file.read().decode()
+            log_content = log_file.read().decode('utf-8',errors='ignore')
+                
             if run_info != None:
                 run_info["return_status"] = 200
 

@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import * as React from 'react';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import { TERRAFORM_LOAD_HISTORY_ITEM_LOG, TERRAFORM_OPEN_HISTORT_ITEM_LOG_VSCODE as TERRAFORM_OPEN_HISTORY_ITEM_LOG_VSCODE, backendGet, backendPost } from '../backend/backend';
@@ -50,7 +50,7 @@ export default function HistoryLog({ historyItemLog: { name, type, log } }) {
     }, [tenantKeyMain, tenantKeyTarget, type, name, log])
 
     const logComponent = React.useMemo(() => {
-        const { lines, modules, other_lines } = historyItemLog
+        const { lines } = historyItemLog
 
         if (lines) {
             return (
@@ -59,11 +59,11 @@ export default function HistoryLog({ historyItemLog: { name, type, log } }) {
         } else {
 
             return (
-                <TFLog logs={modules} other={other_lines} actionLabel={""} actionId={name} defaultExpanded={true} />
+                <TFLog historyItemLog={historyItemLog} actionLabel={""} actionId={name} defaultExpanded={true} />
             )
         }
 
-    }, [historyItemLog])
+    }, [historyItemLog, name])
 
     return (
         <React.Fragment>

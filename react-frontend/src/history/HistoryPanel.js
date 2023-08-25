@@ -4,7 +4,7 @@ import MigrateContext from '../context/components/MigrateContext';
 import MigrateContextLoad from '../context/components/MigrateContextLoad';
 import { TERRAFORM_LOAD_HISTORY_LIST, backendGet } from '../backend/backend';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Checkbox, FormControl, FormControlLabel, Grid } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HistoryItem from './HistoryItem';
 import HistoryLog from './HistoryLog';
@@ -16,8 +16,11 @@ const LOG_LEVEL = 3
 export default function HistoryPanel() {
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
+    const [applyOnly, setApplyOnly] = React.useState(false)
     const [selectedItem, setSelectedItem] = React.useState(null)
+    const [selectedItemPrev, setSelectedItemPrev] = React.useState(null)
     const [selectedHistoryLog, setSelectedHistoryLog] = React.useState(null)
+    const [selectedHistoryLogPrev, setSelectedHistoryLogPrev] = React.useState(null)
 
     const [historyList, setHistoryList] = React.useState([])
 
@@ -42,25 +45,35 @@ export default function HistoryPanel() {
         const components = []
 
         for (const historyItem of historyList) {
+            let color = "primary"
+            if (selectedItemPrev === historyItem) {
+                color = "secondary"
+            }
+            let applyText = ""
+            if (historyItem["has_apply"] === true) {
+                applyText = " Apply"
+            } else if (applyOnly) {
+                continue
+            }
             components.push(
                 <Box>
-                    <Button onClick={() => { setSelectedItem(historyItem) }}>
-                        {" Name: " + convertTimestamp(historyItem["name"]) + " Nb Logs: " + historyItem["nb_logs"] + " Type: " + historyItem["sub_type"]}
+                    <Button onClick={() => { setSelectedItem(historyItem) }} color={color}>
+                        {" Name: " + convertTimestamp(historyItem["name"]) + " Nb Logs: " + historyItem["nb_logs"] + " Type: " + historyItem["sub_type"] + applyText}
                     </Button>
                 </Box>
             )
         }
 
         return components
-    }, [historyList, setSelectedItem])
+    }, [historyList, setSelectedItem, selectedItemPrev, applyOnly])
 
     const historyItemComponent = React.useMemo(() => {
         if (selectedItem) {
-            return <HistoryItem historyItem={selectedItem} setSelectedHistoryLog={setSelectedHistoryLog} />
+            return <HistoryItem historyItem={selectedItem} selectedHistoryLogPrev={selectedHistoryLogPrev} setSelectedHistoryLog={setSelectedHistoryLog} />
         } else {
             return null
         }
-    }, [selectedItem])
+    }, [selectedItem, selectedHistoryLogPrev])
 
     const historyItemLogComponent = React.useMemo(() => {
         if (selectedHistoryLog) {
@@ -97,7 +110,7 @@ export default function HistoryPanel() {
         if (displayLevel >= LIST_LEVEL) {
             crumbs.push(
                 <Button
-                    onClick={() => { setSelectedItem(null) }}
+                    onClick={() => { setSelectedItem(null); setSelectedItemPrev(selectedItem); setSelectedHistoryLog(null); setSelectedHistoryLogPrev(selectedHistoryLog) }}
                 >
                     History List
                 </Button>)
@@ -107,7 +120,7 @@ export default function HistoryPanel() {
             addChevron()
             crumbs.push(
                 <Button
-                    onClick={() => { setSelectedHistoryLog(null) }}
+                    onClick={() => { setSelectedHistoryLog(null); setSelectedHistoryLogPrev(selectedHistoryLog) }}
                 >
                     {selectedItem["sub_type"] + ": " + convertTimestamp(selectedItem["name"])}
                 </Button>)
@@ -117,7 +130,7 @@ export default function HistoryPanel() {
             addChevron()
             crumbs.push(
                 <Button
-                    onClick={() => {  }}
+                    onClick={() => { }}
                 >
                     {selectedHistoryLog.log}
                 </Button>)
@@ -125,6 +138,27 @@ export default function HistoryPanel() {
 
         return crumbs
     }, [displayLevel, setSelectedItem, setSelectedHistoryLog, selectedItem, selectedHistoryLog])
+
+    const applyOnlyComponent = React.useMemo(() => {
+        if (displayLevel === LIST_LEVEL) {
+
+            const handleChangeApplyOnly = (event) => {
+                setApplyOnly(event.target.checked)
+            }
+
+            return (
+                <React.Fragment>
+                    <FormControl fullWidth>
+                        <FormControlLabel control={<Checkbox checked={applyOnly === true}
+                            onChange={handleChangeApplyOnly} />} label={"Apply actions only"} />
+                    </FormControl>
+                </React.Fragment>)
+
+        }
+
+        return null
+
+    }, [displayLevel, applyOnly, setApplyOnly])
 
     return (
         <React.Fragment>
@@ -135,6 +169,7 @@ export default function HistoryPanel() {
                     <Grid container>
                         {breadcrumbs}
                     </Grid>
+                    {applyOnlyComponent}
                     <br />
                     <br />
                     {displayLevel === LIST_LEVEL && historyComponents}
@@ -147,12 +182,18 @@ export default function HistoryPanel() {
 }
 
 function convertTimestamp(inputTimestamp) {
-    const [datePart, timePart] = inputTimestamp.split('_');
-    const [year, month, day] = datePart.split('-');
-    const [hour, minute, second] = timePart.split('-');
+    if (inputTimestamp) {
+        const [datePart, timePart] = inputTimestamp.split('_');
 
-    const formattedDate = `${year}-${month}-${day}`;
-    const formattedTime = `${hour}h${minute}m${second}s`;
+        if (datePart, timePart) {
+            const [year, month, day] = datePart.split('-');
+            const [hour, minute, second] = timePart.split('-');
 
-    return `${formattedDate}, ${formattedTime}`;
+            const formattedDate = `${year}-${month}-${day}`;
+            const formattedTime = `${hour}:${minute}:${second}`;
+
+            return `${formattedDate}, ${formattedTime}`;
+        }
+        return inputTimestamp
+    }
 }

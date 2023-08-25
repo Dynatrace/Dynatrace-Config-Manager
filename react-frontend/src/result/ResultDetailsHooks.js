@@ -137,26 +137,16 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
             if ('log' in actionInfo) {
 
-                const { is_plan_done, no_changes, apply_complete, modules } = actionInfo['log']
+                const { is_plan_done, apply_complete } = actionInfo['log']
 
                 if (terraformActionCompletedLabel === planActionLabel
                     && is_plan_done === true) {
                     isPlanDone = true
                 }
 
-                if (terraformActionCompletedLabel === planActionLabel
-                    && no_changes === true) {
-                    actionDetails.push(
-                        <Typography sx={{ ml: 3 }} color="secondary.main" variant="h5">{terraformActionCompletedLabel + " executed. No Changes."}</Typography>
-                    )
-                }
-
                 if (terraformActionCompletedLabel === applyActionLabel
                     && apply_complete === true) {
                     isApplyDone = true
-                    actionDetails.push(
-                        <Typography sx={{ ml: 3 }} color="success.light" variant="h4">{terraformActionCompletedLabel + " executed!"}</Typography>
-                    )
                 }
 
             }
@@ -187,10 +177,9 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 } else {
                     continue
                 }
-                const { modules, other_lines } = log
 
                 actionDetails.push(
-                    <TFLog logs={modules} other={other_lines} actionLabel={actionLabel} actionId={actionId} />
+                    <TFLog historyItemLog={log} actionLabel={actionLabel} actionId={actionId} />
                 )
             }
 
@@ -218,7 +207,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 <Box sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={planAPI} terraformParams={terraformParams}
                         handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
-                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" + genTooManyLabel(nbUpdate)} confirm={false}
+                        label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" /*+ genTooManyLabel(nbUpdate)*/} confirm={false}
                     />
                 </Box>
             )
@@ -275,7 +264,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
     }, [actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo])
 }
 
-
+/*
 const genTooManyLabel = (genTooManyLabel) => {
     if (genTooManyLabel > NB_MAX_TARGETS) {
         return " ( More than 40 items: items with dependencies will not be pushed )"
@@ -283,3 +272,4 @@ const genTooManyLabel = (genTooManyLabel) => {
         return ""
     }
 }
+*/

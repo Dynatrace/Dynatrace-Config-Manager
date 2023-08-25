@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useDebouncedTextField } from '../text/DebouncedInputHook';
 
 const DEFAULT_MAX_LINES = 35;
+const DEFAULT_MAX_LINES_SINGLE_PAGE = 100;
 const MIN_LINES = 5;
 
 export default function TFAnsiText({ logList }) {
@@ -12,6 +13,11 @@ export default function TFAnsiText({ logList }) {
     const [maxLines, setMaxLines] = React.useState(DEFAULT_MAX_LINES)
     const [page, setPage] = React.useState(1)
     const [highlightLine, setHighlightLine] = React.useState(0)
+    React.useEffect(() => {
+        if(maxLines === DEFAULT_MAX_LINES && logList.length <= DEFAULT_MAX_LINES_SINGLE_PAGE) {
+            setMaxLines(DEFAULT_MAX_LINES_SINGLE_PAGE)
+        }
+    }, [logList])
     const lastPage = React.useMemo(() => {
         if (logList && logList.length) {
             // pass

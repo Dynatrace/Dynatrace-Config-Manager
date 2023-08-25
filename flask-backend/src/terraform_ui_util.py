@@ -32,7 +32,6 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
         elif ": Refreshing state..." in line_cleaned:
             module_lines = [lines[idx]]
             first_line_cleaned = line_cleaned
-            line_unused = False
             done_processing = True
 
         if processing_module:
@@ -50,13 +49,10 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
             first_line_cleaned = ""
 
         if "Apply complete!" in line_cleaned:
-            line_unused = False
             log_dict["apply_complete"] = True
         elif "No changes." in line_cleaned:
-            line_unused = False
             log_dict["no_changes"] = True
         elif "Saved the plan to:" in line_cleaned:
-            line_unused = False
             log_dict["is_plan_done"] = True
 
         if line_unused:

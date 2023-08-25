@@ -56,7 +56,9 @@ def get_history_file(tenant_key_main, tenant_key_target):
 def load_history_configs(tenant_key_main, tenant_key_target):
     history_configs = {}
     try:
-        with open(get_history_file(tenant_key_main, tenant_key_target), "r", encoding='UTF-8') as file:
+        with open(
+            get_history_file(tenant_key_main, tenant_key_target), "r", encoding="UTF-8"
+        ) as file:
             history_configs = json.load(file)
     except:
         pass
@@ -65,7 +67,9 @@ def load_history_configs(tenant_key_main, tenant_key_target):
 
 
 def save_history_configs(tenant_key_main, tenant_key_target, payload):
-    with open(get_history_file(tenant_key_main, tenant_key_target), "w", encoding='UTF-8') as file:
+    with open(
+        get_history_file(tenant_key_main, tenant_key_target), "w", encoding="UTF-8"
+    ) as file:
         file.write(json.dumps(payload))
 
 
@@ -120,7 +124,7 @@ def extract_operation_info(config_main, config_target, history_type, history_lab
     for subdir in os.listdir(path):
         sub_dir_path = os.path.join(path, subdir)
         if os.path.isdir(sub_dir_path):
-            nb_logs, is_post_process = count_dir_files(sub_dir_path)
+            nb_logs, is_post_process, has_apply = process_dir_files(sub_dir_path)
             if nb_logs > 0:
                 used_type = history_label
                 if is_post_process:
@@ -132,24 +136,31 @@ def extract_operation_info(config_main, config_target, history_type, history_lab
                         "type": history_type,
                         "sub_type": used_type,
                         "nb_logs": nb_logs,
+                        "has_apply": has_apply,
                     }
                 )
 
     return operations
 
 
-def count_dir_files(sub_dir_path):
+def process_dir_files(sub_dir_path):
     nb_logs = 0
     is_post_process = False
+    has_apply = False
 
     for file in os.listdir(sub_dir_path):
         file_path = os.path.join(sub_dir_path, file)
         if os.path.isfile(file_path):
             if file_path.endswith("import.log"):
                 is_post_process = True
+            if "apply" in file_path:
+                has_apply = True
             nb_logs += 1
 
-    return nb_logs, is_post_process
+    if is_post_process:
+        has_apply = False
+
+    return nb_logs, is_post_process, has_apply
 
 
 def load_history_item(tenant_key_main, tenant_key_target, history_type, history_name):
@@ -165,9 +176,9 @@ def load_history_item(tenant_key_main, tenant_key_target, history_type, history_
     for file in os.listdir(path):
         file_path = os.path.join(path, file)
 
-        if(terraform_cli.CLEANED_SUFFIX in file_path):
+        if terraform_cli.CLEANED_SUFFIX in file_path:
             continue
-        
+
         if os.path.isfile(file_path):
             list.append(file)
 
@@ -201,10 +212,11 @@ def load_history_item_log(
         log_dict = terraform_ui_util.create_dict_from_terraform_log(
             log_content, log_content_cleaned
         )
-        
-        print("Need to write some temporary UI Payloads!!")
-        #ui_payload = terraform_local.write_UI_payloads(
-        #tenant_key_main, tenant_key_target, log_dict
+
+        # TO-DO Complete this
+        # print("Need to write some temporary UI Payloads!!")
+        # ui_payload = terraform_local.write_UI_payloads(
+        # tenant_key_main, tenant_key_target, log_dict
 
     else:
         with open(log_path, "r", encoding="UTF-8") as f:
@@ -214,11 +226,10 @@ def load_history_item_log(
 
 
 def get_is_terraform_execute(log):
-    
-    is_terraform_execute = ("_plan" in log or "_apply" in log)
-    if(".http." in log):
+    is_terraform_execute = "_plan" in log or "_apply" in log
+    if ".http." in log:
         is_terraform_execute = False
-        
+
     return is_terraform_execute
 
 

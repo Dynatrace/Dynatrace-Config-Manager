@@ -3,7 +3,7 @@ import * as React from 'react';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import { TERRAFORM_LOAD_HISTORY_ITEM, backendGet } from '../backend/backend';
 
-export default function HistoryItem({ historyItem: { name, type }, setSelectedHistoryLog }) {
+export default function HistoryItem({ historyItem: { name, type }, selectedHistoryLogPrev, setSelectedHistoryLog }) {
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
@@ -38,10 +38,14 @@ export default function HistoryItem({ historyItem: { name, type }, setSelectedHi
 
         const list = []
         for (const log of historyItemList) {
+            let color = "primary"
+            if(selectedHistoryLogPrev?.log === log) {
+                color = "secondary"
+            }
 
             list.push(
                 <Box>
-                    <Button onClick={() => { setSelectedHistoryLog({ name: name, type: type, log: log }) }}>
+                    <Button onClick={() => { setSelectedHistoryLog({ name: name, type: type, log: log }) }} color={color}>
                         {log}
                     </Button>
                 </Box>
@@ -50,7 +54,7 @@ export default function HistoryItem({ historyItem: { name, type }, setSelectedHi
 
         return list
 
-    }, [historyItemList, setSelectedHistoryLog, name, type])
+    }, [historyItemList, setSelectedHistoryLog, selectedHistoryLogPrev, name, type])
 
     return (
         logList

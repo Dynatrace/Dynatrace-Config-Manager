@@ -45,7 +45,7 @@ export default function ExtractionSection() {
                 <ExecutionOptions />
                 <MigrateButtonControlled handleChange={() => { }}
                     entityFilter={{ 'applyMigrationChecked': true, getActionIdFunc: getActionId }}
-                    label={"Post-Process extracted files, will delete current cache, do this when extractions are completed (Terraform cli)"}
+                    label={"Post-Process extracted files, do this when extractions are completed (Terraform cli)"}
                     confirm={true} descLabel={""} />
             </Paper>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
