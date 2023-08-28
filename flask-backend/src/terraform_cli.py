@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -26,6 +27,7 @@ PLAN_FILE = "terraform.plan"
 STATE_GEN_DIR = "state_gen"
 CONFIG_DIR = "config"
 CLEANED_SUFFIX = "_cleaned"
+PROVIDER_PLATFORM = "windows_amd64"
 
 
 def get_path_terraform(config_main, config_target):
@@ -101,7 +103,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
             "com",
             "dynatrace",
             "1.8.3",
-            "windows_amd64",
+            PROVIDER_PLATFORM,
         ),
         PROVIDER_EXE,
         ".exe",
@@ -217,8 +219,25 @@ def execute_terraform_cmd(
         )
         run_info["return_status"] = 400
 
-    if return_log_content:
-        if os.path.exists(log_file_path):
+    if os.path.exists(log_file_path):
+        log_content = ""
+
+        with open(log_file_path, "rb") as log_file:
+            log_content = log_file.read().decode("utf-8", errors="ignore")
+        
+        wrong_platform_regex = r'for your current platform, ([^\.]+)\.'
+        m = re.search(wrong_platform_regex, log_content)
+        if m == None:
+            pass
+        else:
+            run_info["return_status"] = 400
+            process_utils.add_aggregate_error(
+                run_info,
+                f"You are not using the right version of terraform.exe, you are using {m.group(1)}, but this tool is made for {PROVIDER_PLATFORM}",
+            )
+            
+
+        if return_log_content:
             cleaned_file_name = log_file_name + CLEANED_SUFFIX + ".log"
             cleaned_log_file_path = dirs.forward_slash_join(
                 terraform_path, cleaned_file_name
@@ -226,9 +245,9 @@ def execute_terraform_cmd(
 
             log_content, log_content_cleaned = util_remove_ansi.remove_ansi_colors(
                 run_info,
-                log_file_path,
-                True,
-                cleaned_log_file_path,
+                do_write_output=True,
+                output_file_path=cleaned_log_file_path,
+                log_content=log_content,
             )
 
             log_dict = terraform_ui_util.create_dict_from_terraform_log(

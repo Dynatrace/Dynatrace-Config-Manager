@@ -3,7 +3,9 @@ import re
 import process_migrate_config
 
 # Regular expression pattern to match ANSI escape codes
-tf_module_pattern = re.compile(r"[^m]*module\.([^ .]*)\.([^ .]*)\.([^ .:]*)[\s:]*")
+tf_module_pattern = re.compile(
+    r"[^m]*module\.([^ .]*)(\.data)?\.([^ .]*)\.([^ .:]*)[\s:]*"
+)
 
 
 def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
@@ -32,6 +34,7 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
         elif ": Refreshing state..." in line_cleaned:
             module_lines = [lines[idx]]
             first_line_cleaned = line_cleaned
+            line_unused = False
             done_processing = True
 
         if processing_module:
@@ -93,8 +96,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         return
 
     module_dir = match.group(1)
-    module_name = match.group(2)
-    resource = match.group(3)
+    module_name = match.group(3)
+    resource = match.group(4)
 
     module_name_trimmed = trim_module_name(module_name)
 

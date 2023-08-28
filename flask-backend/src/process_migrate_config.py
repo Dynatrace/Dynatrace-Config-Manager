@@ -137,20 +137,37 @@ def get_config_dict(
             terraform_cli.create_terraform_repo(
                 run_info, pre_migration, tenant_key_main, tenant_key_target
             )
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
+
             terraform_cli.create_target_current_state(
                 run_info, tenant_key_main, tenant_key_target
             )
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
+
             terraform_cli.terraform_refresh_plan(
                 run_info, tenant_key_main, tenant_key_target
             )
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
+
             terraform_cli.terraform_refresh_apply(
                 run_info, tenant_key_main, tenant_key_target
             )
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
+
             terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
+
             terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
             ui_payload, log_dict = terraform_cli.plan_all(
                 run_info, tenant_key_main, tenant_key_target
             )
+            if "return_status" in run_info and run_info["return_status"] >= 300:
+                return all_tenant_config_dict, run_legacy_match, ui_payload
 
         if ui_payload is None:
             ui_payload = terraform_local.load_ui_payload(

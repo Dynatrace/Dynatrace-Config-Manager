@@ -522,9 +522,7 @@ def get_main_tf_definition(file_path, variable_list, module_dir):
     resource_dict = {}
 
     variable_list_seasoned = []
-    print("AAA")
     for variable in variable_list:
-        print(variable)
         variable_list_seasoned.append((variable, variable + " = module."))
 
     try:
