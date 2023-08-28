@@ -3,7 +3,9 @@ import re
 import process_migrate_config
 
 # Regular expression pattern to match ANSI escape codes
-tf_module_pattern = re.compile(r"[^m]*module\.([^ .]*)\.([^ .]*)\.([^ .:]*)[\s:]*")
+tf_module_pattern = re.compile(
+    r"[^m]*module\.([^ .]*)(\.data)?\.([^ .]*)\.([^ .:]*)[\s:]*"
+)
 
 
 def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
@@ -50,13 +52,10 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
             first_line_cleaned = ""
 
         if "Apply complete!" in line_cleaned:
-            line_unused = False
             log_dict["apply_complete"] = True
         elif "No changes." in line_cleaned:
-            line_unused = False
             log_dict["no_changes"] = True
         elif "Saved the plan to:" in line_cleaned:
-            line_unused = False
             log_dict["is_plan_done"] = True
 
         if line_unused:
@@ -81,6 +80,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         action = process_migrate_config.ACTION_UPDATE
     elif first_line_cleaned.endswith("will be destroyed"):
         action = process_migrate_config.ACTION_DELETE
+    elif first_line_cleaned.endswith("has changed"):
+        action = process_migrate_config.ACTION_REFRESH
     elif ": Refreshing state..." in first_line_cleaned:
         action = process_migrate_config.ACTION_IDENTICAL
 
@@ -95,8 +96,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         return
 
     module_dir = match.group(1)
-    module_name = match.group(2)
-    resource = match.group(3)
+    module_name = match.group(3)
+    resource = match.group(4)
 
     module_name_trimmed = trim_module_name(module_name)
 

@@ -26,6 +26,9 @@ export const PLAN_ALL_RESOURCE_DIFF = 'terraform_plan_all_resource_diff'
 export const TERRAFORM_HISTORY = 'terraform_history_configs'
 
 export const TERRAFORM_LOAD_HISTORY_LIST = 'terraform_load_history_list'
+export const TERRAFORM_LOAD_HISTORY_ITEM = 'terraform_load_history_item'
+export const TERRAFORM_LOAD_HISTORY_ITEM_LOG = 'terraform_load_history_item_log'
+export const TERRAFORM_OPEN_HISTORT_ITEM_LOG_VSCODE = 'terraform_open_history_log_in_vscode'
 
 
 export function backendGet(api_method, searchParams, thenFunction, catchFunction) {

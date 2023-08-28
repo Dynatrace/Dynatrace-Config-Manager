@@ -1,11 +1,11 @@
 from flask import Flask, request, Blueprint
 from flask_cors import cross_origin
 import flask_utils
+import json
 import response_utils
 import terraform_cli
 import terraform_local
 import terraform_history
-import json
 
 blueprint_route_terraform = Blueprint("blueprint_route_terraform", __name__)
 
@@ -22,15 +22,18 @@ def terraform_plan_target():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
+        '''
         log_dict = {}
 
         if len(terraform_params) > 40:
-            log_dict = terraform_local.plan_multi_target(
-                run_info,
-                tenant_key_main,
-                tenant_key_target,
-                terraform_params,
-            )
+        '''
+        log_dict = terraform_local.plan_multi_target(
+            run_info,
+            tenant_key_main,
+            tenant_key_target,
+            terraform_params,
+        )
+        '''
         else:
             log_dict = terraform_cli.plan_target(
                 run_info,
@@ -38,6 +41,7 @@ def terraform_plan_target():
                 tenant_key_target,
                 terraform_params,
             )
+        '''
 
         result = {}
         result["log_dict"] = log_dict
@@ -59,22 +63,12 @@ def terraform_apply_target():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        log_dict = None
-
-        if len(terraform_params) > 40:
-            log_dict = terraform_cli.apply_multi_target(
-                run_info,
-                tenant_key_main,
-                tenant_key_target,
-                terraform_params,
-            )
-        else:
-            log_dict = terraform_cli.apply_target(
-                run_info,
-                tenant_key_main,
-                tenant_key_target,
-                terraform_params,
-            )
+        log_dict = terraform_cli.apply_multi_target(
+            run_info,
+            tenant_key_main,
+            tenant_key_target,
+            terraform_params,
+        )
 
         result = {}
         result["log_dict"] = log_dict
@@ -211,5 +205,65 @@ def terraform_load_history_list():
             tenant_key_main, tenant_key_target
         )
         return history
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_load_history_item", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_load_history_item():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+
+    def call_process():
+        history = terraform_history.load_history_item(
+            tenant_key_main, tenant_key_target, history_type, history_name
+        )
+
+        return history
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_load_history_item_log", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_load_history_item_log():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+    history_log = flask_utils.get_arg("history_log")
+
+    def call_process():
+        log_dict = terraform_history.load_history_item_log(
+            tenant_key_main, tenant_key_target, history_type, history_name, history_log
+        )
+
+        return log_dict
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route(
+    "/terraform_open_history_log_in_vscode", methods=["POST"]
+)
+@cross_origin(origin="*")
+def terraform_open_history_log_in_vscode():
+    tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
+    tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
+    history_type = flask_utils.get_arg("history_type")
+    history_name = flask_utils.get_arg("history_name")
+    history_log = flask_utils.get_arg("history_log")
+    
+    def call_process():
+        terraform_history.open_history_item_log_vscode(
+            tenant_key_main, tenant_key_target, history_type, history_name, history_log
+        )
+
+        result = {}
+
+        return result
 
     return response_utils.call_and_get_response(call_process)

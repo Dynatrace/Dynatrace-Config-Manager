@@ -28,7 +28,7 @@ export default function MigrateTenant() {
 
     return (
         <React.Fragment>
-            <MigrateButtonUncontrolled handleChange={handleChange} label={"Reload from Cache"} confirm={false} progressComponent={progressComponent} runOnce={true} api={TERRAFORM_LOAD_UI_PAYLOAD} />
+            <MigrateButtonUncontrolled handleChange={handleChange} label={"Reload"} confirm={false} progressComponent={progressComponent} runOnce={true} api={TERRAFORM_LOAD_UI_PAYLOAD} />
             {resultComponents}
         </React.Fragment>
     );

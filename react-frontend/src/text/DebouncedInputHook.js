@@ -11,12 +11,14 @@ export const useDebouncedTextField = (defaultText = "") => {
     }, 500), [])
 
 
-    const handleChangeTextInput = React.useMemo(() => {
-        return (event) => {
-            setTextInput(event.target.value)
-            debouncedSetText(event.target.value)
-        }
+    const changeTextInput = React.useCallback((newText) => {
+        setTextInput(newText)
+        debouncedSetText(newText)
     }, [setTextInput, debouncedSetText])
+
+    const handleChangeTextInput = React.useCallback((event) => {
+        changeTextInput(event.target.value)
+    }, [changeTextInput])
 
     const debouncedTextField = React.useMemo(() => {
         return (
@@ -25,5 +27,5 @@ export const useDebouncedTextField = (defaultText = "") => {
         )
     }, [textInput, handleChangeTextInput])
 
-    return { text, debouncedTextField }
+    return { text, debouncedTextField, changeTextInput }
 }

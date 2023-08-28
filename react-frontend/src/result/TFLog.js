@@ -1,22 +1,25 @@
-import { Paper } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import * as React from 'react';
 import EfficientAccordion from './EfficientAccordion';
-import { STATUS_COLORS, STATUS_LABELS } from '../extraction/HorizontalStackedBar';
+import { STATUS_COLORS } from '../extraction/HorizontalStackedBar';
 import TFAnsiText from './TFAnsiText';
 import { applyActionLabel } from './ResultDetailsHooks';
+import TFLogModule from './TFLogModule';
 
 
 
-export default function TFLog({ logs, other, actionLabel, actionId }) {
+export default function TFLog({ historyItemLog: { modules: logs, other_lines: other, apply_complete, no_changes }, actionLabel, actionId, defaultExpanded = false }) {
 
     return (
         ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
             <Paper sx={{ ml: -1, mt: 2 }}>
+                {apply_complete === true && <Typography color="success.light" variant="h4">Apply Complete</Typography>}
+                {no_changes === true && <Typography color="secondary.main" variant="h5">Executed. No Changes.</Typography>}
                 <EfficientAccordion
                     label={genLabel(actionLabel, actionId)}
                     labelColor="secondary.dark"
                     labelVariant="h6"
-                    defaultExpanded={false}
+                    defaultExpanded={defaultExpanded}
                     componentList={
                         [
                             other == null ? null :
@@ -48,21 +51,24 @@ function genLogComponents(logMap) {
 
     let resourceComponents = []
 
-    for (const logModule of Object.values(logMap)) {
-        for (const resourceLog of Object.values(logModule)) {
-            const { module_dir, resource, action_code, module_lines } = resourceLog
-
+    for (const [moduleDir, logModule] of Object.entries(logMap)) {
+        if (Object.keys(logMap).length === 1) {
+            resourceComponents.push(
+                <TFLogModule logModule={logModule} />
+            )
+        } else {
             resourceComponents.push(
                 <EfficientAccordion
-                    label={STATUS_LABELS[action_code] + ": " + module_dir + " " + resource}
-                    labelColor={STATUS_COLORS[action_code]}
+                    label={Object.keys(logModule).length + " x " + moduleDir}
+                    labelColor={"black"}
                     labelVariant="h6"
                     defaultExpanded={false}
                     componentList={
-                        [<TFAnsiText logList={module_lines} />]
+                        [<TFLogModule logModule={logModule} />]
                     }
                 />
             )
+
         }
     }
 
@@ -71,7 +77,7 @@ function genLogComponents(logMap) {
 
 function genLabel(terraform_action_label, actionId) {
     let prefix = "Planned changes details"
-    if(terraform_action_label === applyActionLabel) {
+    if (terraform_action_label === applyActionLabel) {
         prefix = "Execution details"
     }
 
