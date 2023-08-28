@@ -120,7 +120,6 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
 def open_in_vscode(dir, path="."):
     vscodeExecutable = "code.cmd"
     try:
-        print(path)
         subprocess.Popen([vscodeExecutable, path], cwd=dirs.to_backward_slash(dir))
     except FileNotFoundError as e:
         print("Can't open VSCode as", vscodeExecutable, "isn't found.")

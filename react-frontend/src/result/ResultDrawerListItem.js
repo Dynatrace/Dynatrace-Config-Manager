@@ -5,6 +5,7 @@ import { STATUS_COLORS, STATUS_PREFIX } from '../extraction/HorizontalStackedBar
 export default function ResultDrawerListItem({ childKey, child, handleToggleList, forceCheck, forceUncheck }) {
 
     const [checked, setChecked] = React.useState("")
+    const [wasForceChecked, setWasForceChecked] = React.useState(false)
 
     const checkedRef = React.useRef("");
 
@@ -26,6 +27,18 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
 
 
     React.useEffect(() => {
+        if (forceCheck) {
+            if (wasForceChecked) {
+                // pass
+            } else {
+                setWasForceChecked(true)
+            }
+        } else if (wasForceChecked) {
+            setWasForceChecked(false)
+            if (isChecked) {
+                setChecked("")
+            }
+        }
         if (isChecked) {
             if (forceUncheck) {
                 setChecked("")
@@ -35,7 +48,7 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
                 setChecked(childKey)
             }
         }
-    }, [childKey, forceCheck, forceUncheck, isChecked])
+    }, [childKey, forceCheck, forceUncheck, isChecked, wasForceChecked])
 
     const component = React.useMemo(() => {
 

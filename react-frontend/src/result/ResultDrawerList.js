@@ -52,6 +52,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
     const handleSetCheckAllStatus = React.useCallback((status, keys) => {
         if (status === checkAllStatus) {
             setCheckAllStatus("")
+            setChecked([])
         } else {
             setCheckAllStatus(status)
             setChecked(keys)
