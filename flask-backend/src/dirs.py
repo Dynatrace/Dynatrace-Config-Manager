@@ -145,3 +145,9 @@ def copy_tree(src, dest, overwrite=False):
                 else:
                     continue
             shutil.copy2(source_item, destination_item)
+
+def print_path_too_long_message_cond(path):
+    if(is_path_too_long(path)):
+        print(
+            "File name probably too long, try moving the tool closer to the root of the drive. File:", path
+        )
