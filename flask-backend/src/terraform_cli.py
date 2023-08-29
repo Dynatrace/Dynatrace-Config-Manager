@@ -604,23 +604,22 @@ def retry_on_permission_error(action, path, max_retries=5, delay=2):
 
 def delete_old_dir(path, max_retries=5, delay=2, label="Terraform", avoid_dirs=[]):
     print("Deleting old", label, "directory: ", path)
+    path_to_item = ""
     try:
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
-                file_path = dirs.forward_slash_join(dirpath, filename)
-                retry_on_permission_error(os.unlink, file_path, max_retries, delay)
+                path_to_item = dirs.forward_slash_join(dirpath, filename)
+                retry_on_permission_error(os.unlink, path_to_item, max_retries, delay)
 
             for dirname in dirnames:
                 if dirname in avoid_dirs:
                     continue
 
-                dir_path = dirs.forward_slash_join(dirpath, dirname)
-                retry_on_permission_error(shutil.rmtree, dir_path, max_retries, delay)
+                path_to_item = dirs.forward_slash_join(dirpath, dirname)
+                retry_on_permission_error(shutil.rmtree, path_to_item, max_retries, delay)
 
             break
 
     except FileNotFoundError as e:
-        print(
-            "File name probably too long, try moving the tool closer to the root of the drive."
-        )
+        dirs.print_path_too_long_message_cond(path_to_item)
         raise e

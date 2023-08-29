@@ -178,9 +178,7 @@ def delete_old_cache(config, path, non_monaco_dir):
         try:
             shutil.rmtree(path)
         except FileNotFoundError as e:
-            print(
-                "File name probably too long, try moving the tool closer to the root of the drive."
-            )
+            dirs.print_path_too_long_message_cond(path)
             raise e
     else:
         non_monaco_cache_path = dirs.get_tenant_data_cache_sub_dir(
