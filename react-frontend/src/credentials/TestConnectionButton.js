@@ -4,25 +4,26 @@ import { Box, Grid, Typography } from '@mui/material';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { backendPost, TEST_CONNECTION } from '../backend/backend';
 import { useProgress } from '../progress/ProgressHook';
+import { useTenant } from '../context/TenantListContext';
 
 const label = "Test Connection"
 
 export default function TestConnectionButton({ tenantKey }) {
 
     const [testMessage, setTestMessage] = React.useState("")
+    const [testColor, setTestColor] = React.useState(undefined)
     const { setLoading, progressComponent } = useProgress()
+    const { tenant: { url, APIKey } } = useTenant(tenantKey)
 
-    const button = React.useMemo(() => {
+    const runTestConnection = React.useMemo(() => {
+
         const api = TEST_CONNECTION
-
-        const handleChangeTestMessage = (message) => {
-            setTestMessage(message)
-        }
 
         const handleExtract = () => {
             const searchParams = { 'tenant_key': tenantKey }
 
-            handleChangeTestMessage('')
+            setTestMessage("")
+            setTestColor("black")
             setLoading(true)
             backendPost(api, null, searchParams,
                 promise =>
@@ -32,14 +33,44 @@ export default function TestConnectionButton({ tenantKey }) {
                             return response.json()
                         })
                         .then(data => {
-                            handleChangeTestMessage("Tested Successfully")
+                            setTestMessage("Tested Successfully")
+                            setTestColor("success.light")
                         }),
                 (error) => {
                     setLoading(false)
-                    handleChangeTestMessage("Failed")
-                }
+                    setTestMessage("Failed")
+                    setTestColor("error.dark")
+                },
+                false
             )
         }
+
+        return handleExtract
+    }, [setLoading, tenantKey])
+
+    React.useEffect(() => {
+        if (url !== "" && APIKey !== "") {
+            runTestConnection()
+        } else {
+            setTestMessage("URL and Token required")
+            setTestColor("error.light")
+
+        }
+    }, [runTestConnection, url, APIKey])
+
+
+    return (
+        <Box sx={{ my: 1 }}>
+            {progressComponent}
+            <Typography sx={{ mt: 1.7 }} color={testColor}>{testMessage}</Typography>
+        </Box>
+    );
+}
+
+
+/*
+
+    const button = React.useMemo(() => {
 
         const props = { fontSize: 'large' }
         let buttonIcon = null
@@ -51,23 +82,10 @@ export default function TestConnectionButton({ tenantKey }) {
         }
 
         return (
-            <IconButton onClick={handleExtract} color='primary'>
+            <IconButton onClick={runTestConnection} color='primary'>
                 {buttonIcon}
                 <Typography>{label}</Typography>
             </IconButton>
         )
-    }, [progressComponent, setLoading, tenantKey])
-
-    return (
-        <Box sx={{ my: 1 }}>
-            <Grid container>
-                <Grid item xs={4}>
-                    {button}
-                </Grid>
-                <Grid item xs={6}>
-                    <Typography sx={{ mt: 1.7 }}>{testMessage}</Typography>
-                </Grid>
-            </Grid>
-        </Box>
-    );
-}
+    }, [progressComponent, runTestConnection])
+*/

@@ -11,7 +11,7 @@ class AnalysisFilter():
                                      'cloud:gcp:k8s_container', 'NETWORK_INTERFACE']
         '''
         self.entity_type_excluded = []
-        print("TODO: Review entity matching for performance, use sorted arrays, not maps, by then, we are excluding some entities from matching, excluded types are: ", self.entity_type_excluded)
+        #print("TODO: Review entity matching for performance, use sorted arrays, not maps, by then, we are excluding some entities from matching, excluded types are: ", self.entity_type_excluded)
 
         if (time_from is None
            or time_to is None):

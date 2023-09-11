@@ -13,6 +13,8 @@ export const DEFAULT_MONACO_CONCURRENT_REQUESTS = 10
 
 export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
     const [envProxyURL, setEnvProxyUrl] = React.useState("")
+    const [tenantUrlError, setTenantUrlError] = React.useState(false)
+    const [tenantUrlErrorMessage, setTenantUrlErrorMessage] = React.useState("")
     const { tenantKey } = useTenantKey(tenantType)
     const {
         tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey,
@@ -20,6 +22,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification,
         setTenantDisableSystemProxies, setTenantProxyURL, setTenantNotes
     } = useTenant(tenantKey)
+
 
     const tenantUrlDisplay = React.useMemo(() => {
         if (!tenant.url || tenant.url === "") {
@@ -49,6 +52,36 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                     })
         )
     }, [])
+
+    React.useEffect(() => {
+        let urlError = false;
+        let message = "";
+        console.log(tenant.url, typeof tenant.url)
+
+        if (tenant.url.endsWith("/")) {
+            // pass
+        } else {
+            urlError = true
+            message += "The URL should end with a slash '/'. "
+        }
+
+        if (tenant.url.includes(".live.dynatrace.com")) {
+            // pass
+        } else {
+            if (tenant.url.includes(".apps.dynatrace.com")) {
+                urlError = true
+                message += "Use the '.live' URL, not the '.apps' one. "
+            }
+        }
+
+        if (tenantUrlError !== urlError) {
+            setTenantUrlError(urlError)
+        }
+        if (tenantUrlErrorMessage !== message) {
+            setTenantUrlErrorMessage(message)
+        }
+
+    }, [tenant])
 
     /*
     const pasteHeaders = () => {
@@ -193,7 +226,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
     return (
         <Fragment>
             <Box sx={{ mt: 2 }}>
-                <Typography>Required credentials:</Typography>
+                <Typography>Credentials [Required]:</Typography>
                 <Box sx={{ ml: 2 }}>
                     <React.Fragment>
                         <FormControl fullWidth>
@@ -205,7 +238,8 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                         <FormControl fullWidth>
                             <TextField id={"tenant-url-field" + tenantKey} variant="standard"
                                 label="Tenant Url (https://<YOUR_TENANT>.live.dynatrace.com/)" value={tenantUrlDisplay}
-                                onChange={handleChangeUrl} />
+                                onChange={handleChangeUrl}
+                                error={tenantUrlError} helperText={tenantUrlErrorMessage} />
                         </FormControl>
                     </React.Fragment>
                     <React.Fragment>
@@ -225,29 +259,11 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                     <React.Fragment>
                         <TestConnectionButton tenantKey={tenantKey} />
                     </React.Fragment>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"tenant-monacoConcurrentRequests-field" + tenantKey}
-                                type="number"
-                                variant="standard"
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                label="Number of Concurrent Requests for Monaco cli calls to tenant" value={tenantMonacoConcurrentRequests}
-                                onChange={handleChangeMonacoConcurrentRequests} />
-                        </FormControl>
-                    </React.Fragment>
                 </Box>
             </Box>
             <Box sx={{ mt: 2 }}>
-                <Typography>Optional Connection Options:</Typography>
+                <Typography>Connection Options [Optional]:</Typography>
                 <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <FormControlLabel control={<Checkbox checked={tenant.disableSSLVerification === true}
-                                onChange={handleChangeDisableSSLVerification} />} label={"Disable SSL Verification"} />
-                        </FormControl>
-                    </React.Fragment>
                     <React.Fragment>
                         <FormControl fullWidth>
                             <FormControlLabel control={<Checkbox checked={tenant.disableSystemProxies === true}
@@ -259,7 +275,7 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
                     <React.Fragment>
                         <FormControl fullWidth>
                             <TextField id={"proxyURL-text-field" + tenantKey} variant="standard"
-                                label={getProxyLabel(envProxyURL)} value={tenant.proxyURL} onChange={handleChangeProxyURL} disabled={tenant.disableSystemProxies}/>
+                                label={getProxyLabel(envProxyURL)} value={tenant.proxyURL} onChange={handleChangeProxyURL} disabled={tenant.disableSystemProxies} />
                         </FormControl>
                     </React.Fragment>
                     <React.Fragment>
@@ -275,6 +291,18 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
             <Box sx={{ mt: 2 }}>
                 <Typography>Other:</Typography>
                 <Box sx={{ ml: 2 }}>
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <TextField id={"tenant-monacoConcurrentRequests-field" + tenantKey}
+                                type="number"
+                                variant="standard"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                label="Number of Concurrent Requests for Monaco cli calls to tenant" value={tenantMonacoConcurrentRequests}
+                                onChange={handleChangeMonacoConcurrentRequests} />
+                        </FormControl>
+                    </React.Fragment>
                     <React.Fragment>
                         <FormControl fullWidth>
                             <TextField id={"notes-text-field" + tenantKey} variant="standard"
@@ -293,10 +321,20 @@ const getProxyLabel = (envProxyURL) => {
         label += " [Default: "
         label += envProxyURL
         label += "]"
-    }   
+    }
 
     return label
 }
+
+/*
+
+                    <React.Fragment>
+                        <FormControl fullWidth>
+                            <FormControlLabel control={<Checkbox checked={tenant.disableSSLVerification === true}
+                                onChange={handleChangeDisableSSLVerification} />} label={"Disable SSL Verification"} />
+                        </FormControl>
+                    </React.Fragment>
+*/
 
 
 /*

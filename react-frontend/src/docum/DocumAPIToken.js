@@ -39,21 +39,26 @@ const managedUrl =
 const expirationDateOneDay =
     `"now+1d"`
 const curlPartTwo =
-    `api/v2/apiTokens" -H "accept: application/json; charset=utf-8" -H "Content-Type: application/json; charset=utf-8" -d "{"name":"Dynatrace Config Manager (Write)", "expirationDate": ${expirationDateOneDay},"scopes":[`
+    `api/v2/apiTokens" -H "accept: application/json; charset=utf-8" -H "Content-Type: application/json; charset=utf-8" -d `
+const curlObjectStart =
+    `{"name":"Dynatrace Config Manager (Write)", "expirationDate": ${expirationDateOneDay},"scopes":[`
+const curlObjectEnd =
+    `]}`
 const urlSuffix =
-    `]}" -H "Authorization: Api-Token XXXXXXXX"`
+    ` -H "Authorization: Api-Token XXXXXXXX"`
 const readTokenValue =
     `"entities.read","networkZones.read","settings.read","slo.read","credentialVault.read","DataExport","ReadConfig"`
 const writeTokenValue =
     `"networkZones.write","settings.write","slo.write","CaptureRequestData","credentialVault.write","ExternalSyntheticIntegration","WriteConfig"`
 
+const curlReadObject = JSON.stringify(`${curlObjectStart}${readTokenValue}${curlObjectEnd}`)
 
 const curlRead =
     `
 curl for SaaS tenant:
-${curlPrefix}${saasUrl}${curlPartTwo}${readTokenValue}${urlSuffix}
+${curlPrefix}${saasUrl}${curlPartTwo}${curlReadObject}${urlSuffix}
 Curl for Managed tenant:
-${curlPrefix}${managedUrl}${curlPartTwo}${readTokenValue}${urlSuffix}
+${curlPrefix}${managedUrl}${curlPartTwo}${curlReadObject}${urlSuffix}
 `
 
 const writeScopeSection =
@@ -70,12 +75,15 @@ Write Scopes (in addition to the read scopes):
 
 `
 
+
+const curlWriteObject = JSON.stringify(`${curlObjectStart}${readTokenValue},${writeTokenValue}${curlObjectEnd}`)
+
 const curlWrite =
     `
 curl for SaaS tenant:
-${curlPrefix}${saasUrl}${curlPartTwo}${readTokenValue},${writeTokenValue}${urlSuffix}
+${curlPrefix}${saasUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}
 Curl for Managed tenant:
-${curlPrefix}${managedUrl}${curlPartTwo}${readTokenValue},${writeTokenValue}${urlSuffix}
+${curlPrefix}${managedUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}
 `
 
 export default function DocumAPIToken() {
