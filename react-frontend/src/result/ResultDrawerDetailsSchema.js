@@ -194,7 +194,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                 </IconButton>
                 <Typography sx={{ ml: 2, mb: 1 }}>Row: {rowIdx} of: {rowLength}</Typography>
                 {rowLabelList}
-                <ResultDrawerList key={"DrawerList" + keyValues['module']} result={result} contextNode={contextNode} setContextNode={setContextNode} />
+                <ResultDrawerList key={"DrawerList" + keyValues['module'] + contextNode.searchText} result={result} contextNode={contextNode} setContextNode={setContextNode} />
             </React.Fragment>
         )
 

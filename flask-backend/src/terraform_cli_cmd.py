@@ -20,7 +20,6 @@ def gen_export_cmd_list(run_info, import_state):
         export_cmd_list.append("-import-state-v2")
     else:
         export_cmd_list.append("-migrate")
-        export_cmd_list.append("-datasources")
 
     if specific_schema_id != "":
         export_cmd_list.append(specific_schema_id)

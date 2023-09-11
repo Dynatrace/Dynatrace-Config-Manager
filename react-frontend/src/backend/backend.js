@@ -31,17 +31,17 @@ export const TERRAFORM_LOAD_HISTORY_ITEM_LOG = 'terraform_load_history_item_log'
 export const TERRAFORM_OPEN_HISTORT_ITEM_LOG_VSCODE = 'terraform_open_history_log_in_vscode'
 
 
-export function backendGet(api_method, searchParams, thenFunction, catchFunction) {
+export function backendGet(api_method, searchParams, thenFunction, catchFunction, showAlert = true) {
 
     const requestOptions = {
         method: 'GET',
         mode: 'cors',
     }
 
-    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction)
+    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction, showAlert)
 }
 
-export function backendPost(api_method, payload, searchParams, thenFunction, catchFunction) {
+export function backendPost(api_method, payload, searchParams, thenFunction, catchFunction, showAlert = true) {
 
     const requestOptions = {
         method: 'POST',
@@ -50,10 +50,10 @@ export function backendPost(api_method, payload, searchParams, thenFunction, cat
         body: JSON.stringify(payload)
     }
 
-    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction)
+    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction, showAlert)
 }
 
-export function backendDelete(api_method, payload, searchParams, thenFunction, catchFunction) {
+export function backendDelete(api_method, payload, searchParams, thenFunction, catchFunction, showAlert = true) {
 
     const requestOptions = {
         method: 'DELETE',
@@ -62,10 +62,10 @@ export function backendDelete(api_method, payload, searchParams, thenFunction, c
         body: JSON.stringify(payload)
     }
 
-    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction)
+    return fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction, showAlert)
 }
 
-function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction) {
+function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, catchFunction, showAlert = true) {
     const fetchPromise = buildFetch(api_method, requestOptions, searchParams)
 
     if (thenFunction instanceof Function) {
@@ -73,7 +73,9 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, ca
 
         return validationPromise
             .catch((error) => {
-                alert("Error Backend Api: " + api_method + "\n" + error)
+                if (showAlert) {
+                    alert("Error Backend Api: " + api_method + "\n" + error)
+                }
                 if (catchFunction instanceof Function) {
                     catchFunction(error)
                 }

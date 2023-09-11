@@ -245,7 +245,12 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
     path_config_modules = dirs.forward_slash_join(path_config, MODULES_DIR)
 
     copy_other_files(main_tf, path_modules, path_config_modules, PROVIDERS_FILES)
-    copy_other_files(main_tf, path_modules, path_config_modules, DATASOURCES_FILES)
+
+    # There shouldn't be datasources files as we use variables
+    # If there are at some point, then they should be handled properly
+    # Datasources create entries in the state files that also should be handled
+
+    # copy_other_files(main_tf, path_modules, path_config_modules, DATASOURCES_FILES)
     write_resources_tf_files(resources_tf_dict, path_modules)
     write_variables_tf_files(var_defs, path_modules)
     write_main_tf_file(main_tf, path)
@@ -560,7 +565,7 @@ def get_main_tf_definition(file_path, variable_list, module_dir):
                         (variable, variable_seasoned) = variable_info
                         if variable_seasoned in line:
                             current_module_details.append(line)
-                            #print(variable_seasoned, line)
+                            # print(variable_seasoned, line)
                             (
                                 variable_resource_module,
                                 variable_resource_name,
