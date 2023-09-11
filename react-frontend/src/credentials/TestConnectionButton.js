@@ -1,7 +1,5 @@
 import * as React from 'react';
-import IconButton from '@mui/material/IconButton';
-import { Box, Grid, Typography } from '@mui/material';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import { Box, Typography } from '@mui/material';
 import { backendPost, TEST_CONNECTION } from '../backend/backend';
 import { useProgress } from '../progress/ProgressHook';
 import { useTenant } from '../context/TenantListContext';
@@ -13,7 +11,7 @@ export default function TestConnectionButton({ tenantKey }) {
     const [testMessage, setTestMessage] = React.useState("")
     const [testColor, setTestColor] = React.useState(undefined)
     const { setLoading, progressComponent } = useProgress()
-    const { tenant: { url, APIKey } } = useTenant(tenantKey)
+    const { tenant: { url, APIKey, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
 
     const runTestConnection = React.useMemo(() => {
 
@@ -56,7 +54,7 @@ export default function TestConnectionButton({ tenantKey }) {
             setTestColor("error.light")
 
         }
-    }, [runTestConnection, url, APIKey])
+    }, [runTestConnection, url, APIKey, disableSystemProxies, proxyURL])
 
 
     return (
