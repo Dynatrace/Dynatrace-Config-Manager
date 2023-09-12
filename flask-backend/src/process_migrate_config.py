@@ -174,9 +174,6 @@ def get_config_dict(
                 tenant_key_main, tenant_key_target
             )
 
-        # address_map = terraform_local.get_address_map(tenant_key_main, tenant_key_target)
-        # flat_result_table["address_map"] = address_map
-
     return all_tenant_config_dict, run_legacy_match, ui_payload
 
 
