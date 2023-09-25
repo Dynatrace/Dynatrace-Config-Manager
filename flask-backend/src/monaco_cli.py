@@ -4,10 +4,11 @@ import os
 import dirs
 import process_utils
 import proxy
+import os_helper
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
-MONACO_EXEC = "monaco-windows-amd64.exe"
+MONACO_EXEC = f"monaco-{os_helper.OS}-amd64{os_helper.EXEC_EXTENSION}"
 
 
 def get_path_finished_file(type_path):
@@ -47,7 +48,7 @@ def save_finished(path, finished_file=None):
     if finished_file == None:
         finished_file = {"monaco_finished": True}
 
-    with open(get_path_finished_file(path), "w", encoding='UTF-8') as f:
+    with open(get_path_finished_file(path), "w", encoding="UTF-8") as f:
         f.write(json.dumps(finished_file))
 
 
@@ -57,7 +58,7 @@ def load_finished(path):
     path = get_path_finished_file(path)
 
     if os.path.exists(path) and os.path.isfile(path):
-        with open(path, "r", encoding='UTF-8') as f:
+        with open(path, "r", encoding="UTF-8") as f:
             finished_file = json.load(f)
 
     return finished_file

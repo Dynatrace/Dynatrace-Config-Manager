@@ -3,6 +3,7 @@ from os import listdir
 from os.path import isfile, join
 import hashlib
 import shutil
+import os_helper
 
 # Max length is 256 or 260, but it is on an escaped and decorated path
 # Setting limit to 240 characters
@@ -41,8 +42,11 @@ def get_forward_slash_cwd():
 
 
 def is_path_too_long(path):
-    escaped_path = path.encode("unicode_escape")
-    return len(escaped_path) > MAX_LENGTH_WINDOWS
+    if os_helper.IS_WINDOWS:
+        escaped_path = path.encode("unicode_escape")
+        return len(escaped_path) > MAX_LENGTH_WINDOWS
+    else:
+        return False
 
 
 def get_monaco_exec_dir():
@@ -146,8 +150,10 @@ def copy_tree(src, dest, overwrite=False):
                     continue
             shutil.copy2(source_item, destination_item)
 
+
 def print_path_too_long_message_cond(path):
-    if(is_path_too_long(path)):
+    if is_path_too_long(path):
         print(
-            "File name probably too long, try moving the tool closer to the root of the drive. File:", path
+            "File name probably too long, try moving the tool closer to the root of the drive. File:",
+            path,
         )

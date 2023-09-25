@@ -17,12 +17,17 @@ blueprint_route_extract_v2 = Blueprint("blueprint_route_extract_v2", __name__)
 def extract_configs():
     use_cache = flask_utils.get_arg_bool("use_cache", False)
     tenant_key = flask_utils.get_arg("tenant_key", "0")
+    run_info = process_utils.get_run_info(
+        tenant_key,
+    )
 
     def call_process():
-        done = handler_api.pull(tenant_key, settings_2_0.extract_function, use_cache)
+        done = handler_api.pull(
+            tenant_key, settings_2_0.extract_function, use_cache, run_info=run_info
+        )
         return done
 
-    return response_utils.call_and_get_response(call_process)
+    return response_utils.call_and_get_response(call_process, run_info)
 
 
 @blueprint_route_extract_v2.route("/extract_configs_scope", methods=["POST"])

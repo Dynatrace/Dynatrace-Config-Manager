@@ -1,15 +1,17 @@
+import os
+import subprocess
+import yaml
+
 import credentials
 import copy
 import dirs
 import monaco_cli
 import monaco_cli_download
 import monaco_local_entity
-import os
 import shutil
 import process_utils
 import tenant
-import yaml
-import subprocess
+import sub_process_helper
 import terraform_cli
 import terraform_history
 
@@ -156,14 +158,18 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
             "using Monaco, see ",
             log_file_path,
         )
+        print("NEED TO TEST THIS CHANGE ON WINDOWS!!!")
+
+        cmd_list = [f"{monaco_exec_dir}/{command}"] + options
+        commands = sub_process_helper.create_shell_command(cmd_list, monaco_exec_dir)
+
         call_result = subprocess.run(
-            [command] + options,
+            commands,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
             shell=True,
             env=my_env,
-            cwd=monaco_exec_dir,
         )
     except subprocess.CalledProcessError as error:
         print(f"The command {error.cmd} failed with error code {error.returncode}")
@@ -268,7 +274,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
         config_main, config_target
     )
 
-    with open(match_yaml_path, "w", encoding='UTF-8') as f:
+    with open(match_yaml_path, "w", encoding="UTF-8") as f:
         f.write(yaml.dump(match_config))
 
     return match_yaml_path
