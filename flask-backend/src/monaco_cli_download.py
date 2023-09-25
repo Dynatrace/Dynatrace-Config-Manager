@@ -123,7 +123,6 @@ def extract(
             "using Monaco, see ",
             log_file_path,
         )
-        print("NEED TO TEST THIS CHANGE ON WINDOWS!!!")
 
         cmd_list = [f"{monaco_exec_dir}/{command}"] + options
 

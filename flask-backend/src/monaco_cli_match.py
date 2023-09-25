@@ -158,7 +158,6 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
             "using Monaco, see ",
             log_file_path,
         )
-        print("NEED TO TEST THIS CHANGE ON WINDOWS!!!")
 
         cmd_list = [f"{monaco_exec_dir}/{command}"] + options
 

@@ -202,8 +202,6 @@ def execute_terraform_cmd(
     cmd_list.append("2>&1")
 
     try:
-        print("NEED TO TEST THIS CHANGE ON WINDOWS!!!")
-        print(terraform_path)
         if "provider" in cmd_list[0]:
             cmd_list[0] = dirs.forward_slash_join(terraform_path, cmd_list[0])
 
