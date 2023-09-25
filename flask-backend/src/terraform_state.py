@@ -40,6 +40,9 @@ def update_state_with_multi_target_state(run_info, tenant_key_main, tenant_key_t
 
     module_to_remove = {}
 
+    if state_multi_backup is None:
+        return False
+
     if ("resources") in state_multi_backup:
         pass
     else:
@@ -123,7 +126,7 @@ def write_state(path_func_dest, config_main, config_target, state):
         path_func_dest(config_main, config_target), "terraform.tfstate"
     )
 
-    with open(dest_path, "w", encoding='UTF-8') as f:
+    with open(dest_path, "w", encoding="UTF-8") as f:
         f.write(json.dumps(state))
 
 

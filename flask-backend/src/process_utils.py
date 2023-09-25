@@ -70,7 +70,7 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
 
 def get_run_info(
     tenant_key_main,
-    tenant_key_target,
+    tenant_key_target=None,
     context_params=None,
     entity_filter=None,
     time_from=None,
@@ -227,6 +227,7 @@ def is_filtered_out_action(run_info, action):
             return False
 
     return True
+
 
 def add_action_id_to_filename(run_info, filename):
     return run_info["action_id"] + "_" + filename

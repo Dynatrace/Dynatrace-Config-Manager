@@ -1,16 +1,19 @@
-import credentials
-import dirs
 import os
-import monaco_cli
-import process_utils
 import shutil
 import subprocess
+
+import credentials
+import dirs
+import monaco_cli
+import process_utils
+import sub_process_helper
 import tenant
 import terraform_cli
 
 
 def get_path_monaco_logs(config):
     return dirs.get_tenant_data_cache_sub_dir(config, "monaco_logs")
+
 
 def get_path_entities(config):
     return dirs.get_tenant_data_cache_sub_dir(config, "ent_mon")
@@ -80,13 +83,13 @@ def extract(
 
     config = credentials.get_api_call_credentials(tenant_key)
     path = get_path_func(config)
-    
+
     log_file_path = terraform_cli.add_timestamp_to_log_filename(
         path, "monaco_download_" + log_label + ".log"
     )
 
     delete_cache_func(config, path)
-        
+
     log_file_path = terraform_cli.add_timestamp_to_log_filename(
         get_path_monaco_logs(config), "monaco_download_" + log_label + ".log"
     )
@@ -112,23 +115,29 @@ def extract(
     if len(options_suffix) > 0:
         options.extend(options_suffix)
 
-    monaco_exec_dir = dirs.get_monaco_exec_dir()
-    print(
-        "Downloading",
-        log_label,
-        "using Monaco, see ",
-        log_file_path,
-    )
-
     try:
+        monaco_exec_dir = dirs.get_monaco_exec_dir()
+        print(
+            "Downloading",
+            log_label,
+            "using Monaco, see ",
+            log_file_path,
+        )
+
+        cmd_list = [f"{monaco_exec_dir}/{command}"] + options
+
+        commands, cwd = sub_process_helper.create_shell_command(
+            cmd_list, monaco_exec_dir
+        )
+
         call_result = subprocess.run(
-            [command] + options,
+            commands,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
             shell=True,
             env=my_env,
-            cwd=monaco_exec_dir,
+            cwd=cwd,
         )
 
     except subprocess.CalledProcessError as error:
