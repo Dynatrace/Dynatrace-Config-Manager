@@ -39,6 +39,7 @@
     "start": "cross-env PORT=3004 react-scripts start",
     "build": "react-scripts build",
     "build-windows": "react-scripts build && xcopy /Y /s build\\* ..\\Dynatrace_Config_Manager-win64\\app\\",
+    "build-linux": "react-scripts build && cp -p -r build/* ../Dynatrace_Config_Manager-linux64/app/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
