@@ -207,7 +207,9 @@ def execute_terraform_cmd(
         if "provider" in cmd_list[0]:
             cmd_list[0] = dirs.forward_slash_join(terraform_path, cmd_list[0])
 
-        commands = sub_process_helper.create_shell_command(cmd_list, terraform_path)
+        commands, cwd = sub_process_helper.create_shell_command(
+            cmd_list, terraform_path
+        )
 
         call_result = subprocess.run(
             commands,
@@ -216,6 +218,7 @@ def execute_terraform_cmd(
             check=True,
             shell=True,
             env=my_env,
+            cwd=cwd,
         )
 
         stdout = call_result.stdout.decode()

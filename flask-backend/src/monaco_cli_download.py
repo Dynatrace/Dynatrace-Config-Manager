@@ -126,7 +126,10 @@ def extract(
         print("NEED TO TEST THIS CHANGE ON WINDOWS!!!")
 
         cmd_list = [f"{monaco_exec_dir}/{command}"] + options
-        commands = sub_process_helper.create_shell_command(cmd_list, monaco_exec_dir)
+
+        commands, cwd = sub_process_helper.create_shell_command(
+            cmd_list, monaco_exec_dir
+        )
 
         call_result = subprocess.run(
             commands,
@@ -135,6 +138,7 @@ def extract(
             check=True,
             shell=True,
             env=my_env,
+            cwd=cwd,
         )
 
     except subprocess.CalledProcessError as error:
