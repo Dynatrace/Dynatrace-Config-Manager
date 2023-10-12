@@ -50,36 +50,6 @@ def get_path_terraform_multi_target(config_main, config_target):
     )
 
 
-def get_address_map(tenant_key_main, tenant_key_target):
-    config_main = credentials.get_api_call_credentials(tenant_key_main)
-    config_target = credentials.get_api_call_credentials(tenant_key_target)
-
-    address_state_gen = load_address_map(
-        config_main, config_target, terraform_cli.get_path_terraform_state_gen
-    )
-    address_config = load_address_map(
-        config_main, config_target, terraform_cli.get_path_terraform_config
-    )
-
-    for schema, idMap in address_config.items():
-        if schema in address_state_gen:
-            address_state_gen[schema].update(idMap)
-        else:
-            address_state_gen[schema] = idMap
-
-    return address_state_gen
-
-
-def load_address_map(config_main, config_target, path_func):
-    address_path = dirs.forward_slash_join(
-        path_func(config_main, config_target), "address.json"
-    )
-
-    address_map = monaco_local_entity.get_cached_data(address_path, file_expected=False)
-
-    return address_map
-
-
 def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
