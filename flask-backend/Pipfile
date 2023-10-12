@@ -12,6 +12,7 @@ deepdiff = "*"
 colorama = "*"
 cx-freeze = "*"
 charset-normalizer = "*"
+pyyaml = "*"
 
 [dev-packages]
 

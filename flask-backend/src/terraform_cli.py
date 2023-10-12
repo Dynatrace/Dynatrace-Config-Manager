@@ -7,9 +7,11 @@ import time
 
 import credentials
 import dirs
+import os_helper
 import process_migrate_config
 import process_utils
 import proxy
+import sub_process_helper
 import tenant
 import terraform_cli_env
 import terraform_cli_cmd
@@ -21,13 +23,15 @@ import util_remove_ansi
 
 DYNATRACE_PROVIDER_VERSION = "1.8.3"
 PROVIDER_EXE = "terraform-provider-dynatrace_v" + DYNATRACE_PROVIDER_VERSION
+if os_helper.IS_WINDOWS == False:
+    PROVIDER_EXE = f"./{PROVIDER_EXE}"
 CACHE_DIR_IMPORT = "cache_import"
 CACHE_DIR = "cache"
 PLAN_FILE = "terraform.plan"
 STATE_GEN_DIR = "state_gen"
 CONFIG_DIR = "config"
 CLEANED_SUFFIX = "_cleaned"
-PROVIDER_PLATFORM = "windows_amd64"
+PROVIDER_PLATFORM = f"{os_helper.OS}_amd64"
 
 
 def get_path_terraform(config_main, config_target):
@@ -106,9 +110,11 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
             PROVIDER_PLATFORM,
         ),
         PROVIDER_EXE,
-        ".exe",
+        os_helper.EXEC_EXTENSION,
     )
-    provider_dst = dirs.get_file_path(terraform_path, PROVIDER_EXE, ".exe")
+    provider_dst = dirs.get_file_path(
+        terraform_path, PROVIDER_EXE, os_helper.EXEC_EXTENSION
+    )
     shutil.copy(provider_src, provider_dst)
 
     # print("Showing in explorer: ", export_cmd_path)
@@ -196,20 +202,34 @@ def execute_terraform_cmd(
     cmd_list.append("2>&1")
 
     try:
+        if "provider" in cmd_list[0]:
+            cmd_list[0] = dirs.forward_slash_join(terraform_path, cmd_list[0])
+
+        commands, cwd = sub_process_helper.create_shell_command(
+            cmd_list, terraform_path
+        )
+
         call_result = subprocess.run(
-            cmd_list,
+            commands,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
             shell=True,
             env=my_env,
-            cwd=terraform_path,
+            cwd=cwd,
         )
 
         stdout = call_result.stdout.decode()
         stderr = call_result.stderr.decode()
 
-        print(log_label, "completed, output: ", stdout, stderr)
+        print(log_label, "completed, output: ", stderr)
+        if "unknown resource" in stdout:
+            print(f"The command {cmd_list} failed with error {stdout}")
+            process_utils.add_aggregate_error(
+                run_info,
+                f"The command {cmd_list} failed with error {stdout}",
+            )
+            run_info["return_status"] = 400
 
     except subprocess.CalledProcessError as error:
         print(f"The command {error.cmd} failed with error code {error.returncode}")
@@ -224,8 +244,8 @@ def execute_terraform_cmd(
 
         with open(log_file_path, "rb") as log_file:
             log_content = log_file.read().decode("utf-8", errors="ignore")
-        
-        wrong_platform_regex = r'for your current platform, ([^\.]+)\.'
+
+        wrong_platform_regex = r"for your current platform, ([^\.]+)\."
         m = re.search(wrong_platform_regex, log_content)
         if m == None:
             pass
@@ -235,7 +255,6 @@ def execute_terraform_cmd(
                 run_info,
                 f"You are not using the right version of terraform.exe, you are using {m.group(1)}, but this tool is made for {PROVIDER_PLATFORM}",
             )
-            
 
         if return_log_content:
             cleaned_file_name = log_file_name + CLEANED_SUFFIX + ".log"
@@ -616,7 +635,9 @@ def delete_old_dir(path, max_retries=5, delay=2, label="Terraform", avoid_dirs=[
                     continue
 
                 path_to_item = dirs.forward_slash_join(dirpath, dirname)
-                retry_on_permission_error(shutil.rmtree, path_to_item, max_retries, delay)
+                retry_on_permission_error(
+                    shutil.rmtree, path_to_item, max_retries, delay
+                )
 
             break
 
