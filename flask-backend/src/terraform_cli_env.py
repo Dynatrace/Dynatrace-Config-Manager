@@ -97,7 +97,6 @@ def get_env_vars_export_extras(
         ),
         "DYNATRACE_MIGRATION_CACHE_STRICT": cache_strict,
         "DYNATRACE_HCL_NO_FORMAT": "true",
-        "DYNATRACE_BUILD_ADDRESS_FILES": "true",
         "DYNATRACE_ATOMIC_DEPENDENCIES": "true",
         "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
         "DYNATRACE_IN_MEMORY_TAR_FOLDERS": "true",
