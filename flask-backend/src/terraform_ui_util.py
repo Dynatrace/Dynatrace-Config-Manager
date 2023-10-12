@@ -107,19 +107,12 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         modules_dict[module_name_trimmed] = {}
 
     if resource in modules_dict[module_name_trimmed]:
-        if (
-            modules_dict[module_name_trimmed][resource]["action"]
-            == process_migrate_config.ACTION_IDENTICAL
-        ):
-            module_lines = (
-                modules_dict[module_name_trimmed][resource]["module_lines"]
-                + [""]
-                + module_lines
-            )
-        else:
-            print(
-                "ERROR: Duplicate resource", module_name, module_name_trimmed, resource
-            )
+        print(f"INFO: {module_name}, {module_name_trimmed}, {resource} has both actions: {action} (new) and {modules_dict[module_name_trimmed][resource]['module_lines']}")
+        module_lines = (
+            modules_dict[module_name_trimmed][resource]["module_lines"]
+            + [""]
+            + module_lines
+        )
 
     action_code = None
     if action is not None:
