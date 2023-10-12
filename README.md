@@ -1,10 +1,10 @@
 # Dynatrace Config Manager
 
+*Please note: this is a community developed application. It is provided without any representations, warranties, or support from Dynatrace. If you have questions about this app, please post on our forum or create an [issue](https://github.com/dcryans-dynatrace/Dynatrace-Config-Manager/issues) on Github*
+
 ## Why?
 Moving configs from tenant to tenant is not a simple task.
 <br>This tool has been built in order to help every Dynatrace enthusiasts get as much value as possible from their platform.
-
-*Please note: this is a community developed application. It is provided without any representations, warranties, or support from Dynatrace. If you have questions about this app, please post on our forum or create an [issue](https://github.com/dcryans-dynatrace/Dynatrace-Config-Manager/issues) on Github*
 
 ## Getting started
 [Download terraform.exe](https://developer.hashicorp.com/terraform/downloads) and [add it to your path](https://stackoverflow.com/questions/1618280/where-can-i-set-path-to-make-exe-on-windows)
