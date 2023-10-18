@@ -8,12 +8,12 @@ FLASK_PORT_DEFAULT = 3004
 
 def env_var_message():
     print("\nEnvironment variables:")
-    print("\n  DCM_HOST:")
+    print("\n  {HOST_VAR_NAME}:")
     print(
-        "    - Right now, the server will be only available on localhost, as it is safer"
+        "    - By default, the server will be only available on localhost, as it is safer"
     )
     print(
-        "    - To make it available from other computers, you could set the DCM_HOST environment variable to the ip address zero: 0.0.0.0"
+        "    - To make it available from other computers, you could set the {HOST_VAR_NAME} environment variable to the ip address zero: 0.0.0.0"
     )
     print(f"\n  {PORT_VAR_NAME}:")
     print(
