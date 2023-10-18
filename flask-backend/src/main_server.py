@@ -28,6 +28,10 @@ from route_tenant import blueprint_route_tenant
 from route_terraform import blueprint_route_terraform
 from route_test_monaco import blueprint_route_monaco
 
+
+FLASK_HOST = environment.get_flask_host()
+FLASK_PORT = environment.get_flask_port()
+
 app = Flask(__name__, template_folder="./")
 app.register_blueprint(blueprint_route_extract_ui_api)
 app.register_blueprint(blueprint_route_analysis_v2)
@@ -51,5 +55,5 @@ def my_index():
 
 
 if __name__ == "__main__":
-    print("Running on port:", environment.FLASK_PORT)
-    app.run(port=environment.FLASK_PORT, host=environment.FLASK_HOST)
+    print("Running on port:", FLASK_PORT)
+    app.run(port=FLASK_PORT, host=FLASK_HOST)

@@ -1,42 +1,59 @@
 import os
 
-FLASK_PORT = 3004
-FLASK_HOST = None
+HOST_VAR_NAME = "DCM_HOST"
+PORT_VAR_NAME = "DCM_PORT"
 
-DCM_PORT_ENV_VAR = os.getenv("DCM_PORT")
-DCM_PORT = FLASK_PORT
+FLASK_PORT_DEFAULT = 3004
 
-print("\nEnvironment variables:")
-print("\n  DCM_PORT:")
-print(
-    f"    - The port default port: {FLASK_PORT} can be modified with the DCM_PORT environment variable"
-)
-print("\n  DCM_HOST:")
-print("    - Right now, the server will be only available on localhost, as it is safer")
-print(
-    "    - To make it available from other computers, you could set the DCM_HOST environment variable to the ip address zero: 0.0.0.0"
-)
-print("\n")
 
-try:
-    if DCM_PORT_ENV_VAR is None or DCM_PORT_ENV_VAR == "":
+def env_var_message():
+    print("\nEnvironment variables:")
+    print("\n  DCM_HOST:")
+    print(
+        "    - Right now, the server will be only available on localhost, as it is safer"
+    )
+    print(
+        "    - To make it available from other computers, you could set the DCM_HOST environment variable to the ip address zero: 0.0.0.0"
+    )
+    print(f"\n  {PORT_VAR_NAME}:")
+    print(
+        f"    - The port default port: {FLASK_PORT_DEFAULT} can be modified with the {PORT_VAR_NAME} environment variable"
+    )
+    print("\n")
+
+
+def get_flask_host():
+    flask_host = None
+    dcm_host_env_var = os.getenv(HOST_VAR_NAME)
+
+    if dcm_host_env_var is None or dcm_host_env_var == "":
         pass
     else:
-        DCM_PORT = float(DCM_PORT_ENV_VAR)
-        if DCM_PORT < 0 or DCM_PORT > 65535:
-            print(f"Env. Var DCM_PORT is out of range [0-65535]: {DCM_PORT_ENV_VAR}")
+        print(f"Using Env. Var {HOST_VAR_NAME}, value: {dcm_host_env_var}")
+        flask_host = dcm_host_env_var
+
+    return flask_host
+
+
+def get_flask_port():
+    flask_port = FLASK_PORT_DEFAULT
+
+    dcm_port_env_var = os.getenv(PORT_VAR_NAME)
+    dcm_port = flask_port
+
+    try:
+        if dcm_port_env_var is None or dcm_port_env_var == "":
+            pass
         else:
-            print(f"Using Env. Var DCM_PORT, value: {FLASK_PORT}")
-            FLASK_PORT = DCM_PORT_ENV_VAR
+            dcm_port = float(dcm_port_env_var)
+            if dcm_port < 0 or dcm_port > 65535:
+                print(
+                    f"Env. Var {PORT_VAR_NAME} is out of range [0-65535]: {dcm_port_env_var}"
+                )
+            else:
+                print(f"Using Env. Var {PORT_VAR_NAME}, value: {flask_port}")
+                flask_port = dcm_port_env_var
 
-except ValueError:
-    # If the input cannot be converted to a float, handle the exception
-    print(f"Env. Var DCM_PORT is invalid: {DCM_PORT_ENV_VAR}")
-
-
-DCM_HOST_ENV_VAR = os.getenv("DCM_HOST")
-if DCM_PORT_ENV_VAR is None or DCM_PORT_ENV_VAR == "":
-    pass
-else:
-    print(f"Using Env. Var DCM_HOST, value: {DCM_HOST_ENV_VAR}")
-    FLASK_HOST = DCM_HOST_ENV_VAR
+    except ValueError:
+        # If the input cannot be converted to a float, handle the exception
+        print(f"Env. Var {PORT_VAR_NAME} is invalid: {dcm_port_env_var}")
