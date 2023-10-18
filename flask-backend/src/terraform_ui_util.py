@@ -49,6 +49,7 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
             module_lines = [lines[idx]]
             first_line_cleaned = line_cleaned
             line_unused = False
+            processing_module = True
             done_processing = True
 
         if processing_module:
@@ -57,6 +58,8 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
 
             if line_cleaned.startswith("    }"):
                 done_processing = True
+
+            if done_processing:
                 processing_module = False
 
         if done_processing:
@@ -120,15 +123,26 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
     else:
         modules_dict[module_name_trimmed] = {}
 
+    action_code = None
+
     if resource in modules_dict[module_name_trimmed]:
-        print(f"INFO: {module_name}, {module_name_trimmed}, {resource} has both actions: {action} (new) and {modules_dict[module_name_trimmed][resource]['module_lines']}")
+        if (
+            modules_dict[module_name_trimmed][resource]["action"]
+            == process_migrate_config.ACTION_IDENTICAL
+        ):
+            pass
+        else:
+            print(
+                f"INFO: {module_name}, {module_name_trimmed}, {resource} has both actions: {action} (new) and {modules_dict[module_name_trimmed][resource]['action_code']}"
+            )
+
+        action_code = modules_dict[module_name_trimmed][resource]["action_code"]
         module_lines = (
             modules_dict[module_name_trimmed][resource]["module_lines"]
             + [""]
             + module_lines
         )
 
-    action_code = None
     if action is not None:
         action_code = process_migrate_config.ACTION_MAP[action]
 
