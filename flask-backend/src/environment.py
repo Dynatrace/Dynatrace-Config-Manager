@@ -57,3 +57,5 @@ def get_flask_port():
     except ValueError:
         # If the input cannot be converted to a float, handle the exception
         print(f"Env. Var {PORT_VAR_NAME} is invalid: {dcm_port_env_var}")
+
+    return flask_port
