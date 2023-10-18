@@ -141,6 +141,8 @@ def extract_config(tenant_key, tenant_data, headers):
     else:
         config["monaco_concurrent_requests"] = 10
 
+    # Not using this feature currently, would have to adapt with Monaco/Terraform 
+    '''
     if (
         "disableSSLVerification" in tenant_data
         and tenant_data["disableSSLVerification"] == True
@@ -148,6 +150,8 @@ def extract_config(tenant_key, tenant_data, headers):
         config["verifySSL"] = False
     else:
         config["verifySSL"] = True
+    '''
+    config["verifySSL"] = None
 
     set_tenant_proxy(tenant_data, config)
 

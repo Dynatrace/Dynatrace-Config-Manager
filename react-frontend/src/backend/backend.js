@@ -136,5 +136,10 @@ function getBackendURL(api_method, searchParams) {
         searchParamsString += '?' + new URLSearchParams(searchParams)
     }
 
-    return 'http://' + config.backend_host + '/' + api_method + searchParamsString
+    const environment = process.env.REACT_APP_ENVIRONMENT;
+
+    if (environment === "test") {
+        return `http://${config.backend_host}/${api_method}${searchParamsString}`
+    }
+    return `${window.location.origin}/${api_method}${searchParamsString}`
 }

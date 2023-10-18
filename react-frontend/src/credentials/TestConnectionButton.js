@@ -14,10 +14,11 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { backendPost, TEST_CONNECTION } from '../backend/backend';
 import { useProgress } from '../progress/ProgressHook';
 import { useTenant } from '../context/TenantListContext';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 
 const label = "Test Connection"
 
@@ -26,7 +27,7 @@ export default function TestConnectionButton({ tenantKey }) {
     const [testMessage, setTestMessage] = React.useState("")
     const [testColor, setTestColor] = React.useState(undefined)
     const { setLoading, progressComponent } = useProgress()
-    const { tenant: { url, APIKey, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
+    //const { tenant: { url, APIKey, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
 
     const runTestConnection = React.useMemo(() => {
 
@@ -61,6 +62,7 @@ export default function TestConnectionButton({ tenantKey }) {
         return handleExtract
     }, [setLoading, tenantKey])
 
+    /*
     React.useEffect(() => {
         if (url !== "" && APIKey !== "") {
             runTestConnection()
@@ -70,18 +72,7 @@ export default function TestConnectionButton({ tenantKey }) {
 
         }
     }, [runTestConnection, url, APIKey, disableSystemProxies, proxyURL])
-
-
-    return (
-        <Box sx={{ my: 1 }}>
-            {progressComponent}
-            <Typography sx={{ mt: 1.7 }} color={testColor}>{testMessage}</Typography>
-        </Box>
-    );
-}
-
-
-/*
+    */
 
     const button = React.useMemo(() => {
 
@@ -101,4 +92,11 @@ export default function TestConnectionButton({ tenantKey }) {
             </IconButton>
         )
     }, [progressComponent, runTestConnection])
-*/
+
+    return (
+        <Box sx={{ my: 1 }}>
+            {button}
+            <Typography sx={{ mt: 1.7 }} color={testColor}>{testMessage}</Typography>
+        </Box>
+    );
+}

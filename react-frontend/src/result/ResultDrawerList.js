@@ -79,7 +79,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
         if (checked.length >= 1) {
             let key = checked[checked.length - 1]
 
-            if(isNumeric(currentKey) && checked.includes(currentKey)) {
+            if (isNumeric(currentKey) && checked.includes(currentKey)) {
                 key = currentKey
             }
 
@@ -163,12 +163,13 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
 
         const componentList = []
 
-        for (const status of STATUS_ORDER) {
+        const addStatusComponent = (status) => {
+
             const resourceComponent = items[status]
             if (resourceComponent) {
                 // pass
             } else {
-                continue
+                return
             }
 
             const { nbMax, list, keys } = resourceComponent
@@ -176,7 +177,17 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             componentList.push(
                 <ResultDrawerListSchema {...props} />
             )
+        }
 
+        for (const status of STATUS_ORDER) {
+            addStatusComponent(status)
+        }
+
+        for (const status of Object.keys(items)) {
+            if (STATUS_ORDER.includes(status)) {
+                continue;
+            }
+            addStatusComponent(status)
         }
 
         return [componentList, name]
