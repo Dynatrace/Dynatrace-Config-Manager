@@ -36,7 +36,7 @@
     }
   },
   "scripts": {
-    "start": "cross-env PORT=3004 react-scripts start",
+    "start": "cross-env PORT=3004 env-cmd -f .env.test react-scripts start",
     "build": "react-scripts build",
     "build-windows": "react-scripts build && xcopy /Y /s build\\* ..\\Dynatrace_Config_Manager-win64\\app\\",
     "build-linux": "react-scripts build && cp -p -r build/* ../Dynatrace_Config_Manager-linux64/app/",
@@ -62,6 +62,7 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "env-cmd": "^10.1.0"
   }
 }
