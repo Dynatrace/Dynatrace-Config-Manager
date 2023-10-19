@@ -70,7 +70,6 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
             processing_module = True
             done_tag = ERROR_SECTION_CHAR_END
             is_error = True
-            print("is_error error section", is_error)
 
         elif (
             REFRESH_STATE_LABEL in line_cleaned
@@ -87,7 +86,6 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
             done_processing = True
 
         if processing_module:
-            print("is_error processing", is_error)
             line_unused = False
             module_lines.append(lines[idx])
 
@@ -130,11 +128,9 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
 
 
 def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
-    print("START", is_error)
     action = None
     if is_error:
         action = process_migrate_config.ACTION_ERROR
-        print("ACTION IS ERROR", action)
     elif first_line_cleaned.endswith("will be created"):
         action = process_migrate_config.ACTION_ADD
     elif first_line_cleaned.endswith("will be updated in-place"):
@@ -201,7 +197,6 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
 
     if action is not None:
         action_code = process_migrate_config.ACTION_MAP[action]
-        print("ACTION_CODE", action, action_code)
 
     modules_dict[module_name_trimmed][resource] = {
         "module_name_trimmed": module_name_trimmed,
@@ -211,7 +206,6 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
         "action_code": action_code,
         "module_lines": module_lines,
     }
-    print("RESULT ACTION_CODE", action, action_code)
 
 
 def trim_module_name(module_name):
