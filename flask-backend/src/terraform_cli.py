@@ -251,7 +251,10 @@ def execute_terraform_cmd(
             run_info,
             f"The command {error.cmd} failed with error code {error.returncode}",
         )
-        run_info["return_status"] = 400
+        if(return_log_content):
+            run_info["return_status"] = 207
+        else:
+            run_info["return_status"] = 400
 
     if os.path.exists(log_file_path):
         log_content = ""

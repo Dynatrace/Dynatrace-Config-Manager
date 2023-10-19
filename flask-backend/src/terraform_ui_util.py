@@ -18,8 +18,22 @@ import process_migrate_config
 
 # Regular expression pattern to match ANSI escape codes
 tf_module_pattern = re.compile(
-    r"[^m]*module\.([^ .]*)(\.data)?\.([^ .]*)\.([^ .:]*)[\s:]*"
+    r"[^m]*module\.([^ .]*)(\.data)?\.([^ .]*)\.([^ .:,]*)[\s:,]*"
 )
+
+REFRESH_STATE_LABEL = ": Refreshing state..."
+CREATING_LABEL = ": Creating..."
+CREATION_COMPLETE = ": Creation complete after"
+MODIFYING_LABEL = ": Modifying..."
+MODIFICATIONS_COMPLETE = "Modifications complete after"
+DESTROYING_LABEL = ": Destroying..."
+DESTRUCTION_COMPLETE = ": Destruction complete after"
+
+PLAN_MODULE_SECTION_START = "  # module."
+PLAN_MODULE_SECTION_END = "    }"
+
+ERROR_SECTION_CHAR_START = "╷"
+ERROR_SECTION_CHAR_END = "╵"
 
 
 def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
@@ -30,9 +44,13 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
     lines_cleaned = terraform_log_cleaned.split("\n")
     lines = terraform_log.split("\n")
     module_lines = []
-    first_line_cleaned = ""
+    module_line_cleaned = ""
     processing_module = False
     done_processing = False
+    module_line_tag = ""
+    is_error = False
+
+    done_tag = ""
 
     for idx, line_cleaned in enumerate(lines_cleaned):
         line_unused = True
@@ -40,33 +58,55 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
         if processing_module:
             pass
 
-        elif line_cleaned.startswith("  # module."):
+        elif line_cleaned.startswith(PLAN_MODULE_SECTION_START):
             module_lines = []
-            first_line_cleaned = line_cleaned
+            module_line_cleaned = line_cleaned
             processing_module = True
+            done_tag = PLAN_MODULE_SECTION_END
+        elif line_cleaned.startswith(ERROR_SECTION_CHAR_START):
+            module_lines = []
+            module_line_cleaned = ""
+            module_line_tag = "│   with module."
+            processing_module = True
+            done_tag = ERROR_SECTION_CHAR_END
+            is_error = True
+            print("is_error error section", is_error)
 
-        elif ": Refreshing state..." in line_cleaned:
-            module_lines = [lines[idx]]
-            first_line_cleaned = line_cleaned
-            line_unused = False
+        elif (
+            REFRESH_STATE_LABEL in line_cleaned
+            or CREATING_LABEL in line_cleaned
+            or CREATION_COMPLETE in line_cleaned
+            or MODIFYING_LABEL in line_cleaned
+            or MODIFICATIONS_COMPLETE in line_cleaned
+            or DESTROYING_LABEL in line_cleaned
+            or DESTRUCTION_COMPLETE in line_cleaned
+        ):
+            module_lines = []
+            module_line_cleaned = line_cleaned
             processing_module = True
             done_processing = True
 
         if processing_module:
+            print("is_error processing", is_error)
             line_unused = False
             module_lines.append(lines[idx])
 
-            if line_cleaned.startswith("    }"):
+            if module_line_cleaned == "" and line_cleaned.startswith(module_line_tag):
+                module_line_cleaned = line_cleaned
+
+            if done_tag != "" and line_cleaned.startswith(done_tag):
                 done_processing = True
+                done_tag = ""
 
             if done_processing:
+                module_line_tag = ""
+                done_tag = ""
                 processing_module = False
-
-        if done_processing:
-            done_processing = False
-            extract_tf_module(module_lines, modules_dict, first_line_cleaned)
-            module_lines = []
-            first_line_cleaned = ""
+                done_processing = False
+                extract_tf_module(module_lines, modules_dict, module_line_cleaned, is_error)
+                module_lines = []
+                module_line_cleaned = ""
+                is_error = False
 
         if "Apply complete!" in line_cleaned:
             log_dict["apply_complete"] = True
@@ -89,9 +129,13 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
     return log_dict
 
 
-def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
+def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
+    print("START", is_error)
     action = None
-    if first_line_cleaned.endswith("will be created"):
+    if is_error:
+        action = process_migrate_config.ACTION_ERROR
+        print("ACTION IS ERROR", action)
+    elif first_line_cleaned.endswith("will be created"):
         action = process_migrate_config.ACTION_ADD
     elif first_line_cleaned.endswith("will be updated in-place"):
         action = process_migrate_config.ACTION_UPDATE
@@ -99,8 +143,20 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         action = process_migrate_config.ACTION_DELETE
     elif first_line_cleaned.endswith("has changed"):
         action = process_migrate_config.ACTION_REFRESH
-    elif ": Refreshing state..." in first_line_cleaned:
+    elif REFRESH_STATE_LABEL in first_line_cleaned:
         action = process_migrate_config.ACTION_IDENTICAL
+    elif CREATING_LABEL in first_line_cleaned:
+        action = None
+    elif CREATION_COMPLETE in first_line_cleaned:
+        action = process_migrate_config.ACTION_DONE
+    elif MODIFYING_LABEL in first_line_cleaned:
+        action = None
+    elif MODIFICATIONS_COMPLETE in first_line_cleaned:
+        action = process_migrate_config.ACTION_DONE
+    elif DESTROYING_LABEL in first_line_cleaned:
+        action = None
+    elif DESTRUCTION_COMPLETE in first_line_cleaned:
+        action = process_migrate_config.ACTION_DONE
 
     match = tf_module_pattern.search(first_line_cleaned)
 
@@ -145,6 +201,7 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
 
     if action is not None:
         action_code = process_migrate_config.ACTION_MAP[action]
+        print("ACTION_CODE", action, action_code)
 
     modules_dict[module_name_trimmed][resource] = {
         "module_name_trimmed": module_name_trimmed,
@@ -154,6 +211,7 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned):
         "action_code": action_code,
         "module_lines": module_lines,
     }
+    print("RESULT ACTION_CODE", action, action_code)
 
 
 def trim_module_name(module_name):
