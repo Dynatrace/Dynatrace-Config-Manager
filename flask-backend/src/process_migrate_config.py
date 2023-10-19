@@ -33,16 +33,20 @@ ACTION_ADD = "Add"
 ACTION_DELETE = "Delete"
 ACTION_UPDATE = "Update"
 ACTION_IDENTICAL = "Identical"
+ACTION_DONE = "Identical"
 ACTION_PREEMPTIVE = "Preemptive"
 ACTION_REFRESH = "Refresh"
+ACTION_ERROR = "Error"
 
 ACTION_MAP = {
     ACTION_DELETE: "D",
     ACTION_ADD: "A",
     ACTION_UPDATE: "U",
     ACTION_IDENTICAL: "I",
+    ACTION_DONE: "I",
     ACTION_PREEMPTIVE: "P",
     ACTION_REFRESH: "R",
+    ACTION_ERROR: "E",
 }
 
 

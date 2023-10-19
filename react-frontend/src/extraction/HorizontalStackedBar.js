@@ -25,8 +25,11 @@ export const STATUS_PREFIX = {
     "A": "+",
     "D": "-",
     "R": "",
+    "E": "",
     "Other": "?",
 }
+
+const ERROR_RED = "#BB0000"
 
 export const STATUS_LABELS = {
     "I": "Done",
@@ -34,6 +37,7 @@ export const STATUS_LABELS = {
     "A": "+ Add",
     "D": "- Destroy",
     "R": "Refresh state",
+    "E": "Error",
     "Other": "? Other",
 }
 
@@ -43,6 +47,7 @@ export const STATUS_COLORS = {
     "A": "ForestGreen",
     "D": "FireBrick",
     "R": "black",
+    "E": ERROR_RED,
     "Other": "black",
 }
 
@@ -52,6 +57,7 @@ const statusColorsPale = {
     "A": "Honeydew",
     "D": "MistyRose",
     "R": "WhiteSmoke",
+    "E": ERROR_RED,
     "Other": "WhiteSmoke",
 }
 
