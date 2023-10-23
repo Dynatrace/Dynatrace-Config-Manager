@@ -24,9 +24,12 @@ export default function ResultDrawerDetails() {
 
     const { contextNode, setContextNode } = useContextMenuState()
     const resultKey = useContextResultKey(contextNode)
-    const { result } = useResult(resultKey)
+    const { result, setResult: setExtractedData } = useResult(resultKey)
     const [actionCompleted, setActionCompleted] = React.useState({})
-    const handleTerraformCallComplete = useHandleTerraformCallComplete(actionCompleted, setActionCompleted)
+    const setExtractedDataNoResetMenu = React.useCallback((value) => {
+        setExtractedData({...value, "keepDrawerOpen": true}, false)
+    }, [setExtractedData])
+    const handleTerraformCallComplete = useHandleTerraformCallComplete(actionCompleted, setActionCompleted, setExtractedDataNoResetMenu)
     const [lastActionsInfo, setLastActionsInfo] = React.useState({})
     const genTerraformActionComponent = useGenTerraformActionComponent(actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo)
 

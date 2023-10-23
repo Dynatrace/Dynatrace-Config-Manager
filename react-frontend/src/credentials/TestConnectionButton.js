@@ -39,24 +39,24 @@ export default function TestConnectionButton({ tenantKey }) {
             setTestMessage("")
             setTestColor("black")
             setLoading(true)
-            backendPost(api, null, searchParams,
-                promise =>
-                    promise
-                        .then(response => {
-                            setLoading(false)
-                            return response.json()
-                        })
-                        .then(data => {
-                            setTestMessage("Tested Successfully")
-                            setTestColor("success.light")
-                        }),
-                (error) => {
-                    setLoading(false)
-                    setTestMessage("Failed")
-                    setTestColor("error.dark")
-                },
-                false
-            )
+            const thenFunction = promise =>
+                promise
+                    .then(response => {
+                        setLoading(false)
+                        return response.json()
+                    })
+                    .then(data => {
+                        setTestMessage("Tested Successfully")
+                        setTestColor("success.light")
+                    })
+
+            const catchFunction = (error) => {
+                setLoading(false)
+                setTestMessage("Failed")
+                setTestColor("error.dark")
+            }
+
+            backendPost(api, null, searchParams, thenFunction, catchFunction, false)
         }
 
         return handleExtract

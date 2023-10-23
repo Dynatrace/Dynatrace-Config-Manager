@@ -251,7 +251,7 @@ def execute_terraform_cmd(
             run_info,
             f"The command {error.cmd} failed with error code {error.returncode}",
         )
-        if(return_log_content):
+        if return_log_content:
             run_info["return_status"] = 207
         else:
             run_info["return_status"] = 400
@@ -527,7 +527,11 @@ def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_p
         run_info, tenant_key_main, tenant_key_target
     )
 
-    return log_dict
+    ui_payload = terraform_local.write_UI_payloads_apply(
+        tenant_key_main, tenant_key_target, log_dict
+    )
+
+    return ui_payload, log_dict
 
 
 def plan_all(run_info, tenant_key_main, tenant_key_target):
@@ -556,7 +560,7 @@ def plan_all(run_info, tenant_key_main, tenant_key_target):
         if re_run_plan:
             log_dict = run_plan_all(run_info, tenant_key_main, tenant_key_target)
 
-    ui_payload = terraform_local.write_UI_payloads(
+    ui_payload = terraform_local.write_UI_payloads_plan_all(
         tenant_key_main, tenant_key_target, log_dict
     )
 
@@ -611,7 +615,7 @@ def apply_all(run_info, tenant_key_main, tenant_key_target):
 
     cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
 
-    return terraform_execute(
+    log_dict = terraform_execute(
         run_info,
         tenant_key_main,
         tenant_key_target,
@@ -623,6 +627,12 @@ def apply_all(run_info, tenant_key_main, tenant_key_target):
         use_cache=False,
         return_log_content=True,
     )
+
+    ui_payload = terraform_local.write_UI_payloads_apply(
+        tenant_key_main, tenant_key_target, log_dict
+    )
+
+    return ui_payload, log_dict
 
 
 def retry_on_permission_error(action, path, max_retries=5, delay=2):

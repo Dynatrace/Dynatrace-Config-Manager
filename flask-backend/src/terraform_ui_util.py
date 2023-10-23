@@ -101,7 +101,9 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
                 done_tag = ""
                 processing_module = False
                 done_processing = False
-                extract_tf_module(module_lines, modules_dict, module_line_cleaned, is_error)
+                extract_tf_module(
+                    module_lines, modules_dict, module_line_cleaned, is_error
+                )
                 module_lines = []
                 module_line_cleaned = ""
                 is_error = False
@@ -175,13 +177,14 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     else:
         modules_dict[module_name_trimmed] = {}
 
+    immobile_status = [
+        None,
+        process_migrate_config.ACTION_IDENTICAL,
+    ]
     action_code = None
 
     if resource in modules_dict[module_name_trimmed]:
-        if (
-            modules_dict[module_name_trimmed][resource]["action"]
-            == process_migrate_config.ACTION_IDENTICAL
-        ):
+        if modules_dict[module_name_trimmed][resource]["action"] in immobile_status:
             pass
         else:
             print(

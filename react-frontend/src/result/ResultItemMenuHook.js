@@ -19,6 +19,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@mui/material';
 import { useContextMenuState } from '../context/ContextMenuContext';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
+import { shouldKeepDrawerOpen } from './ResultHook';
 
 export function useResultItemMenu(setOpenDrawer, data) {
 
@@ -37,11 +38,15 @@ export function useResultItemMenu(setOpenDrawer, data) {
 
 
   React.useMemo(() => {
-    if (contextMenu !== null) {
-      setContextMenu(null)
-    }
-    if (contextNode !== null) {
-      setContextNode(null)
+    if (shouldKeepDrawerOpen(data)) {
+      // pass
+    } else {
+      if (contextMenu !== null) {
+        setContextMenu(null)
+      }
+      if (contextNode !== null) {
+        setContextNode(null)
+      }
     }
   }, [data])
 

@@ -32,6 +32,7 @@ import ResultDetails from './ResultDetails';
 
 const error_color = 'error.dark'
 const warning_color = 'secondary.dark'
+export const MIGRATION_RESULT_KEY = 'migration'
 
 export const useResultHook = (resultKey) => {
 
@@ -47,7 +48,11 @@ export const useResultHook = (resultKey) => {
     }, [tenantKeyMain, tenantKeyTarget])
 
     const hasExtractedData = React.useMemo(() => {
-        setOpenDrawer(false)
+        if (shouldKeepDrawerOpen(extractedData)) {
+            // pass
+        } else {
+            setOpenDrawer(false)
+        }
         return !_.isEmpty(extractedData)
     }, [extractedData])
 
@@ -58,8 +63,7 @@ export const useMigrationResultHook = () => {
 
     const [searchTextInput, setSearchTextInput] = React.useState("")
     const [searchText, setSearchText] = React.useState("")
-    const resultKey = 'migration'
-    const { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer } = useResultHook(resultKey)
+    const { extractedData, setExtractedData, hasExtractedData, openDrawer, setOpenDrawer } = useResultHook(MIGRATION_RESULT_KEY)
     const { handleContextMenu } = useResultItemMenu(setOpenDrawer, extractedData)
 
     const handleLaunchSearch = React.useCallback(() => {
@@ -96,7 +100,7 @@ export const useMigrationResultHook = () => {
                 </Grid>
             )
             components.push(
-                <ResultDetails resultKey={resultKey} setExtractedData={setExtractedData} />
+                <ResultDetails resultKey={MIGRATION_RESULT_KEY} setExtractedData={setExtractedData} />
             )
         }
 
@@ -279,7 +283,7 @@ export const useMigrationResultHook = () => {
                 <React.Fragment>
                     <Typography sx={{ mt: 2, mb: 1 }} align="center" variant="h4">{label} </Typography>
                     {schemaComponents}
-                    <ExtractedTable data={extractedData['modules']} resultKey={resultKey} keyArray={['modules']} handleClickMenu={handleContextMenu} searchText={searchText} />
+                    <ExtractedTable data={extractedData['modules']} resultKey={MIGRATION_RESULT_KEY} keyArray={['modules']} handleClickMenu={handleContextMenu} searchText={searchText} />
                 </React.Fragment>
             )
 
@@ -320,6 +324,10 @@ export const useMigrationResultHook = () => {
 
     return { setExtractedData, hasExtractedData, resultComponents }
 }
+export function shouldKeepDrawerOpen(extractedData) {
+    return extractedData && "keepDrawerOpen" in extractedData && extractedData["keepDrawerOpen"] === true;
+}
+
 function buildStatuses(extractedData) {
     const perStatus = {};
     for (const [statusKey, statusValue] of Object.entries(extractedData['stats'])) {
