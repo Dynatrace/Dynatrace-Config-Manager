@@ -101,9 +101,15 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
                 done_tag = ""
                 processing_module = False
                 done_processing = False
-                extract_tf_module(
+                found_module = extract_tf_module(
                     module_lines, modules_dict, module_line_cleaned, is_error
                 )
+
+                if found_module:
+                    pass
+                else:
+                    other_lines.extend(module_lines)
+
                 module_lines = []
                 module_line_cleaned = ""
                 is_error = False
@@ -161,10 +167,7 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     if match:
         pass
     else:
-        print(
-            "ERROR: Could not find terraform module details for: ", first_line_cleaned
-        )
-        return
+        return False
 
     module_dir = match.group(1)
     module_name = match.group(3)
@@ -209,6 +212,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
         "action_code": action_code,
         "module_lines": module_lines,
     }
+
+    return True
 
 
 def trim_module_name(module_name):
