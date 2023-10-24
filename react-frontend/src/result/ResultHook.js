@@ -89,7 +89,7 @@ export const useMigrationResultHook = () => {
 
             )
 
-            const statuses = buildStatuses(extractedData);
+            const statuses = buildStatuses(extractedData["stats"]);
 
             components.push(
                 <Grid container>
@@ -328,9 +328,15 @@ export function shouldKeepDrawerOpen(extractedData) {
     return extractedData && "keepDrawerOpen" in extractedData && extractedData["keepDrawerOpen"] === true;
 }
 
-function buildStatuses(extractedData) {
+export function buildStatuses(stats) {
+    if (stats) {
+        // pass
+    } else {
+        return undefined
+    }
+
     const perStatus = {};
-    for (const [statusKey, statusValue] of Object.entries(extractedData['stats'])) {
+    for (const [statusKey, statusValue] of Object.entries(stats)) {
         if (STATUS_ORDER.includes(statusKey)) {
             perStatus[statusKey] = statusValue;
         } else {
