@@ -805,7 +805,7 @@ def file_contains_resource(file_path, resource_list):
             contents = file.read()
 
             for string in resource_list:
-                if string in contents:
+                if f'" "{string}" {{' in contents:
                     do_copy = True
                     break
 
