@@ -36,18 +36,18 @@ def terraform_plan_target():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        '''
+        """
         log_dict = {}
 
         if len(terraform_params) > 40:
-        '''
+        """
         log_dict = terraform_local.plan_multi_target(
             run_info,
             tenant_key_main,
             tenant_key_target,
             terraform_params,
         )
-        '''
+        """
         else:
             log_dict = terraform_cli.plan_target(
                 run_info,
@@ -55,7 +55,7 @@ def terraform_plan_target():
                 tenant_key_target,
                 terraform_params,
             )
-        '''
+        """
 
         result = {}
         result["log_dict"] = log_dict
@@ -77,7 +77,7 @@ def terraform_apply_target():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        log_dict = terraform_cli.apply_multi_target(
+        ui_payload, log_dict = terraform_cli.apply_multi_target(
             run_info,
             tenant_key_main,
             tenant_key_target,
@@ -85,6 +85,7 @@ def terraform_apply_target():
         )
 
         result = {}
+        result["ui_payload"] = ui_payload
         result["log_dict"] = log_dict
         result["action_id"] = action_id
         return result
@@ -128,9 +129,10 @@ def terraform_apply_all():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        log_dict = terraform_cli.apply_all(run_info, tenant_key_main, tenant_key_target)
+        ui_payload, log_dict = terraform_cli.apply_all(run_info, tenant_key_main, tenant_key_target)
 
         result = {}
+        result["ui_payload"] = ui_payload
         result["log_dict"] = log_dict
         result["action_id"] = action_id
         return result
@@ -270,7 +272,7 @@ def terraform_open_history_log_in_vscode():
     history_type = flask_utils.get_arg("history_type")
     history_name = flask_utils.get_arg("history_name")
     history_log = flask_utils.get_arg("history_log")
-    
+
     def call_process():
         terraform_history.open_history_item_log_vscode(
             tenant_key_main, tenant_key_target, history_type, history_name, history_log

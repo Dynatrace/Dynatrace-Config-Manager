@@ -228,22 +228,23 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
 
         const searchParams = { 'tenant_key_main': tenantKeyMain, 'tenant_key_target': tenantKeyTarget, 'module': module, 'unique_name': uniqueName }
 
+        const thenFunction = promise =>
+            promise
+                .then(response => {
+                    return response.json()
+                })
+                .then(data => {
+                    const { lines } = data
+                    if (lines) {
+                        setLogList(lines)
+                    } else {
+                        setLogList([])
+                    }
+                })
+
         setLogList([])
-        backendGet(PLAN_ALL_RESOURCE_DIFF, searchParams,
-            promise =>
-                promise
-                    .then(response => {
-                        return response.json()
-                    })
-                    .then(data => {
-                        const { lines } = data
-                        if (lines) {
-                            setLogList(lines)
-                        } else {
-                            setLogList([])
-                        }
-                    })
-        )
+        backendGet(PLAN_ALL_RESOURCE_DIFF, searchParams, thenFunction, undefined, false)
+
     }, [tenantKeyMain, tenantKeyTarget, module, uniqueName, setLogList])
 
     return (

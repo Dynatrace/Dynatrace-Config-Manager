@@ -18,7 +18,6 @@ import { Box, Paper, Typography } from '@mui/material';
 import TFLog from './TFLog';
 import TerraformButton from '../terraform/TerraformButton';
 import EfficientAccordion from './EfficientAccordion';
-import { NB_MAX_TARGETS } from './ResultDrawerListSchema';
 import { ALL } from './ResultDrawerDetailsAll';
 import { getTimestampActionId } from '../date/DateFormatter';
 

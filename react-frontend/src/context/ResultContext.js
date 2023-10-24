@@ -53,8 +53,7 @@ function useContextState() {
 
 export function useResult(key) {
 
-    
-    const { resetContextNode } = useContextMenuState()
+    const { resetContextNode: resetContextNodeMenu } = useContextMenuState()
     const contextState = useContextState()
     const contextDispatch = useContextDispatch()
 
@@ -65,8 +64,10 @@ export function useResult(key) {
 
         result = contextState["results"][key]
 
-        setResult = (value) => {
-            resetContextNode()
+        setResult = (value, resetMenu = true) => {
+            if (resetMenu) {
+                resetContextNodeMenu()
+            }
             const action = { type: "updateResult", key, value }
             contextDispatch(action)
         }

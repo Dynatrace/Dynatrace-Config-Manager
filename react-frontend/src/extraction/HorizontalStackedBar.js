@@ -25,8 +25,8 @@ export const STATUS_PREFIX = {
     "A": "+",
     "D": "-",
     "R": "",
-    "E": "",
-    "Other": "?",
+    "E": "!",
+    "Other": "!",
 }
 
 const ERROR_RED = "#BB0000"
@@ -37,8 +37,8 @@ export const STATUS_LABELS = {
     "A": "+ Add",
     "D": "- Destroy",
     "R": "Refresh state",
-    "E": "Error",
-    "Other": "? Other",
+    "E": "! Error",
+    "Other": "! Other",
 }
 
 export const STATUS_COLORS = {

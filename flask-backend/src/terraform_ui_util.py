@@ -15,6 +15,7 @@
 import re
 
 import process_migrate_config
+import terraform_local
 
 # Regular expression pattern to match ANSI escape codes
 tf_module_pattern = re.compile(
@@ -101,7 +102,15 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
                 done_tag = ""
                 processing_module = False
                 done_processing = False
-                extract_tf_module(module_lines, modules_dict, module_line_cleaned, is_error)
+                found_module = extract_tf_module(
+                    module_lines, modules_dict, module_line_cleaned, is_error
+                )
+
+                if found_module:
+                    pass
+                else:
+                    other_lines.extend(module_lines)
+
                 module_lines = []
                 module_line_cleaned = ""
                 is_error = False
@@ -123,6 +132,24 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
 
     log_dict["modules"] = modules_dict
     log_dict["other_lines"] = other_lines
+    
+    log_dict = compile_stats(log_dict)
+
+    return log_dict
+
+
+def compile_stats(log_dict):
+    overall_stats = {}
+
+    for _, module in log_dict["modules"].items():
+
+        for _, resource in module.items():
+            status_code = resource["action_code"]
+
+            overall_stats = terraform_local.add_to_stats(overall_stats, status_code)
+
+
+    log_dict["stats"] = overall_stats
 
     return log_dict
 
@@ -134,6 +161,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     elif first_line_cleaned.endswith("will be created"):
         action = process_migrate_config.ACTION_ADD
     elif first_line_cleaned.endswith("will be updated in-place"):
+        action = process_migrate_config.ACTION_UPDATE
+    elif first_line_cleaned.endswith("must be replaced"):
         action = process_migrate_config.ACTION_UPDATE
     elif first_line_cleaned.endswith("will be destroyed"):
         action = process_migrate_config.ACTION_DELETE
@@ -159,10 +188,7 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     if match:
         pass
     else:
-        print(
-            "ERROR: Could not find terraform module details for: ", first_line_cleaned
-        )
-        return
+        return False
 
     module_dir = match.group(1)
     module_name = match.group(3)
@@ -175,13 +201,14 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     else:
         modules_dict[module_name_trimmed] = {}
 
+    immobile_status = [
+        None,
+        process_migrate_config.ACTION_IDENTICAL,
+    ]
     action_code = None
 
     if resource in modules_dict[module_name_trimmed]:
-        if (
-            modules_dict[module_name_trimmed][resource]["action"]
-            == process_migrate_config.ACTION_IDENTICAL
-        ):
+        if modules_dict[module_name_trimmed][resource]["action"] in immobile_status:
             pass
         else:
             print(
@@ -206,6 +233,8 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
         "action_code": action_code,
         "module_lines": module_lines,
     }
+
+    return True
 
 
 def trim_module_name(module_name):

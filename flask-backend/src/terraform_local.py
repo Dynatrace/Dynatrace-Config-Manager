@@ -50,33 +50,115 @@ def get_path_terraform_multi_target(config_main, config_target):
     )
 
 
-def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
+def write_UI_payloads_plan_all(tenant_key_main, tenant_key_target, log_dict):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
     path = get_path_overall_diff(config_main, config_target)
     terraform_cli.delete_old_dir(path, label="overall")
 
-    for module_key, module in log_dict["modules"].items():
-        module_path = dirs.prep_dir(path, module_key)
+    write_per_resource_output(log_dict, path)
 
-        for resource_key, resource in module.items():
-            resource_path = dirs.get_file_path(module_path, resource_key, ".txt")
+    write_other_lines(log_dict, path)
 
-            with open(resource_path, "w", encoding="utf-8") as f:
-                for line in resource["module_lines"]:
-                    f.write("%s\n" % line)
+    ui_payload = build_ui_payload(log_dict)
 
-    other_lines_path = dirs.get_file_path(path, "other_lines", ".txt")
-    with open(other_lines_path, "w", encoding="utf-8") as f:
-        last_line = ""
-        for line in log_dict["other_lines"]:
-            if last_line == "" and line == "":
-                pass
-            else:
-                f.write("%s\n" % line)
-            last_line = line
+    write_ui_payload(path, ui_payload)
 
+    return ui_payload
+
+
+def write_UI_payloads_apply(tenant_key_main, tenant_key_target, log_dict):
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+    path = get_path_overall_diff(config_main, config_target)
+
+    write_per_resource_output(log_dict, path)
+
+    write_other_lines(log_dict, path, append=True)
+
+    ui_payload_apply = build_ui_payload(log_dict)
+
+    ui_payload_current = load_ui_payload(tenant_key_main, tenant_key_target)
+
+    ui_payload = update_ui_payload(ui_payload_apply, ui_payload_current)
+
+    write_ui_payload(path, ui_payload)
+
+    return ui_payload
+
+
+def update_ui_payload(apply, current):
+    overall_stats = current["stats"]
+
+    if current is None or apply is None:
+        return current
+
+    if "modules" in current and "modules" in apply:
+        pass
+    else:
+        return current
+
+    for module_apply in apply["modules"]:
+        module_current, mod_idx = get_module_current(module_apply, current)
+        if module_current is None:
+            continue
+
+        module_stats = module_current["stats"]
+
+        for resource_apply in module_apply["data"]:
+            resource_current, res_idx = get_resource_current(resource_apply, module_current)
+            if resource_current is None:
+                continue
+
+            module_stats = add_to_stats(module_stats, resource_current["status"], -1)
+            overall_stats = add_to_stats(overall_stats, resource_current["status"], -1)
+
+            module_stats = add_to_stats(module_stats, resource_apply["status"])
+            overall_stats = add_to_stats(overall_stats, resource_apply["status"])
+
+            current["modules"][mod_idx]["data"][res_idx]["status"] = resource_apply[
+                "status"
+            ]
+
+        current["modules"][mod_idx]["stats"] = module_stats
+
+    current["stats"] = overall_stats
+
+    return current
+
+
+def get_module_current(module_apply, current):
+    idx = 0
+    while idx < len(current["modules"]):
+        module_current = current["modules"][idx]
+        if module_current["module"] == module_apply["module"]:
+            return module_current, idx
+
+        idx += 1
+
+    print(
+        f"WARNING: Could not find module {module_apply['module']} in current ui_payload"
+    )
+    return None, -1
+
+
+def get_resource_current(resource_apply, module_current):
+    idx = 0
+    while idx < len(module_current["data"]):
+        resource_current = module_current["data"][idx]
+        if resource_current["key_id"] == resource_apply["key_id"]:
+            return resource_current, idx
+        idx += 1
+
+    print(
+        f"WARNING: Could not find resource {resource_apply['key_id']} in current ui_payload"
+    )
+    return None, -1
+
+
+def compile_modules_and_stats(log_dict):
     modules = []
     overall_stats = {}
 
@@ -108,6 +190,30 @@ def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
             }
         )
 
+    return modules, overall_stats
+
+
+def write_ui_payload(path, ui_payload):
+    ui_payload_path = dirs.get_file_path(path, UI_PAYLOAD_FILENAME)
+    with open(ui_payload_path, "w", encoding="UTF-8") as f:
+        f.write(json.dumps(ui_payload))
+
+
+def build_ui_payload(log_dict):
+    modules, overall_stats = compile_modules_and_stats(log_dict)
+
+    legend = get_legend()
+
+    ui_payload = {
+        "legend": legend,
+        "modules": modules,
+        "stats": overall_stats,
+    }
+
+    return ui_payload
+
+
+def get_legend():
     statuses = [
         process_migrate_config.ACTION_DELETE,
         process_migrate_config.ACTION_ADD,
@@ -118,26 +224,43 @@ def write_UI_payloads(tenant_key_main, tenant_key_target, log_dict):
     legend = {}
     for status in statuses:
         legend[status] = process_migrate_config.ACTION_MAP[status]
-
-    ui_payload = {
-        "legend": legend,
-        "modules": modules,
-        "stats": overall_stats,
-    }
-
-    ui_payload_path = dirs.get_file_path(path, UI_PAYLOAD_FILENAME)
-    with open(ui_payload_path, "w", encoding="UTF-8") as f:
-        f.write(json.dumps(ui_payload))
-
-    return ui_payload
+    return legend
 
 
-def add_to_stats(stats, code):
+def write_other_lines(log_dict, path, append=True):
+    file_mode = "w"
+    if append:
+        file_mode = "a"
+
+    other_lines_path = dirs.get_file_path(path, "other_lines", ".txt")
+    with open(other_lines_path, file_mode, encoding="utf-8") as f:
+        last_line = ""
+        for line in log_dict["other_lines"]:
+            if last_line == "" and line == "":
+                pass
+            else:
+                f.write("%s\n" % line)
+            last_line = line
+
+
+def write_per_resource_output(log_dict, path):
+    for module_key, module in log_dict["modules"].items():
+        module_path = dirs.prep_dir(path, module_key)
+
+        for resource_key, resource in module.items():
+            resource_path = dirs.get_file_path(module_path, resource_key, ".txt")
+
+            with open(resource_path, "w", encoding="utf-8") as f:
+                for line in resource["module_lines"]:
+                    f.write("%s\n" % line)
+
+
+def add_to_stats(stats, code, incr_val=1):
     if code in stats:
         pass
     else:
         stats[code] = 0
-    stats[code] += 1
+    stats[code] += incr_val
 
     return stats
 
