@@ -19,9 +19,9 @@ import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from '../context/Tenant
 import { DEFAULT_MONACO_CONCURRENT_REQUESTS } from '../credentials/TenantConfig';
 
 
-export default function MonacoRequestsInfo({ tenantType = TENANT_KEY_TYPE_MAIN }) {
+export default function MonacoRequestsInfo({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
 
-    const { tenantKey } = useTenantKey(tenantType)
+    const { tenantKey } = useTenantKey(tenantKeyType)
     const { tenant } = useTenant(tenantKey)
 
     return (

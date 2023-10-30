@@ -88,7 +88,6 @@ export default function TFAnsiText({ logList }) {
                 startLine = logList.length - 1
             }
 
-            console.log(page, startLine)
             for (let i = startLine; (i < logList.length && ansiLines.length < maxLines); i++) {
                 processLog(logList[i], (i + 1), searchText, ansiLines, changePageToLine, highlightLine, setHighlightLine);
             }

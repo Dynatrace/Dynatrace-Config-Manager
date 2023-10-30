@@ -16,18 +16,17 @@ limitations under the License.
 import * as React from 'react';
 import { Box, IconButton, Typography } from '@mui/material';
 import { backendPost, TEST_CONNECTION } from '../backend/backend';
-import { useProgress } from '../progress/ProgressHook';
-import { useTenant } from '../context/TenantListContext';
+import { DONE, ERROR, LOADING, useProgress } from '../progress/ProgressHook';
+import ClearIcon from '@mui/icons-material/Clear';
+import CheckIcon from '@mui/icons-material/Check';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import { useTenant } from '../context/TenantListContext';
 
-const label = "Test Connection"
 
 export default function TestConnectionButton({ tenantKey }) {
 
-    const [testMessage, setTestMessage] = React.useState("")
-    const [testColor, setTestColor] = React.useState(undefined)
-    const { setLoading, progressComponent } = useProgress()
-    //const { tenant: { url, APIKey, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
+    const { progress, setProgress, progressComponent } = useProgress()
+    const { tenant: { connectionTested }, setConnectionTested } = useTenant(tenantKey)
 
     const runTestConnection = React.useMemo(() => {
 
@@ -36,31 +35,28 @@ export default function TestConnectionButton({ tenantKey }) {
         const handleExtract = () => {
             const searchParams = { 'tenant_key': tenantKey }
 
-            setTestMessage("")
-            setTestColor("black")
-            setLoading(true)
+            setConnectionTested(undefined)
+            setProgress(LOADING)
             const thenFunction = promise =>
                 promise
                     .then(response => {
-                        setLoading(false)
+                        setProgress(DONE)
                         return response.json()
                     })
                     .then(data => {
-                        setTestMessage("Tested Successfully")
-                        setTestColor("success.light")
+                        setConnectionTested(true)
                     })
 
             const catchFunction = (error) => {
-                setLoading(false)
-                setTestMessage("Failed")
-                setTestColor("error.dark")
+                setProgress(ERROR)
+                setConnectionTested(false)
             }
 
             backendPost(api, null, searchParams, thenFunction, catchFunction, false)
         }
 
         return handleExtract
-    }, [setLoading, tenantKey])
+    }, [setProgress, tenantKey, setConnectionTested])
 
     /*
     React.useEffect(() => {
@@ -76,27 +72,39 @@ export default function TestConnectionButton({ tenantKey }) {
 
     const button = React.useMemo(() => {
 
-        const props = { fontSize: 'large' }
+        const iconProps = { fontSize: 'large' }
         let buttonIcon = null
+        let buttonColor = "primary"
+        let label = "Test Connection"
 
-        if (progressComponent) {
+        if (connectionTested === true) {
+            buttonColor = "success"
+            label = "Successfully tested connection"
+            buttonIcon = (<CheckIcon {...iconProps} color={buttonColor} />)
+        } else if (progress === ERROR) {
+            buttonColor = "error"
+            label = "Failed to connect"
+            buttonIcon = (<ClearIcon {...iconProps} color={buttonColor} />)
+        } else if (progressComponent) {
+            buttonColor = "primary"
+            label = "Testing Connection"
             buttonIcon = progressComponent
         } else {
-            buttonIcon = (<PlayCircleOutlineIcon {...props} />)
+            buttonColor = "primary"
+            buttonIcon = (<PlayCircleOutlineIcon {...iconProps} />)
         }
 
         return (
-            <IconButton onClick={runTestConnection} color='primary'>
+            <IconButton onClick={runTestConnection} color={buttonColor}>
                 {buttonIcon}
                 <Typography>{label}</Typography>
             </IconButton>
         )
-    }, [progressComponent, runTestConnection])
+    }, [connectionTested, progress, progressComponent, runTestConnection])
 
     return (
-        <Box sx={{ my: 1 }}>
+        <Box sx={{ mt: 1 }}>
             {button}
-            <Typography sx={{ mt: 1.7 }} color={testColor}>{testMessage}</Typography>
         </Box>
     );
 }

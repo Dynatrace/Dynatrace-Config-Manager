@@ -22,9 +22,10 @@ import Setting from '../setting/Setting';
 import MigratePanel from '../migrate/MigratePanel';
 import TabPanelBar, { genTabConfig } from './TabPanelBar';
 import HistoryPanel from '../history/HistoryPanel';
+import { FirstTimeUser } from '../options/FirstTimeUser';
 
 
-const tabConfig = [
+const tabConfigMain = [
   genTabConfig("Credentials", <CredentialPanel />),
   genTabConfig("Extract", <ExtractionPanel />),
   //genTabConfig("Match", <MatchPanel />),
@@ -35,7 +36,22 @@ const tabConfig = [
 ]
 
 export default function TabPanelMain() {
+  const [tabIdx, setTabIdx] = React.useState(1);
+  const genShowNextTab = React.useCallback((currentIdx) => {
+    return () => {
+      setTabIdx(currentIdx + 1)
+    }
+  }, [setTabIdx])
+  const tabConfig = React.useMemo(() => {
+    const tabConfigList = []
+
+    tabConfigList.push(genTabConfig("Mode", <FirstTimeUser autoShowed={false} showNextTab={genShowNextTab(tabConfigList.length)} />))
+    tabConfigList.push(...tabConfigMain)
+
+    return tabConfigList
+  }, [genShowNextTab])
+
   return (
-    <TabPanelBar tabConfig={tabConfig} />
+    <TabPanelBar tabConfig={tabConfig} tabIdx={tabIdx} setTabIdx={setTabIdx} />
   )
 }

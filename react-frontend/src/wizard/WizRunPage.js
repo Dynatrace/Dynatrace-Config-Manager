@@ -14,16 +14,20 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { MIGRATE_SETTINGS_2_0 } from '../backend/backend';
-import { useHandlePostCurrent } from '../backend/useHandlePost';
-import MigrateButton from './MigrateButton';
+import MigrateContext from '../context/components/MigrateContext';
+import MigrateContextLoad from '../context/components/MigrateContextLoad';
+import { WizRun } from './WizRun';
 
-export default function MigrateButtonUncontrolled({ handleChange, label, progressComponent = null, progress = "", confirm = false, runOnce = false, api = MIGRATE_SETTINGS_2_0 }) {
+export function WizRunPage({ showNextTab }) {
 
-    const { handlePost } = useHandlePostCurrent(handleChange, api)
-
-    return (
-        <MigrateButton label={label} handlePost={handlePost} confirm={confirm} progressComponent={progressComponent} progress={progress} runOnce={runOnce} />
-    )
+  return (
+    <React.Fragment>
+      <MigrateContext>
+        <MigrateContextLoad>
+          <WizRun showNextTab={showNextTab} />
+        </MigrateContextLoad>
+      </MigrateContext>
+    </React.Fragment>
+  );
 }
 

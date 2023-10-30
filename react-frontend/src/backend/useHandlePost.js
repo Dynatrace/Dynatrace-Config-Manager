@@ -16,32 +16,33 @@ limitations under the License.
 import * as React from 'react';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import { useEnhancedBackendCurrent, useEnhancedBackendSpecific, useEnhancedBackendTerraform } from '../backend/useEnhancedBackend';
+import { DONE, ERROR, LOADING } from '../progress/ProgressHook';
 
-export function useHandlePostCurrent(handleChange, api, setLoading=()=>{}) {
+export function useHandlePostCurrent(handleChange, api, setProgress = () => { }) {
 
     const { backendPost } = useEnhancedBackendCurrent()
-    const handlePost = useHandlePost(handleChange, api, backendPost, setLoading)
+    const handlePost = useHandlePost(handleChange, api, backendPost, setProgress)
 
     return { handlePost }
 }
 
-export function useHandlePostSpecific(entityFilter, handleChange, api, setLoading=()=>{}) {
+export function useHandlePostSpecific(entityFilter, handleChange, api, setProgress = () => { }) {
 
     const { backendPost } = useEnhancedBackendSpecific(entityFilter)
-    const handlePost = useHandlePost(handleChange, api, backendPost, setLoading)
+    const handlePost = useHandlePost(handleChange, api, backendPost, setProgress)
 
     return handlePost
 }
 
-export function useHandlePostTerraform(terraformParams, handleChange, api, getActionId, setLoading=()=>{}) {
+export function useHandlePostTerraform(terraformParams, handleChange, api, getActionId, setProgress = () => { }) {
 
     const { backendPost } = useEnhancedBackendTerraform(terraformParams, getActionId)
-    const handlePost = useHandlePost(handleChange, api, backendPost, setLoading)
+    const handlePost = useHandlePost(handleChange, api, backendPost, setProgress)
 
     return handlePost
 }
 
-function useHandlePost(handleChange, api, backendPost, setLoading=()=>{}) {
+function useHandlePost(handleChange, api, backendPost, setProgress = () => { }) {
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_MAIN)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
@@ -50,23 +51,25 @@ function useHandlePost(handleChange, api, backendPost, setLoading=()=>{}) {
         const postFunction = () => {
 
             const searchParams = { 'tenant_key_main': tenantKeyMain, 'tenant_key_target': tenantKeyTarget }
-            setLoading(true)
+            setProgress(LOADING)
             handleChange(null)
-            backendPost(api, null, searchParams,
-                promise =>
-                    promise
-                        .then(response => {
-                            setLoading(false)
-                            return response.json()
-                        })
-                        .then(data => {
-                            handleChange(data)
-                        })
-            )
+            const thenFunction = promise =>
+                promise
+                    .then(response => {
+                        setProgress(DONE)
+                        return response.json()
+                    })
+                    .then(data => {
+                        handleChange(data)
+                    })
+            const catchFunction = (error) => {
+                setProgress(ERROR)
+            }
+            backendPost(api, null, searchParams, thenFunction, catchFunction)
         }
 
         return postFunction
-    }, [tenantKeyMain, tenantKeyTarget, handleChange, api, backendPost, setLoading])
+    }, [tenantKeyMain, tenantKeyTarget, handleChange, api, backendPost, setProgress])
 
 
     return handlePost

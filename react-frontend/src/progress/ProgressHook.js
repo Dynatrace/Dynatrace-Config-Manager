@@ -17,19 +17,24 @@ import * as React from 'react'
 import _ from 'lodash';
 import { Box, CircularProgress } from '@mui/material';
 
+export const NOT_STARTED = "NOT STARTED"
+export const LOADING = "LOADING"
+export const ERROR = "ERROR"
+export const DONE = "DONE"
+
 export const useProgress = () => {
 
-    const { loading, setLoading } = useProgressState()
-    const progressComponent = useProgressIcon(loading)
+    const { progress, setProgress } = useProgressState()
+    const progressComponent = useProgressIcon(progress === LOADING)
 
-    return { setLoading, progressComponent }
+    return { progress, setProgress, progressComponent }
 }
 
 export const useProgressState = () => {
 
-    const [loading, setLoading] = React.useState(false)
+    const [progress, setProgress] = React.useState(NOT_STARTED)
 
-    return { loading, setLoading }
+    return { progress, setProgress }
 }
 
 export const useProgressIcon = (loading) => {
@@ -38,8 +43,8 @@ export const useProgressIcon = (loading) => {
         if (loading) {
             return (
 
-                <Box sx={{ my: 2 }}>
-                    <CircularProgress size={30} />
+                <Box sx={{ ml: 0.25, mr: 0.75 }}>
+                    <CircularProgress size={27} />
                 </Box>
             )
         }

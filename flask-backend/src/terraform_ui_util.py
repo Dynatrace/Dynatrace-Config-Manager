@@ -132,7 +132,7 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
 
     log_dict["modules"] = modules_dict
     log_dict["other_lines"] = other_lines
-    
+
     log_dict = compile_stats(log_dict)
 
     return log_dict
@@ -142,12 +142,10 @@ def compile_stats(log_dict):
     overall_stats = {}
 
     for _, module in log_dict["modules"].items():
-
         for _, resource in module.items():
             status_code = resource["action_code"]
 
             overall_stats = terraform_local.add_to_stats(overall_stats, status_code)
-
 
     log_dict["stats"] = overall_stats
 
@@ -167,7 +165,13 @@ def extract_tf_module(module_lines, modules_dict, first_line_cleaned, is_error):
     elif first_line_cleaned.endswith("will be destroyed"):
         action = process_migrate_config.ACTION_DELETE
     elif first_line_cleaned.endswith("has changed"):
-        action = process_migrate_config.ACTION_REFRESH
+        action = process_migrate_config.ACTION_IDENTICAL
+        # action = process_migrate_config.ACTION_REFR
+
+        # Technically, this would mean Refresh state.
+        # But sometimes a subsequent terraform plan will not show differences
+        # These would be APIs on the Dynatrace clusters that return un-sorted lists, where the order can and will change at some point
+        # So since Refresh also means Done for the migration purpose, they will be tagged as Identical/DoneESH
     elif REFRESH_STATE_LABEL in first_line_cleaned:
         action = process_migrate_config.ACTION_IDENTICAL
     elif CREATING_LABEL in first_line_cleaned:

@@ -25,12 +25,20 @@ export const genTabConfig = (tabLabel, tabComponent) => {
   return { tabLabel, tabComponent }
 }
 
-export default function TabPanelBar({tabConfig}) {
-  const [value, setValue] = React.useState(0);
+export default function TabPanelBar({ tabConfig, tabIdx: tabIdxReq, setTabIdx, autoDisable = false }) {
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+  const tabIdx = React.useMemo(() => {
+    if (tabIdxReq >= tabConfig.length) {
+      return tabConfig.length - 1
+    } else if (tabIdxReq < 0) {
+      return 0
+    }
+    return tabIdxReq
+  }, [tabIdxReq, tabConfig])
+
+  const handleChange = React.useCallback((event, newValue) => {
+    setTabIdx(newValue)
+  }, [setTabIdx])
 
   const [tabs, tabPanels] = React.useMemo(() => {
     const outTabs = []
@@ -40,11 +48,11 @@ export default function TabPanelBar({tabConfig}) {
       const { tabLabel, tabComponent } = tabConfig
       outTabs.push(
         (
-          <Tab label={tabLabel} key={"tab-" + index} id={`tab-${index}`} />
+          <Tab label={tabLabel} key={"tab-" + index} id={`tab-${index}`} disabled={index > tabIdx && autoDisable} />
         ))
       outTabPanels.push(
         (
-          <TabPanel value={value} index={index} key={"tab-panel-" + index}>
+          <TabPanel value={tabIdx} index={index} key={"tab-panel-" + index}>
             {tabComponent}
             <Box sx={{ my: drawerBleeding }} />
           </TabPanel>
@@ -53,12 +61,12 @@ export default function TabPanelBar({tabConfig}) {
     })
 
     return [outTabs, outTabPanels]
-  }, [value, tabConfig])
+  }, [tabIdx, tabConfig, autoDisable])
 
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+        <Tabs value={tabIdx} onChange={handleChange} aria-label="basic tabs example">
           {tabs}
         </Tabs>
       </Box>

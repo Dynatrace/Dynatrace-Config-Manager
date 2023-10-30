@@ -22,10 +22,11 @@ import BackupIcon from '@mui/icons-material/Backup';
 import { genTenantLabel } from '../credentials/TenantSelector';
 import ConfirmAction from '../action/ConfirmAction';
 import { useConfirmAction } from './ConfirmHook';
+import { ERROR } from '../progress/ProgressHook';
 
 export default function MigrateButton({ label, handlePost, confirm = false, disabled = false,
-    progressComponent = null, runOnce = false,
-    descLabel = "Will send API Requests, updating your tenant's configuration." }) {
+    progressComponent = null, runOnce = false, progress = "",
+    descLabel = "Will send API Requests, updating your tenant's configuration.", }) {
 
     const { tenantKey: tenantKeyMain } = useTenantKey(TENANT_KEY_TYPE_TARGET)
     const { tenantKey: tenantKeyTarget } = useTenantKey(TENANT_KEY_TYPE_TARGET)
@@ -64,6 +65,10 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
             color = 'primary'
         }
 
+        if (progress === ERROR) {
+            color = 'error'
+        }
+
         if (progressComponent) {
             buttonIcon = progressComponent
         }
@@ -74,7 +79,7 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
                 <Typography sx={{ ml: 1 }}>{label}</Typography>
             </IconButton>
         )
-    }, [confirm, label, handleClickAction, disabled, progressComponent])
+    }, [confirm, label, handleClickAction, disabled, progressComponent, progress])
 
     const confirmDialog = React.useMemo(() => {
 

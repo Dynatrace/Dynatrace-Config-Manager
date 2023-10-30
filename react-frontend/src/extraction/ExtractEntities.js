@@ -19,11 +19,12 @@ import ExtractButton from './ExtractButton';
 import { Box, TextField } from '@mui/material';
 import { FormControl } from '@mui/base';
 
-const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
+export const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
+export const timeToNow = 0
 
-export default function ExtractEntities({ tenantType }) {
+export default function ExtractEntities({ tenantKeyType }) {
     const [timeFromMinute, setTimeFromMinute] = React.useState(timeFrom7WeeksMinutes)
-    const [timeToMinute, setTimeToMinute] = React.useState(0)
+    const [timeToMinute, setTimeToMinute] = React.useState(timeToNow)
 
     const handleTimeFromMinute = (event) => {
         setTimeFromMinute(event.target.value)
@@ -34,9 +35,9 @@ export default function ExtractEntities({ tenantType }) {
 
     return (
         <React.Fragment>
-            <ExtractButton handleChange={() => { }} api={EXTRACT_ENTITY_V2}
+            <ExtractButton api={EXTRACT_ENTITY_V2}
                 label="Extract Entities (Monaco cli)"
-                tenantType={tenantType}
+                tenantKeyType={tenantKeyType}
                 extraSearchParams={{ 'time_from_minutes': timeFromMinute, 'time_to_minutes': timeToMinute }} />
             <Box sx={{ ml: 2 }}>
                 <React.Fragment>

@@ -23,7 +23,7 @@ export const TenantListContextState = React.createContext();
 export const TenantListContextDispatch = React.createContext();
 
 function getDefaultTenant() {
-    const tenant = { label: "", headers: "", APIKey: "", url: "", clientID: "", accountID: "", clientSecret: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, proxyURL: "", notes: "" }
+    const tenant = { label: "", headers: "", APIKey: "", url: "", connectionTested: undefined, clientID: "", accountID: "", clientSecret: "", monacoConcurrentRequests: 10, disableSSLVerification: false, disableSystemProxies: false, proxyURL: "", notes: "" }
     return { ...tenant }
 }
 
@@ -196,15 +196,27 @@ export function useTenant(key) {
             contextDispatch(action)
         }
 
+        const setConnectionTested = (value) => {
+            setTenantProperty("connectionTested", value)
+        }
+
         const setTenantLabel = (value) => {
             setTenantProperty("label", value)
         }
 
+        const needToTestConnection = () => {
+            if (tenant.connectionTested !== undefined) {
+                setConnectionTested(undefined)
+            }
+        }
+
         const setTenantUrl = (value) => {
+            needToTestConnection()
             setTenantProperty("url", value)
         }
 
         const setTenantHeaders = (value) => {
+            needToTestConnection()
             setTenantProperty("headers", value)
         }
 
@@ -221,6 +233,7 @@ export function useTenant(key) {
         }
 
         const setTenantAPIKey = (value) => {
+            needToTestConnection()
             setTenantProperty("APIKey", value)
         }
 
@@ -229,14 +242,17 @@ export function useTenant(key) {
         }
 
         const setTenantDisableSSLVerification = (value) => {
+            needToTestConnection()
             setTenantProperty("disableSSLVerification", value)
         }
 
         const setTenantDisableSystemProxies = (value) => {
+            needToTestConnection()
             setTenantProperty("disableSystemProxies", value)
         }
 
         const setTenantProxyURL = (value) => {
+            needToTestConnection()
             setTenantProperty("proxyURL", value)
         }
 
@@ -244,7 +260,7 @@ export function useTenant(key) {
             setTenantProperty("notes", value)
         }
 
-        return { tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey, setTenantClientID, setTenantAccountID, setTenantClientSecret, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantProxyURL, setTenantNotes }
+        return { tenant, setTenantLabel, setTenantUrl, setConnectionTested, setTenantHeaders, setTenantAPIKey, setTenantClientID, setTenantAccountID, setTenantClientSecret, setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification, setTenantDisableSystemProxies, setTenantProxyURL, setTenantNotes }
     }
     return {}
 }

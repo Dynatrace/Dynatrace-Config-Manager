@@ -14,19 +14,16 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import DocumAPIToken from './DocumAPIToken';
-import TabPanelBar, { genTabConfig } from '../navigation/TabPanelBar';
+import { useExecutionOptionsStateValue } from '../context/ExecutionContext';
+import { WizardPage } from '../wizard/WizardPage';
+import TabPanelMain from './TabPanelMain';
 
+export function UserPage(props) {
+  const { advancedMode } = useExecutionOptionsStateValue()
 
-const tabConfig = [
-    genTabConfig("Access Tokens", <DocumAPIToken />),
-]
-
-export default function DocumPanel() {
-    const [tabIdx, setTabIdx] = React.useState(0);
-
-    return (
-        <TabPanelBar tabConfig={tabConfig} tabIdx={tabIdx} setTabIdx={setTabIdx} />
-    )
+  return (
+    <React.Fragment>
+      {advancedMode ? <TabPanelMain /> : <WizardPage />}
+    </React.Fragment>
+  );
 }
-

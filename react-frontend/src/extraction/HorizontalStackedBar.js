@@ -17,7 +17,7 @@ import * as React from 'react';
 import HSBar from "react-horizontal-stacked-bar-chart";
 
 export const defaultColumnArray = ['data', '0']
-export const STATUS_ORDER = ["I", "A", "U", "D", "Other"]
+export const STATUS_ORDER = ["I", "A", "D", "U", "E"/*, "R"*/]
 
 export const STATUS_PREFIX = {
     "I": "",
@@ -26,7 +26,7 @@ export const STATUS_PREFIX = {
     "D": "-",
     "R": "",
     "E": "!",
-    "Other": "!",
+    "Other": "",
 }
 
 const ERROR_RED = "#BB0000"
@@ -38,7 +38,7 @@ export const STATUS_LABELS = {
     "D": "- Destroy",
     "R": "Refresh state",
     "E": "! Error",
-    "Other": "! Other",
+    "Other": "Other",
 }
 
 export const STATUS_COLORS = {
@@ -57,7 +57,7 @@ const statusColorsPale = {
     "A": "Honeydew",
     "D": "MistyRose",
     "R": "WhiteSmoke",
-    "E": ERROR_RED,
+    "E": "MistyRose",
     "Other": "WhiteSmoke",
 }
 

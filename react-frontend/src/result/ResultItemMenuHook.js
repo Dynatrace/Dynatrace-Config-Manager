@@ -129,8 +129,8 @@ export function useResultItemMenu(setOpenDrawer, data) {
 
 }
 
-export function useTenantItems(contextNode, handleClose, tenantTypeKey = TENANT_KEY_TYPE_MAIN) {
-  const { tenantKey } = useTenantKey(tenantTypeKey)
+export function useTenantItems(contextNode, handleClose, tenantKeyType = TENANT_KEY_TYPE_MAIN) {
+  const { tenantKey } = useTenantKey(tenantKeyType)
 
   const tenantItems = React.useMemo(() => {
     let items = []
@@ -153,12 +153,12 @@ export function useTenantItems(contextNode, handleClose, tenantTypeKey = TENANT_
         entityId = keyObject['scope']
       }
 
-      if (tenantTypeKey === TENANT_KEY_TYPE_MAIN
+      if (tenantKeyType === TENANT_KEY_TYPE_MAIN
         && 'from' in keyObject) {
         entityId = keyObject['from']
       }
 
-      if (tenantTypeKey === TENANT_KEY_TYPE_TARGET
+      if (tenantKeyType === TENANT_KEY_TYPE_TARGET
         && 'to' in keyObject) {
         entityId = keyObject['to']
       }
