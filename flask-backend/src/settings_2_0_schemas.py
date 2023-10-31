@@ -21,7 +21,7 @@ NO_CACHE_SCHEMA_LIST = False
 def extract_schemas(config, use_cache=True, cache_only=False, skip_404=True):
     schema_dict = handler_api.extract_basic_json(
         config, api_v2.settings_schemas, 'settings_schemas',
-        use_cache, cache_only, skip_404)
+        use_cache, cache_only, skip_404=skip_404)
 
     return schema_dict
 
