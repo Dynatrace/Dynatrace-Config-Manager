@@ -50,7 +50,7 @@ export default function ExtractedTable({ data, resultKey, keyArray, handleClickM
 
                 hsBarComponents.push(
 
-                    <Grid container>
+                    <Grid key={`extractedTable-${row['module']}`} container>
                         <Grid item xs={3}>
 
                             <IconButton

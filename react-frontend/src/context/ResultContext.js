@@ -57,22 +57,25 @@ export function useResult(key) {
     const contextState = useContextState()
     const contextDispatch = useContextDispatch()
 
-    let result = null
-    let setResult = undefined
+    let { result, setResult } = React.useMemo(() => {
+        let result = null;
+        let setResult = undefined;
 
-    if (key) {
+        if (key) {
 
-        result = contextState["results"][key]
+            result = contextState["results"][key];
 
-        setResult = (value, resetMenu = true) => {
-            if (resetMenu) {
-                resetContextNodeMenu()
-            }
-            const action = { type: "updateResult", key, value }
-            contextDispatch(action)
+            setResult = (value, resetMenu = true) => {
+                if (resetMenu) {
+                    resetContextNodeMenu();
+                }
+                const action = { type: "updateResult", key, value };
+                contextDispatch(action);
+            };
+
         }
-
-    }
+        return { result, setResult };
+    }, [key, contextState, resetContextNodeMenu, contextDispatch]);
 
     return { result, setResult }
 

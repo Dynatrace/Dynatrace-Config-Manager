@@ -80,7 +80,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                     rowLabel += row[row_key]
 
                     rowLabelList.push(
-                        <Typography sx={{ ml: 3 }}>{rowLabel}</Typography>
+                        <Typography key={`row-${row_key}`} sx={{ ml: 3 }}>{rowLabel}</Typography>
                     )
                     keyValues[row_key] = row[row_key]
                 }
@@ -128,7 +128,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                     columnLabel += value
 
                     columnLabelList.push(
-                        <Typography sx={{ ml: 3 }} color={color}>{columnLabel}</Typography>
+                        <Typography key={`columnLabelList-${columnLabelList.length}`} sx={{ ml: 3 }} color={color}>{columnLabel}</Typography>
                     )
 
                     keyValues[column_key] = value
@@ -267,9 +267,9 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
                             componentList={
                                 [
                                     columnLabelList,
-                                    <Typography sx={{ ml: 3, mt: 2 }}>Cached terraform plan info: </Typography>,
-                                    <Paper sx={{ ml: 3, p: 1.5 }}>
-                                        <TFAnsiText logList={logList} />
+                                    <Typography key={`lastSelectionCachedTextLabel`} sx={{ ml: 3, mt: 2 }}>Cached terraform plan info: </Typography>,
+                                    <Paper key={`lastSelectionCachedTextAnsi`} sx={{ ml: 3, p: 1.5 }}>
+                                        <TFAnsiText key="cachedText" logList={logList} />
                                     </Paper>
                                 ]
                             }
@@ -282,7 +282,7 @@ export default function ResultDrawerDetailsSchema({ contextNode, setContextNode,
     )
 }
 
-const getObjectFromKeyArray = (sourceObject, keyArray, adjustment, idx = 0) => {
+export const getObjectFromKeyArray = (sourceObject, keyArray, adjustment, idx = 0) => {
 
     if (sourceObject && keyArray && keyArray.length && idx < keyArray.length && keyArray[idx]) {
 

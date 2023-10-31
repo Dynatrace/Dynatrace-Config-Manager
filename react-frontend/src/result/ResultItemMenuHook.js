@@ -20,12 +20,17 @@ import { Link } from '@mui/material';
 import { useContextMenuState } from '../context/ContextMenuContext';
 import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenantKey } from '../context/TenantListContext';
 import { shouldKeepDrawerOpen } from './ResultHook';
+import { getObjectFromKeyArray } from './ResultDrawerDetailsSchema';
+import { useContextResultKey } from './ResultDrawerDetails';
+import { useResult } from '../context/ResultContext';
 
 export function useResultItemMenu(setOpenDrawer, data) {
 
   const [menuPosition, setMenuPosition] = React.useState(null);
   const [cursorPosition, setCursorPosition] = React.useState(null);
   const { contextMenu, contextNode, setContextMenu, setContextNode } = useContextMenuState()
+  const resultKey = useContextResultKey(contextNode)
+  const { result } = useResult(resultKey)
 
   const handleClose = React.useMemo(() => {
     return () => {
@@ -88,8 +93,13 @@ export function useResultItemMenu(setOpenDrawer, data) {
     let items = null
     if (contextNode !== null) {
 
+      const [row, , ,] = getObjectFromKeyArray(result, contextNode.rowArray, 0)
+      let label = "Details"
+      if ('module' in row) {
+        label = `${label} of ${row["module"]}`
+      }
       items = [
-        <MenuItem key="drawer" onClick={handleOpenDrawer}>Details</MenuItem>,
+        <MenuItem key="drawer" onClick={handleOpenDrawer}>{label}</MenuItem>,
       ]
 
       if (tenantItemComponentMain) {
@@ -101,7 +111,7 @@ export function useResultItemMenu(setOpenDrawer, data) {
       }
     }
     return items
-  }, [handleClose, contextNode, handleOpenDrawer, tenantItemComponentMain, tenantItemComponentTarget])
+  }, [contextNode, handleOpenDrawer, tenantItemComponentMain, tenantItemComponentTarget])
 
 
   React.useMemo(() => {

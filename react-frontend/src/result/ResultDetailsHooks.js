@@ -218,7 +218,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
                 return newLastActionsInfo[newActionInfoLabel]
             }
             updateObjectList.push(
-                <Box sx={{ ml: -1 }}>
+                <Box key="tfPlan" sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={planAPI} terraformParams={terraformParams}
                         handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
                         label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" /*+ genTooManyLabel(nbUpdate)*/} confirm={false}
@@ -249,7 +249,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
             }
 
             updateObjectList.push(
-                <Box sx={{ ml: -1 }}>
+                <Box key="tfApply" sx={{ ml: -1 }}>
                     <TerraformButton terraformAPI={applyAPI} terraformParams={previousPlanTerraformParams}
                         handleChange={handleTerraformCallCompleteApply} getActionId={getActionIdApply}
                         label={"Terraform Apply '" + actionId + "' ( " + applyParenthesisLabel + " )"} confirm={true}

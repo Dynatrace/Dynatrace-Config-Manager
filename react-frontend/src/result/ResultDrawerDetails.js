@@ -52,7 +52,7 @@ export default function ResultDrawerDetails() {
     )
 }
 
-function useContextResultKey(contextNode) {
+export function useContextResultKey(contextNode) {
     return useMemo(() => {
         if (contextNode) {
             return contextNode['resultKey']

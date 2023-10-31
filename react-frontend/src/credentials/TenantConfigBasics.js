@@ -131,7 +131,7 @@ export default function TenantConfigBasics({ tenantKeyType = TENANT_KEY_TYPE_MAI
                         defaultExpanded={false}
                         label="Access Token Documentation (and curl commands)"
                         labelColor="primary.main"
-                        componentList={[(<DocumAPIToken url={tenant.url} tenantKeyType={tenantKeyType} />)]} />
+                        componentList={[(<DocumAPIToken key="DocumAPI" url={tenant.url} tenantKeyType={tenantKeyType} />)]} />
                 </React.Fragment>
                 <React.Fragment>
                     <TestConnectionButton tenantKey={tenantKey} />

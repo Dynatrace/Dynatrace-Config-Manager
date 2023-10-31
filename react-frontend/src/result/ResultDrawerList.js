@@ -175,7 +175,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             const { nbMax, list, keys } = resourceComponent
             const props = { status, list, nbMax, keys, checkAllStatus, handleSetCheckAllStatus }
             componentList.push(
-                <ResultDrawerListSchema {...props} />
+                <ResultDrawerListSchema key={`drawerListSchema-${name}-${status}`} {...props} />
             )
         }
 
