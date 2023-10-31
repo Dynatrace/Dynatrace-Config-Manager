@@ -29,10 +29,11 @@ export default function TFAnsiText({ logList }) {
     const [page, setPage] = React.useState(1)
     const [highlightLine, setHighlightLine] = React.useState(0)
     React.useEffect(() => {
-        if(maxLines === DEFAULT_MAX_LINES && logList.length <= DEFAULT_MAX_LINES_SINGLE_PAGE) {
+        if (maxLines === DEFAULT_MAX_LINES && logList.length <= DEFAULT_MAX_LINES_SINGLE_PAGE) {
             setMaxLines(DEFAULT_MAX_LINES_SINGLE_PAGE)
         }
     }, [logList])
+
     const lastPage = React.useMemo(() => {
         if (logList && logList.length) {
             // pass
@@ -192,7 +193,7 @@ function processLog(moduleLine, lineNumber, searchText, ansiLines, changePageToL
     }
     if (textComponent) {
         ansiLines.push(
-            <React.Fragment>
+            <React.Fragment key={`ansiLine-${ansiLines.length}`}>
                 <Grid item xs={1}>
                     {lineComponent}
                 </Grid>
@@ -209,7 +210,7 @@ function countLeadingSpaces(moduleLine) {
 }
 
 function stripAnsiCodes(moduleLine) {
-    if(moduleLine) {
+    if (moduleLine) {
         return moduleLine.replace(ansiCodeRegex, '')
     } else {
         return ""

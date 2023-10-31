@@ -24,7 +24,7 @@ import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 export default function ResultDrawerListSchema({ status, list, nbMax, keys, checkAllStatus, handleSetCheckAllStatus }) {
 
     const button = (
-        <FormControl sx={{ color: STATUS_COLORS[status] }} fullWidth>
+        <FormControl key={`ResultDrawerListSchema-button`} sx={{ color: STATUS_COLORS[status] }} fullWidth>
             <FormControlLabel
                 control={<Checkbox checked={checkAllStatus === status}
                     onChange={() => { handleSetCheckAllStatus(status, keys) }}

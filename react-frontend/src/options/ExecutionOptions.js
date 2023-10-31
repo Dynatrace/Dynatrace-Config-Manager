@@ -45,10 +45,10 @@ export default function ExecutionOptions() {
 
 function genButtonProps(isEnabled) {
     if (isEnabled) {
-        return { variant: "contained", textTransform: 'none', color: "secondary" }
+        return { variant: "contained", color: "secondary" }
     }
 
-    return { variant: "contained", textTransform: 'none', color: "primary" }
+    return { variant: "contained", color: "primary" }
 }
 
 const ENABLE_DASHBOARDS = 'enableDashboards'

@@ -41,7 +41,7 @@ export default function ExtractEntities({ tenantKeyType }) {
                 extraSearchParams={{ 'time_from_minutes': timeFromMinute, 'time_to_minutes': timeToMinute }} />
             <Box sx={{ ml: 2 }}>
                 <React.Fragment>
-                    <FormControl fullWidth>
+                    <FormControl>
                         <TextField fullWidth id={"timeFromMinute"}
                             type="number"
                             variant="standard"
@@ -54,7 +54,7 @@ export default function ExtractEntities({ tenantKeyType }) {
                     </FormControl>
                 </React.Fragment>
                 <React.Fragment>
-                    <FormControl fullWidth>
+                    <FormControl>
                         <TextField fullWidth id={"timeToMinute"}
                             type="number"
                             variant="standard"

@@ -37,7 +37,7 @@ export default function ResultTreeGroup({ data, defaultSortOrder, initialFilterT
             let typePageList = []
 
             for (const { renderedTreeItems, expandedList } of typeGroup['children']) {
-                typePageList.push(<ResultTree renderedTreeItems={renderedTreeItems} expandedList={expandedList} />)
+                typePageList.push(<ResultTree key={`resultTree-${typePageList.length}`} renderedTreeItems={renderedTreeItems} expandedList={expandedList} />)
             }
 
             const nb = typeGroup['nb']

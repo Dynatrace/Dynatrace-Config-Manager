@@ -35,7 +35,7 @@ export default function ExtractionSection() {
         for (const keyType of gridConfigList) {
 
             gridComponentList.push(
-                <React.Fragment>
+                <React.Fragment key={keyType}>
                     <Grid item xs={5} id={keyType}>
                         <ExtractConfigs tenantKeyType={keyType} />
                         <ExtractEntities tenantKeyType={keyType} />

@@ -83,7 +83,7 @@ export const useMigrationResultHook = () => {
             && 'stats' in extractedData) {
 
             components.push(
-                <Box sx={{ mt: 2, mb: 1 }} align={"center"}>
+                <Box key="Overall" sx={{ mt: 2, mb: 1 }} align={"center"}>
                     <Typography color="black" variant={"h4"}>Overall Progress</Typography>
                 </Box>
 
@@ -92,7 +92,7 @@ export const useMigrationResultHook = () => {
             const statuses = buildStatuses(extractedData["stats"]);
 
             components.push(
-                <Grid container>
+                <Grid key="stats" container>
                     <Grid item xs={3}></Grid>
                     <Grid item xs={9}>
                         <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
@@ -100,7 +100,7 @@ export const useMigrationResultHook = () => {
                 </Grid>
             )
             components.push(
-                <ResultDetails resultKey={MIGRATION_RESULT_KEY} setExtractedData={setExtractedData} />
+                <ResultDetails key="resultDetails" resultKey={MIGRATION_RESULT_KEY} setExtractedData={setExtractedData} />
             )
         }
 
@@ -108,9 +108,7 @@ export const useMigrationResultHook = () => {
     }, [extractedData])
 
     const searchComponents = React.useMemo(() => {
-        let components = []
-
-        components.push(
+        return (
             <Box sx={{ mt: 2 }}>
                 <Box sx={{ ml: 2 }}>
                     <Grid container>
@@ -149,8 +147,6 @@ export const useMigrationResultHook = () => {
                 </Box>
             </Box>
         )
-
-        return components
     }, [searchTextInput, handleLaunchSearch, setSearchTextInput, handleClearSearchText])
 
     const tableComponents = React.useMemo(() => {
@@ -261,11 +257,11 @@ export const useMigrationResultHook = () => {
 
             const unmatchedTreeList = []
             unmatchedTreeList.push(
-                <ResultTreeGroup data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
+                <ResultTreeGroup key="ResultTree-unmatched-entities" data={extractedData['entity_match_unmatched_dict']} defaultSortOrder={MATCH_TYPE} />
             )
 
             components.push(
-                <EfficientAccordion
+                <EfficientAccordion key="Accordion-unmatched-entities"
                     label={"ERROR: UNMATCHED Entities that were part of the extraction (May need to ajust Rules using the Match Tab)"}
                     componentList={unmatchedTreeList}
                 />
@@ -275,14 +271,11 @@ export const useMigrationResultHook = () => {
         if (extractedData
             && 'modules' in extractedData) {
 
-            let schemaComponents = []
-
             let label = "All Configs, per module"
 
             components.push(
-                <React.Fragment>
+                <React.Fragment key="modules">
                     <Typography sx={{ mt: 2, mb: 1 }} align="center" variant="h4">{label} </Typography>
-                    {schemaComponents}
                     <ExtractedTable data={extractedData['modules']} resultKey={MIGRATION_RESULT_KEY} keyArray={['modules']} handleClickMenu={handleContextMenu} searchText={searchText} />
                 </React.Fragment>
             )
@@ -320,7 +313,7 @@ export const useMigrationResultHook = () => {
             )
         }
         return null
-    }, [tableComponents, openDrawer, searchComponents])
+    }, [tableComponents, openDrawer, searchComponents, progressComponents, extractedData, setOpenDrawer])
 
     return { setExtractedData, hasExtractedData, resultComponents }
 }

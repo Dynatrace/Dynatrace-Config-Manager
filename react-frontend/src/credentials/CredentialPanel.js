@@ -31,7 +31,7 @@ export default function CredentialPanel() {
         for (const keyType of gridConfigList) {
 
             gridComponentList.push(
-                <React.Fragment>
+                <React.Fragment key={keyType}>
                     <Grid item xs={5}>
                         <AddTenantButton tenantKeyType={keyType} />
                         <CopyTenantButton tenantKeyType={keyType} />
