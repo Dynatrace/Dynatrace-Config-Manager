@@ -20,7 +20,7 @@ import { FirstTimeUser } from '../options/FirstTimeUser';
 import { useTenant } from '../context/TenantListContext';
 
 export function MainPage(props) {
-  const { firstTimeUser, setFirstTimeUser } = useExecutionOptionsState()
+  const { firstTimeUser, setFirstTimeUser, setAdvancedMode } = useExecutionOptionsState()
   const { tenant: { url, APIKey, label } } = useTenant("0")
 
   const isFirstTimeUser = React.useMemo(() => {
@@ -32,13 +32,14 @@ export function MainPage(props) {
       } else {
         if (firstTimeUser !== false) {
           setFirstTimeUser(false)
+          setAdvancedMode(true)
         }
         return false
       }
     }
     return firstTimeUser
 
-  }, [url, APIKey, label, firstTimeUser, setFirstTimeUser])
+  }, [url, APIKey, label, firstTimeUser, setFirstTimeUser, setAdvancedMode])
 
   return (
     <React.Fragment>
