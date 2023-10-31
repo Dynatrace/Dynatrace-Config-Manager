@@ -35,20 +35,24 @@ const TenantDescription = {
 
 export function WizTenantConfig({ showNextTab, tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
   const { tenantKey } = useTenantKey(tenantKeyType)
-  const { tenant: { url, APIKey, connectionTested, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
+  const { tenant: { label, url, APIKey, connectionTested, disableSystemProxies, proxyURL } } = useTenant(tenantKey)
   const { tenantKey: tenantKeySource } = useTenantKey(TENANT_KEY_TYPE_MAIN)
   const { tenant: { label: labelSource } } = useTenant(tenantKeySource)
   const [needsProxy, setNeedsProxy] = React.useState(false)
 
   const [buttonColor, buttonMessage, buttonDisabled] = React.useMemo(() => {
-    if (connectionTested === true) {
-      return [MatrixBlue, `Done with ${TenantLabel[tenantKeyType]} Credentials`, false]
-    } else if (connectionTested === false) {
-      return [MatrixRed, "Move on with a failed connection test", false]
+    if (label === "") {
+      return [MatrixDisabled, "Please enter a label for this tenant", true]
     } else {
-      return [MatrixDisabled, "Please test the connection", true]
+      if (connectionTested === true) {
+        return [MatrixBlue, `Done with ${TenantLabel[tenantKeyType]} Credentials`, false]
+      } else if (connectionTested === false) {
+        return [MatrixRed, "Move on with a failed connection test", false]
+      } else {
+        return [MatrixDisabled, "Please test the connection", true]
+      }
     }
-  }, [connectionTested, tenantKeyType])
+  }, [connectionTested, tenantKeyType, label])
 
   React.useEffect(() => {
     let areProxySettingsAlreadySet = false
