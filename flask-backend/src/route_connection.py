@@ -15,7 +15,7 @@ def test_connection():
 
     def call_process():
         config = credentials.get_api_call_credentials(tenant_key)
-        schema_dict = settings_2_0_schemas.extract_schemas(config, False, False)
+        schema_dict = settings_2_0_schemas.extract_schemas(config, False, False, skip_404=False)
 
         return schema_dict
 

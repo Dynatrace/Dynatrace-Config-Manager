@@ -84,7 +84,7 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, ca
     const fetchPromise = buildFetch(api_method, requestOptions, searchParams)
 
     if (thenFunction instanceof Function) {
-        const validationPromise = validateReturnCodePromise(fetchPromise, api_method, thenFunction, catchFunction)
+        const validationPromise = validateReturnCodePromise(fetchPromise, api_method, thenFunction, catchFunction, showAlert)
 
         return validationPromise
             .catch((error) => {
@@ -101,7 +101,7 @@ function fetchRunThen(api_method, requestOptions, searchParams, thenFunction, ca
     console.trace()
 }
 
-function validateReturnCodePromise(fetchPromise, api_method, thenFunction, catchFunction) {
+function validateReturnCodePromise(fetchPromise, api_method, thenFunction, catchFunction, showAlert) {
     return fetchPromise.then(response => {
         if (response.ok) {
             return thenFunction(Promise.resolve(response))
@@ -112,7 +112,9 @@ function validateReturnCodePromise(fetchPromise, api_method, thenFunction, catch
                     throw new Error("Http Status: " + response.status + "\nBody: " + responseText)
                 })
                     .catch((error) => {
-                        alert("Error Backend Api: " + api_method + "\n" + error)
+                        if (showAlert) {
+                            alert("Error Backend Api: " + api_method + "\n" + error)
+                        }
                         if (catchFunction instanceof Function) {
                             catchFunction(error)
                         }
