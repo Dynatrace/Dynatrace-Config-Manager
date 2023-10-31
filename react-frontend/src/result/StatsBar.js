@@ -14,16 +14,17 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { MIGRATE_SETTINGS_2_0 } from '../backend/backend';
-import { useHandlePostCurrent } from '../backend/useHandlePost';
-import MigrateButton from './MigrateButton';
+import HorizontalStackedBar from '../extraction/HorizontalStackedBar';
+import { buildStatuses } from './ResultHook';
 
-export default function MigrateButtonUncontrolled({ handleChange, label, progressComponent = null, progress = "", confirm = false, runOnce = false, api = MIGRATE_SETTINGS_2_0 }) {
+export default function StatsBar({ stats }) {
 
-    const { handlePost } = useHandlePostCurrent(handleChange, api)
+    const statuses = React.useMemo(() => {
+        return buildStatuses(stats)
+    }, [stats])
 
     return (
-        <MigrateButton label={label} handlePost={handlePost} confirm={confirm} progressComponent={progressComponent} progress={progress} runOnce={runOnce} />
+        statuses == null ? null :
+            <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />
     )
 }
-

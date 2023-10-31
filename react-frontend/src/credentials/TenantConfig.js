@@ -16,36 +16,22 @@ limitations under the License.
 import { Fragment } from "react";
 import * as React from 'react';
 import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
-import ClearIcon from '@mui/icons-material/Clear';
-import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
+import { Box, TextField, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from "../context/TenantListContext";
-import TestConnectionButton from "./TestConnectionButton";
-import { PROXY_GET_ENV, backendGet } from "../backend/backend";
+import TenantConfigBasics from "./TenantConfigBasics";
+import TenantConfigConnectionOptions from "./TenantConfigConnectionOptions";
 
 export const DEFAULT_MONACO_CONCURRENT_REQUESTS = 10
 
-export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
-    const [envProxyURL, setEnvProxyUrl] = React.useState("")
-    const [tenantUrlError, setTenantUrlError] = React.useState(false)
-    const [tenantUrlErrorMessage, setTenantUrlErrorMessage] = React.useState("")
-    const { tenantKey } = useTenantKey(tenantType)
+export default function TenantConfig({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
+    const { tenantKey } = useTenantKey(tenantKeyType)
     const {
-        tenant, setTenantLabel, setTenantUrl, setTenantHeaders, setTenantAPIKey,
+        tenant, setTenantHeaders,
         setTenantClientID, setTenantAccountID, setTenantClientSecret,
-        setTenantMonacoConcurrentRequests, setTenantDisableSSLVerification,
-        setTenantDisableSystemProxies, setTenantProxyURL, setTenantNotes
+        setTenantMonacoConcurrentRequests,
+        setTenantNotes
     } = useTenant(tenantKey)
 
-
-    const tenantUrlDisplay = React.useMemo(() => {
-        if (!tenant.url || tenant.url === "") {
-            return "https://<YOUR_TENANT>.live.dynatrace.com/"
-        } else {
-            return tenant.url
-        }
-    }, [tenant.url])
 
     const tenantMonacoConcurrentRequests = React.useMemo(() => {
         if (!tenant.monacoConcurrentRequests || tenant.monacoConcurrentRequests === "" || tenant.monacoConcurrentRequests === 0) {
@@ -55,48 +41,6 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         }
     }, [tenant.monacoConcurrentRequests])
 
-    React.useEffect(() => {
-        backendGet(PROXY_GET_ENV, null,
-            promise =>
-                promise
-                    .then(response => {
-                        return response.json()
-                    })
-                    .then(data => {
-                        setEnvProxyUrl(data["proxy"])
-                    })
-        )
-    }, [])
-
-    React.useEffect(() => {
-        let urlError = false;
-        let message = "";
-        console.log(tenant.url, typeof tenant.url)
-
-        if (tenant.url.endsWith("/")) {
-            // pass
-        } else {
-            urlError = true
-            message += "The URL should end with a slash '/'. "
-        }
-
-        if (tenant.url.includes(".live.dynatrace.com")) {
-            // pass
-        } else {
-            if (tenant.url.includes(".apps.dynatrace.com")) {
-                urlError = true
-                message += "Use the '.live' URL, not the '.apps' one. "
-            }
-        }
-
-        if (tenantUrlError !== urlError) {
-            setTenantUrlError(urlError)
-        }
-        if (tenantUrlErrorMessage !== message) {
-            setTenantUrlErrorMessage(message)
-        }
-
-    }, [tenant])
 
     /*
     const pasteHeaders = () => {
@@ -114,21 +58,6 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         setTenantHeaders("")
     }
     */
-
-    const pasteAPIKey = () => {
-        navigator.clipboard.readText()
-            .then(text => {
-                setTenantAPIKey(text)
-            })
-            .catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-            });
-
-    }
-
-    const clearAPIKey = () => {
-        setTenantAPIKey("")
-    }
 
     const pasteClientID = () => {
         navigator.clipboard.readText()
@@ -171,39 +100,13 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
 
     }
 
-    const clearProxyURL = () => {
-        setTenantProxyURL("")
-    }
-
-    const pasteProxyURL = () => {
-        navigator.clipboard.readText()
-            .then(text => {
-                setTenantProxyURL(text)
-            })
-            .catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-            });
-
-    }
 
     const clearClientSecret = () => {
         setTenantClientSecret("")
     }
 
-    const handleChangeLabel = (event) => {
-        setTenantLabel(event.target.value)
-    }
-
-    const handleChangeUrl = (event) => {
-        setTenantUrl(event.target.value)
-    }
-
     const handleChangeHeaders = (event) => {
         setTenantHeaders(event.target.value)
-    }
-
-    const handleChangeAPIKey = (event) => {
-        setTenantAPIKey(event.target.value)
     }
 
     const handleChangeClientID = (event) => {
@@ -222,87 +125,14 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
         setTenantMonacoConcurrentRequests(event.target.value)
     }
 
-    const handleChangeDisableSSLVerification = (event) => {
-        setTenantDisableSSLVerification(event.target.checked)
-    }
-
-    const handleChangeDisableSystemProxies = (event) => {
-        setTenantDisableSystemProxies(event.target.checked)
-    }
-
-    const handleChangeProxyURL = (event) => {
-        setTenantProxyURL(event.target.value)
-    }
-
     const handleChangeNotes = (event) => {
         setTenantNotes(event.target.value)
     }
 
     return (
         <Fragment>
-            <Box sx={{ mt: 2 }}>
-                <Typography>Credentials [Required]:</Typography>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"tenant-text-field" + tenantKey} variant="standard"
-                                label="Tenant Label" value={tenant.label} onChange={handleChangeLabel} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"tenant-url-field" + tenantKey} variant="standard"
-                                label="Tenant Url (https://<YOUR_TENANT>.live.dynatrace.com/)" value={tenantUrlDisplay}
-                                onChange={handleChangeUrl}
-                                error={tenantUrlError} helperText={tenantUrlErrorMessage} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"api_key-text-field" + tenantKey} variant="standard" type="password"
-                                label="Access Token (API Key): see documentation tab" value={tenant.APIKey} onChange={handleChangeAPIKey} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <IconButton onClick={pasteAPIKey}>
-                            <ContentPasteIcon />
-                        </IconButton>
-                        <IconButton onClick={clearAPIKey}>
-                            <ClearIcon />
-                        </IconButton>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <TestConnectionButton tenantKey={tenantKey} />
-                    </React.Fragment>
-                </Box>
-            </Box>
-            <Box sx={{ mt: 2 }}>
-                <Typography>Connection Options [Optional]:</Typography>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <FormControlLabel control={<Checkbox checked={tenant.disableSystemProxies === true}
-                                onChange={handleChangeDisableSystemProxies} />} label={"Disable Proxies (HTTP_PROXY & HTTPS_PROXY)"} />
-                        </FormControl>
-                    </React.Fragment>
-                </Box>
-                <Box sx={{ ml: 2 }}>
-                    <React.Fragment>
-                        <FormControl fullWidth>
-                            <TextField id={"proxyURL-text-field" + tenantKey} variant="standard"
-                                label={getProxyLabel(envProxyURL)} value={tenant.proxyURL} onChange={handleChangeProxyURL} disabled={tenant.disableSystemProxies} />
-                        </FormControl>
-                    </React.Fragment>
-                    <React.Fragment>
-                        <IconButton onClick={pasteProxyURL} disabled={tenant.disableSystemProxies}>
-                            <ContentPasteIcon />
-                        </IconButton>
-                        <IconButton onClick={clearProxyURL} disabled={tenant.disableSystemProxies}>
-                            <ClearIcon />
-                        </IconButton>
-                    </React.Fragment>
-                </Box>
-            </Box>
+            <TenantConfigBasics tenantKeyType={tenantKeyType} />
+            <TenantConfigConnectionOptions tenantKeyType={tenantKeyType} />
             <Box sx={{ mt: 2 }}>
                 <Typography>Other:</Typography>
                 <Box sx={{ ml: 2 }}>
@@ -328,17 +158,6 @@ export default function TenantConfig({ tenantType = TENANT_KEY_TYPE_MAIN }) {
             </Box>
         </Fragment>
     );
-}
-
-const getProxyLabel = (envProxyURL) => {
-    let label = "Proxy URL"
-    if (envProxyURL && envProxyURL !== "") {
-        label += " [Default: "
-        label += envProxyURL
-        label += "]"
-    }
-
-    return label
 }
 
 /*

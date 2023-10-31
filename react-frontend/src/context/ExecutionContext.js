@@ -84,7 +84,7 @@ function reducer(state, action) {
 }
 
 function initState() {
-    return { enableDashboards: false, enableOmitDestroy: false }
+    return { enableDashboards: false, enableOmitDestroy: false, firstTimeUser: true, advancedMode: false }
 }
 
 export function useExecutionOptionsContextReducer() {
@@ -108,12 +108,14 @@ export function useExecutionOptionsStateValue() {
 
     const enableDashboards = contextState['enableDashboards'] === true
     const enableOmitDestroy = contextState['enableOmitDestroy'] === true
+    const firstTimeUser = contextState['firstTimeUser'] === true
+    const advancedMode = contextState['advancedMode'] === true
 
-    return { enableDashboards, enableOmitDestroy }
+    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode }
 }
 
 export function useExecutionOptionsState() {
-    const { enableDashboards, enableOmitDestroy } = useExecutionOptionsStateValue()
+    const { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode } = useExecutionOptionsStateValue()
     const contextDispatch = useContextDispatch()
 
     const setProperty = (property, value) => {
@@ -130,6 +132,14 @@ export function useExecutionOptionsState() {
         setProperty("enableOmitDestroy", value)
     }
 
+    const setFirstTimeUser = (value) => {
+        setProperty("firstTimeUser", value)
+    }
 
-    return { enableDashboards, enableOmitDestroy, setEnableDashboards, setEnableOmitDestroy }
+    const setAdvancedMode = (value) => {
+        setProperty("advancedMode", value)
+    }
+
+
+    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, setEnableDashboards, setEnableOmitDestroy, setFirstTimeUser, setAdvancedMode }
 }

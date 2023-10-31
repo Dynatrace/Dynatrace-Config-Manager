@@ -35,7 +35,7 @@ ACTION_UPDATE = "Update"
 ACTION_IDENTICAL = "Identical"
 ACTION_DONE = "Identical"
 ACTION_PREEMPTIVE = "Preemptive"
-ACTION_REFRESH = "Refresh"
+# ACTION_REFRESH = "Refresh"
 ACTION_ERROR = "Error"
 
 ACTION_MAP = {
@@ -45,7 +45,7 @@ ACTION_MAP = {
     ACTION_IDENTICAL: "I",
     ACTION_DONE: "I",
     ACTION_PREEMPTIVE: "P",
-    ACTION_REFRESH: "R",
+    # ACTION_REFRESH: "R",
     ACTION_ERROR: "E",
 }
 

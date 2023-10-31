@@ -13,20 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Grid, Typography } from '@mui/material';
 import * as React from 'react';
-import DocumAPIToken from './DocumAPIToken';
-import TabPanelBar, { genTabConfig } from '../navigation/TabPanelBar';
+import TabPanelAssisted from '../navigation/TabPanelAssisted';
 
+export function WizardPage(props) {
+  const [tabIdx, setTabIdx] = React.useState(0);
 
-const tabConfig = [
-    genTabConfig("Access Tokens", <DocumAPIToken />),
-]
-
-export default function DocumPanel() {
-    const [tabIdx, setTabIdx] = React.useState(0);
-
-    return (
-        <TabPanelBar tabConfig={tabConfig} tabIdx={tabIdx} setTabIdx={setTabIdx} />
-    )
+  return (
+    <React.Fragment>
+      <Grid item sx={{ mt: 2, mb: 1 }} direction={"column"} align={'center'}>
+        <Typography variant='h4'>
+          Assisted Config Migration
+        </Typography>
+      </Grid>
+      <TabPanelAssisted tabIdx={tabIdx} setTabIdx={setTabIdx} />
+    </React.Fragment>
+  );
 }
-

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from "react";
+import React, { useCallback } from "react";
 import { useLoadHistory } from "../HistoryContext";
 
 export default function MigrateContextLoad(props) {
@@ -26,13 +26,13 @@ export default function MigrateContextLoad(props) {
         return false
     }, [isHistoryLoaded])
 
-    const genChildren = () => {
+    const genChildren = useCallback(() => {
         if (isLoaded) {
             return props.children
         } else {
             return null
         }
-    }
+    }, [isLoaded, props.children])
 
     return (
         <React.Fragment>

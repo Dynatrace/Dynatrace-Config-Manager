@@ -61,18 +61,18 @@ export function useEnhancedBackendFunctions(completeSearchParams, payloadTerrafo
     const enhancedBackendFunctions = useMemo(() => {
 
         const functions = {
-            "backendGet": (api_method, searchParams, thenFunction) => {
+            "backendGet": (api_method, searchParams, thenFunction, catchFunction) => {
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
-                return backendGet(api_method, completedSearchParams, thenFunction)
+                return backendGet(api_method, completedSearchParams, thenFunction, catchFunction)
             },
-            "backendPost": (api_method, payload, searchParams, thenFunction) => {
+            "backendPost": (api_method, payload, searchParams, thenFunction, catchFunction) => {
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
-                return backendPost(api_method, payloadTerraform, completedSearchParams, thenFunction)
+                return backendPost(api_method, payloadTerraform, completedSearchParams, thenFunction, catchFunction)
 
             },
-            "backendDelete": (api_method, payload, searchParams, thenFunction) => {
+            "backendDelete": (api_method, payload, searchParams, thenFunction, catchFunction) => {
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
-                return backendDelete(api_method, payload, completedSearchParams, thenFunction)
+                return backendDelete(api_method, payload, completedSearchParams, thenFunction, catchFunction)
 
             },
         }

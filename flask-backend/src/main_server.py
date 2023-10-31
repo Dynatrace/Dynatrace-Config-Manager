@@ -49,8 +49,6 @@ CORS(app)
 @app.route("/")
 def my_index():
     template = render_template("index.html")
-    print(template)
-    print("localhost" in template)
     return template
 
 

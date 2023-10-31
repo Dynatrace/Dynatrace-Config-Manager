@@ -16,19 +16,15 @@ limitations under the License.
 import { Paper, Typography } from '@mui/material';
 import * as React from 'react';
 import EfficientAccordion from './EfficientAccordion';
-import HorizontalStackedBar, { STATUS_COLORS } from '../extraction/HorizontalStackedBar';
+import { STATUS_COLORS } from '../extraction/HorizontalStackedBar';
 import TFAnsiText from './TFAnsiText';
 import { applyActionLabel } from './ResultDetailsHooks';
 import TFLogModule from './TFLogModule';
-import { buildStatuses } from './ResultHook';
+import StatsBar from './StatsBar';
 
 
 
 export default function TFLog({ historyItemLog: { modules: logs, other_lines: other, apply_complete, no_changes, stats }, actionLabel, actionId, defaultExpanded = false }) {
-
-    const statuses = React.useMemo(() => {
-        return buildStatuses(stats)
-    }, [stats])
 
     return (
         ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
@@ -42,8 +38,7 @@ export default function TFLog({ historyItemLog: { modules: logs, other_lines: ot
                     defaultExpanded={defaultExpanded}
                     componentList={
                         [
-                            statuses == null ? null :
-                                <HorizontalStackedBar id={'statistics'} statuses={statuses} onClickMenu={() => { }} />,
+                            <StatsBar stats={stats} />,
                             other == null ? null :
                                 <EfficientAccordion
                                     label="General execution info"

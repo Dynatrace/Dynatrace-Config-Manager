@@ -19,10 +19,10 @@ import IconButton from '@mui/material/IconButton';
 import { Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey, useTenantList } from '../context/TenantListContext';
 
-export default function CopyTenantButton({ tenantType = TENANT_KEY_TYPE_MAIN }) {
+export default function CopyTenantButton({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
 
     const { addTenant } = useTenantList()
-    const { tenantKey, setTenantKey } = useTenantKey(tenantType)
+    const { tenantKey, setTenantKey } = useTenantKey(tenantKeyType)
     const { tenant } = useTenant(tenantKey)
 
     const handleCopyTenant = () => {

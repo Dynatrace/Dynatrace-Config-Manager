@@ -18,12 +18,12 @@ import IconButton from '@mui/material/IconButton';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { Box, Typography } from '@mui/material';
 import { useHandlePostCurrent } from '../backend/useHandlePost';
-import { useProgress } from '../progress/ProgressHook';
+import { ERROR, useProgress } from '../progress/ProgressHook';
 
 export default function MatchButton({ handleChange, api, label, confirm = false }) {
 
-    const { setLoading, progressComponent } = useProgress()
-    const { handlePost } = useHandlePostCurrent(handleChange, api, setLoading)
+    const { progress, setProgress, progressComponent } = useProgress()
+    const { handlePost } = useHandlePostCurrent(handleChange, api, setProgress)
 
     const button = React.useMemo(() => {
 
@@ -36,13 +36,18 @@ export default function MatchButton({ handleChange, api, label, confirm = false 
             buttonIcon = (<PlayCircleOutlineIcon {...props} />)
         }
 
+        let buttonColor = "primary"
+        if (progress === ERROR) {
+            buttonColor = "error"
+        }
+
         return (
-            <IconButton onClick={handlePost} color='primary'>
+            <IconButton onClick={handlePost} color={buttonColor}>
                 {buttonIcon}
                 <Typography sx={{ ml: 1 }}>{label}</Typography>
             </IconButton>
         )
-    }, [label, handlePost, progressComponent])
+    }, [label, handlePost, progressComponent, progress])
 
     return (
         <Box sx={{ my: 1 }}>

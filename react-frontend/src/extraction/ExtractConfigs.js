@@ -18,13 +18,13 @@ import { EXTRACT_CONFIGS } from '../backend/backend';
 import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 import ExtractButton from './ExtractButton';
 
-export default function ExtractConfigs({ tenantType = TENANT_KEY_TYPE_MAIN }) {
+export default function ExtractConfigs({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
 
     return (
         <React.Fragment>
-            <ExtractButton handleChange={() => { }} api={EXTRACT_CONFIGS}
+            <ExtractButton api={EXTRACT_CONFIGS}
                 label="Extract Configs (Monaco cli)"
-                tenantType={tenantType} />
+                tenantKeyType={tenantKeyType} />
         </React.Fragment>
     );
 }

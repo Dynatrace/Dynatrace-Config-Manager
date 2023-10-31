@@ -14,16 +14,23 @@ limitations under the License.
 */
 
 import { HistoryContextDispatch, HistoryContextState, useHistoryContextReducer } from "../HistoryContext";
+import { ResultContextDispatch, ResultContextState, useResultContextReducer } from "../ResultContext";
 
 
 export default function MigrateContext(props) {
     const [historyState, historyDispatch] = useHistoryContextReducer()
+    const [resultState, resultDispatch] = useResultContextReducer()
 
     return (
         <HistoryContextState.Provider value={historyState}>
             <HistoryContextDispatch.Provider value={historyDispatch}>
-                {props.children}
+                <ResultContextState.Provider value={resultState}>
+                    <ResultContextDispatch.Provider value={resultDispatch}>
+                        {props.children}
+                    </ResultContextDispatch.Provider>
+                </ResultContextState.Provider>
             </HistoryContextDispatch.Provider>
         </HistoryContextState.Provider>
     )
 }
+

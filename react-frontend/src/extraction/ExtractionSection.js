@@ -21,18 +21,12 @@ import ExtractEntities from './ExtractEntities';
 import MonacoRequestsInfo from './MonacoRequestsInfo';
 import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
 import ExecutionOptions from '../options/ExecutionOptions';
-import { useHistoryState } from '../context/HistoryContext'
-import { getTimestampActionId } from '../date/DateFormatter';
+import { usePostProcessEntityFilter } from '../migrate/PostProcessHooks';
 
 export default function ExtractionSection() {
     const gridConfigList = useMigrationGridConfig()
-    const { setLastPlanAllActionId } = useHistoryState()
 
-    const getActionId = React.useCallback(() => {
-        const newActionId = getTimestampActionId()
-        setLastPlanAllActionId(newActionId)
-        return newActionId
-    }, [setLastPlanAllActionId])
+    const entityFilter = usePostProcessEntityFilter()
 
     const extractionGridComponentList = React.useMemo(() => {
 
@@ -43,9 +37,9 @@ export default function ExtractionSection() {
             gridComponentList.push(
                 <React.Fragment>
                     <Grid item xs={5} id={keyType}>
-                        <ExtractConfigs tenantType={keyType} />
-                        <ExtractEntities tenantType={keyType} />
-                        <MonacoRequestsInfo tenantType={keyType} />
+                        <ExtractConfigs tenantKeyType={keyType} />
+                        <ExtractEntities tenantKeyType={keyType} />
+                        <MonacoRequestsInfo tenantKeyType={keyType} />
                     </Grid>
                     <Grid item xs={1} />
                 </React.Fragment>
@@ -59,7 +53,7 @@ export default function ExtractionSection() {
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
                 <ExecutionOptions />
                 <MigrateButtonControlled handleChange={() => { }}
-                    entityFilter={{ 'applyMigrationChecked': true, getActionIdFunc: getActionId }}
+                    entityFilter={entityFilter}
                     label={"Post-Process extracted files, do this when extractions are completed (Terraform cli)"}
                     confirm={true} descLabel={""} />
             </Paper>

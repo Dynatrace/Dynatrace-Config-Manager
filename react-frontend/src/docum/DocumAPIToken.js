@@ -16,124 +16,105 @@ limitations under the License.
 import { Box, Typography } from '@mui/material';
 import * as React from 'react';
 import EfficientAccordion from '../result/EfficientAccordion';
+import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET } from '../context/TenantListContext';
 
 
 const accessTokenHygieneInfo =
-    `
-Access Token hygiene: 
-- This tool is not using a Vault to store your access tokens.
-- It is recommended that the tokens you create have a 24 hours life span and that you delete them when you are done using the tool.
+    `  - This tool is not using a Vault to store your access tokens.
+  - It is recommended that the tokens you create:
+    - Have a 24 hours life span
+    - Are deleted when you are done using the tool.
 `
 
 const tokenSection =
     `
 Here is a list of the required scopes for your access token
-- In addition, you will find curl commands that you can copy paste to create the tokens easily
+  - You can copy paste the curl commands below to create the tokens easily
+`
+
+const readScopeList =
+    `  - Read entities
+  - Read settings
+  - Read SLO
+  - Access problem and event feed, metrics, and topology
+  - Read configuration
+  - Read network zones
+  - Read Credential Vault
 `
 
 const readScopeSection =
-    `
+    `${readScopeList}
 
-Read Scopes:
-- Read entities
-- Read settings
-- Read SLO
-- Access problem and event feed, metrics, and topology
-- Read configuration
-- Read network zones
-- Read Credential Vault
-
-`
-
-const curlPrefix =
-    `curl -X POST "`
-const saasUrl =
-    `https://<tenant>.live.dynatrace.com/`
-const managedUrl =
-    `https://<managed_domain>/e/<environment>/`
-const expirationDateOneDay =
-    `"now+1d"`
-const curlPartTwo =
-    `api/v2/apiTokens" -H "accept: application/json; charset=utf-8" -H "Content-Type: application/json; charset=utf-8" -d `
-const curlObjectStart =
-    `{"name":"Dynatrace Config Manager (Write)", "expirationDate": ${expirationDateOneDay},"scopes":[`
-const curlObjectEnd =
-    `]}`
-const urlSuffix =
-    ` -H "Authorization: Api-Token XXXXXXXX"`
-const readTokenValue =
-    `"entities.read","networkZones.read","settings.read","slo.read","credentialVault.read","DataExport","ReadConfig"`
-const writeTokenValue =
-    `"networkZones.write","settings.write","slo.write","CaptureRequestData","credentialVault.write","ExternalSyntheticIntegration","WriteConfig"`
-
-const curlReadObject = JSON.stringify(`${curlObjectStart}${readTokenValue}${curlObjectEnd}`)
-
-const curlRead =
-    `
-curl for SaaS tenant:
-${curlPrefix}${saasUrl}${curlPartTwo}${curlReadObject}${urlSuffix}
-Curl for Managed tenant:
-${curlPrefix}${managedUrl}${curlPartTwo}${curlReadObject}${urlSuffix}
 `
 
 const writeScopeSection =
-    `
-
-Write Scopes (in addition to the read scopes):
-- Write settings
-- Write SLO
-- Create and read synthetic monitors, locations, and nodes
-- Write configuration
-- Write network zones
-- Write Credential Vault
-- Capture request data
+    `${readScopeList}
+  - All of the Read Scopes (see above)
+  - Write settings
+  - Write SLO
+  - Create and read synthetic monitors, locations, and nodes
+  - Write configuration
+  - Write network zones
+  - Write Credential Vault
+  - Capture request data
 
 `
 
 
-const curlWriteObject = JSON.stringify(`${curlObjectStart}${readTokenValue},${writeTokenValue}${curlObjectEnd}`)
 
-const curlWrite =
-    `
-curl for SaaS tenant:
-${curlPrefix}${saasUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}
-Curl for Managed tenant:
-${curlPrefix}${managedUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}
-`
-
-export default function DocumAPIToken() {
+export default function DocumAPIToken({ url = undefined, tenantKeyType = undefined }) {
 
     const documList = React.useMemo(() => {
+
+        const [curlRead, curlWrite] = genCurlCommands(url)
+
         let documList = []
 
-        documList.push(<Typography variant='h5'>Access Token (API Key):</Typography>)
+        documList.push(<Typography variant='h6'>Access Token hygiene</Typography>)
         documList.push(...multiLinesToComponent(accessTokenHygieneInfo))
-        documList.push(...multiLinesToComponent(tokenSection))
+        //documList.push(...multiLinesToComponent(tokenSection))
 
+        if (tenantKeyType === TENANT_KEY_TYPE_TARGET) {
+            // pass
+        } else {
+            documList.push(<Typography variant='h6'>Manual creation (UI)</Typography>)
+            documList.push((<EfficientAccordion
+                defaultExpanded={false}
+                label="Source tenant scopes"
+                labelColor={null}
+                componentList={[
+                    ...multiLinesToComponent(readScopeSection),
+                ]
+                } />))
+            documList.push(<Typography variant='h6'>Curl command creation:</Typography>)
+            documList.push(...multiLinesToComponent(curlRead))
 
-        documList.push((<EfficientAccordion
-            defaultExpanded={false}
-            label="Read Scopes and curls: "
-            labelColor={null}
-            componentList={[
-                ...multiLinesToComponent(readScopeSection),
-                ...multiLinesToComponent(curlRead),
-            ]
-            } />))
+        }
 
-        documList.push((<EfficientAccordion
-            defaultExpanded={false}
-            label="Write Scopes and curls: "
-            labelColor={null}
-            componentList={[
-                ...multiLinesToComponent(writeScopeSection),
-                ...multiLinesToComponent(curlWrite),
-            ]
-            } />))
+        if (tenantKeyType === TENANT_KEY_TYPE_MAIN) {
+            // pass
+        } else {
+            documList.push((<EfficientAccordion
+                defaultExpanded={false}
+                label="Target tenant scopes"
+                labelColor={null}
+                componentList={[
+                    ...multiLinesToComponent(writeScopeSection),
+                ]
+                } />))
+            documList.push((<EfficientAccordion
+                defaultExpanded={false}
+                label="Target tenant curl command"
+                labelColor={null}
+                componentList={[
+                    ...multiLinesToComponent(curlWrite),
+                ]
+                } />))
+        }
 
         return documList
 
-    }, [])
+    }, [url])
 
     return (
         <React.Fragment>
@@ -160,6 +141,65 @@ function multiLinesToComponent(lines) {
         )
     }
     return documList
+}
+
+export function genCurlCommands(url) {
+
+    const curlPrefix =
+        `curl -X POST "`
+    let saasUrl =
+        `https://<tenant>.live.dynatrace.com/`
+    let managedUrl =
+        `https://<managed_domain>/e/<environment>/`
+    const expirationDateOneDay =
+        `"now+1d"`
+    const curlPartTwo =
+        `api/v2/apiTokens" -H "accept: application/json; charset=utf-8" -H "Content-Type: application/json; charset=utf-8" -d `
+    const curlObjectStart =
+        `{"name":"Dynatrace Config Manager (Write)", "expirationDate": ${expirationDateOneDay},"scopes":[`
+    const curlObjectEnd =
+        `]}`
+    const urlSuffix =
+        ` -H "Authorization: Api-Token XXXXXXXX"`
+    const readTokenValue =
+        `"entities.read","networkZones.read","settings.read","slo.read","credentialVault.read","DataExport","ReadConfig"`
+    const writeTokenValue =
+        `"networkZones.write","settings.write","slo.write","CaptureRequestData","credentialVault.write","ExternalSyntheticIntegration","WriteConfig"`
+
+    const curlReadObject = JSON.stringify(`${curlObjectStart}${readTokenValue}${curlObjectEnd}`)
+
+    const curlWarning = `- Don't forget to validate the URL and replace "Api-Token XXXXXXXX"`
+
+    let curlRead =
+        `${curlWarning}
+SaaS tenant:
+${curlPrefix}${saasUrl}${curlPartTwo}${curlReadObject}${urlSuffix}
+Managed tenant:
+${curlPrefix}${managedUrl}${curlPartTwo}${curlReadObject}${urlSuffix}`
+
+
+
+    const curlWriteObject = JSON.stringify(`${curlObjectStart}${readTokenValue},${writeTokenValue}${curlObjectEnd}`)
+
+    let curlWrite =
+        `${curlWarning}
+SaaS tenant:
+${curlPrefix}${saasUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}
+Managed tenant:
+${curlPrefix}${managedUrl}${curlPartTwo}${curlWriteObject}${urlSuffix}`
+
+    if (url === undefined || url === "") {
+        // pass
+    } else {
+        curlRead =
+            `${curlWarning}
+${curlPrefix}${url}${curlPartTwo}${curlReadObject}${urlSuffix}`
+        curlWrite =
+            `${curlWarning}
+${curlPrefix}${url}${curlPartTwo}${curlWriteObject}${urlSuffix}`
+    }
+
+    return [curlRead, curlWrite]
 }
 
 // <Link href="https://www.dynatrace.com/support/help/dynatrace-api/environment-api/log-monitoring-v2/post-ingest-logs" target="_blank" rel=" noopener noreferrer">Dynatrace Log Ingestion Api v2</Link>

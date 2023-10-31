@@ -16,9 +16,9 @@ limitations under the License.
 import './App.css';
 import React from 'react';
 import ContextMenu from './menu/ContextMenu';
-import TabPanelMain from './navigation/TabPanelMain';
 import AppContextLoad from './context/components/AppContextLoad';
 import AppContext from './context/components/AppContext';
+import { MainPage } from './navigation/MainPage';
 //"@dynatrace/openkit-js": "^1.3.0",     <-- package.json
 //import './dynatrace/openkit';
 
@@ -28,7 +28,7 @@ function App() {
       <AppContext>
         <AppContextLoad>
           <ContextMenu>
-            <TabPanelMain />
+            <MainPage />
           </ContextMenu>
         </AppContextLoad>
       </AppContext>

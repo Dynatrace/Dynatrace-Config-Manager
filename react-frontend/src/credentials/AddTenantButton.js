@@ -19,10 +19,10 @@ import IconButton from '@mui/material/IconButton';
 import { Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenantKey, useTenantList } from '../context/TenantListContext';
 
-export default function AddTenantButton({tenantType=TENANT_KEY_TYPE_MAIN}) {
+export default function AddTenantButton({tenantKeyType=TENANT_KEY_TYPE_MAIN}) {
 
     const { addTenant } = useTenantList()
-    const { setTenantKey } = useTenantKey(tenantType)
+    const { setTenantKey } = useTenantKey(tenantKeyType)
     
     const handleAddTenant = () => {
         const newTenantId = addTenant()
