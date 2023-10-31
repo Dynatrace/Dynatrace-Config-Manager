@@ -46,7 +46,7 @@ def extract_basic_json(config, api_endpoint, label, use_cache, cache_only, skip_
     cache_path = dirs.get_file_path(cache_path, label)
 
     def extract_function():
-        return api_v2.get_json(config, api_endpoint, "", skip_404)
+        return api_v2.get_json(config, api_endpoint, "", skip_404=skip_404)
 
     result_json = cache.get_cached_data(
         use_cache, cache_only, cache_path, label, extract_function)

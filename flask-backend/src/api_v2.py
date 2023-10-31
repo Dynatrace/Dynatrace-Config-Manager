@@ -64,7 +64,7 @@ def get(config, api, url_trail, query_dict={}, skip_404=True):
 
     response = requests.request(
         method, call_url, headers=config['headers'], verify=config['verifySSL'], proxies=config['proxies'])
-    _handle_response(response, method, api, skip_404)
+    _handle_response(response, method, api, skip_404=skip_404)
 
     return response
 
@@ -137,7 +137,7 @@ def _append_query_string(url_trail, query_dict):
 
 def get_json(config, api, url_trail, query_dict={}, skip_404=True):
 
-    response = get(config, api, url_trail, query_dict, skip_404)
+    response = get(config, api, url_trail, query_dict, skip_404=skip_404)
     result = response.text
 
     try:
