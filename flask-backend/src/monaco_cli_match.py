@@ -205,7 +205,6 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
         result["monaco_finished"] = True
 
         finished_file = {
-            "monaco_finished": True,
             "tenant_key_main": tenant_key_main,
             "tenant_key_target": tenant_key_target,
         }

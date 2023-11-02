@@ -95,7 +95,7 @@ export function useResultItemMenu(setOpenDrawer, data) {
 
       const [row, , ,] = getObjectFromKeyArray(result, contextNode.rowArray, 0)
       let label = "Details"
-      if ('module' in row) {
+      if (row && 'module' in row) {
         label = `${label} of ${row["module"]}`
       }
       items = [

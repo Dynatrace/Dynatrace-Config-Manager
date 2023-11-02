@@ -374,12 +374,16 @@ def gen_exec_path(
 
 
 def add_timestamp_to_log_filename(log_path, log_filename):
-    timestamp = datetime.now()
-    formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
+    formatted_timestamp = get_formatted_timestamp()
 
     seasoned_log_filename = formatted_timestamp + "_" + log_filename
     log_file_path = dirs.forward_slash_join(log_path, seasoned_log_filename)
     return log_file_path
+
+def get_formatted_timestamp():
+    timestamp = datetime.now()
+    formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
+    return formatted_timestamp
 
 
 def create_target_current_state(run_info, tenant_key_main, tenant_key_target):

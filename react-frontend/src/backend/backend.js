@@ -24,6 +24,8 @@ export const PROXY_GET_ENV = 'proxy_get_env'
 export const TEST_CONNECTION = 'test_connection'
 export const EXTRACT_CONFIGS = 'extract_configs'
 export const EXTRACT_ENTITY_V2 = 'extract_entity_v2'
+export const GET_FINISHED_DOWNLOAD_ENTITIES = 'get_finished_download_entities'
+export const GET_FINISHED_DOWNLOAD_CONFIGS = 'get_finished_download_configs'
 
 export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 

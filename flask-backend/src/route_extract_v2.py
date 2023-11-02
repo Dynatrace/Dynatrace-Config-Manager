@@ -18,6 +18,7 @@ import credentials
 import entity_v2
 import flask_utils
 import handler_api
+import monaco_cli_download
 import process_utils
 import response_utils
 import settings_2_0
@@ -84,6 +85,30 @@ def extract_entity_v2():
         return done
 
     return response_utils.call_and_get_response(call_process, run_info)
+
+
+@blueprint_route_extract_v2.route("/get_finished_download_entities", methods=["GET"])
+@cross_origin(origin="*")
+def get_finished_download_entities():
+    tenant_key = flask_utils.get_arg("tenant_key", "0")
+
+    def call_process():
+        finished_file = monaco_cli_download.get_finished_download_entities(tenant_key)
+        return finished_file
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_extract_v2.route("/get_finished_download_configs", methods=["GET"])
+@cross_origin(origin="*")
+def get_finished_download_configs():
+    tenant_key = flask_utils.get_arg("tenant_key", "0")
+
+    def call_process():
+        finished_file = monaco_cli_download.get_finished_download_configs(tenant_key)
+        return finished_file
+
+    return response_utils.call_and_get_response(call_process)
 
 
 @blueprint_route_extract_v2.route("/test_connection", methods=["POST"])
