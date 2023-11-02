@@ -18,11 +18,13 @@ import IconButton from '@mui/material/IconButton';
 import { Box, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_TARGET, useTenant, useTenantKey } from '../context/TenantListContext';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import ClearIcon from '@mui/icons-material/Clear';
+import CheckIcon from '@mui/icons-material/Check';
 import BackupIcon from '@mui/icons-material/Backup';
 import { genTenantLabel } from '../credentials/TenantSelector';
 import ConfirmAction from '../action/ConfirmAction';
 import { useConfirmAction } from './ConfirmHook';
-import { ERROR } from '../progress/ProgressHook';
+import { DONE, ERROR, LOADING } from '../progress/ProgressHook';
 
 export default function MigrateButton({ label, handlePost, confirm = false, disabled = false,
     progressComponent = null, runOnce = false, progress = "",
@@ -55,26 +57,26 @@ export default function MigrateButton({ label, handlePost, confirm = false, disa
 
         const props = { fontSize: 'large' }
         let buttonIcon = null
-        let color = null
+        let buttonColor = 'primary'
 
-        if (confirm === true) {
-            buttonIcon = (<BackupIcon {...props} />)
-            color = 'success'
-        } else {
-            buttonIcon = (<PlayCircleOutlineIcon {...props} />)
-            color = 'primary'
-        }
-
-        if (progress === ERROR) {
-            color = 'error'
-        }
-
-        if (progressComponent) {
+        if (progress === DONE) {
+            buttonColor = "success"
+            buttonIcon = (<CheckIcon {...props} />)
+        } else if (progress === LOADING) {
             buttonIcon = progressComponent
+        } else if (progress === ERROR) {
+            buttonColor = "error"
+            buttonIcon = (<ClearIcon {...props} />)
+        } else {
+            if (confirm === true) {
+                buttonIcon = (<BackupIcon {...props} />)
+            } else {
+                buttonIcon = (<PlayCircleOutlineIcon {...props} />)
+            }
         }
 
         return (
-            <IconButton onClick={handleClickAction} color={color} disabled={disabled}>
+            <IconButton onClick={handleClickAction} color={buttonColor} disabled={disabled}>
                 {buttonIcon}
                 <Typography sx={{ ml: 1 }}>{label}</Typography>
             </IconButton>

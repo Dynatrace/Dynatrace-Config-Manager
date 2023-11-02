@@ -50,6 +50,14 @@ def extract_entities(run_info, tenant_key):
     delete_cache_func = delete_old_cache_entities
     log_label = "entities"
 
+    def add_from_to_finished(finished):
+        if run_info["time_from_minutes"] != None:
+            finished["time_from_minutes"] = run_info["time_from_minutes"]
+        if run_info["time_to_minutes"] != None:
+            finished["time_to_minutes"] = run_info["time_to_minutes"]
+
+        return finished
+
     result = extract(
         run_info,
         tenant_key,
@@ -58,6 +66,7 @@ def extract_entities(run_info, tenant_key):
         get_path_func,
         delete_cache_func,
         log_label,
+        add_from_to_finished,
     )
 
     return result
@@ -91,6 +100,7 @@ def extract(
     get_path_func,
     delete_cache_func,
     log_label,
+    add_to_finished=None,
 ):
     result = {}
     call_result = {}
@@ -172,7 +182,14 @@ def extract(
     ):
         print(log_label, "downloaded successfully")
         result["monaco_finished"] = True
-        monaco_cli.save_finished(path)
+
+        finished_file = {"tenant_key": tenant_key}
+        if add_to_finished is None:
+            pass
+        else:
+            finished_file = add_to_finished(finished_file)
+
+        monaco_cli.save_finished(path, finished_file)
     else:
         monaco_cli.handle_subprocess_error(
             run_info, result, command, options, stdout, stderr, ("Extract" + log_label)
@@ -234,3 +251,18 @@ def is_finished_download(get_path_func, config=None, tenant_key=None):
     is_finished, _ = monaco_cli.is_finished(get_path_func(config))
 
     return is_finished
+
+
+def get_finished_download_configs(tenant_key):
+    return monaco_cli.load_finished(get_path_configs, tenant_key=tenant_key)
+
+
+def get_finished_download_entities(tenant_key):
+    return monaco_cli.load_finished(get_path_entities, tenant_key=tenant_key)
+
+
+def get_finished_download(get_path_func, config=None, tenant_key=None):
+    if config == None:
+        config = credentials.get_api_call_credentials(tenant_key)
+
+    return monaco_cli.load_finished(get_path_func(config))

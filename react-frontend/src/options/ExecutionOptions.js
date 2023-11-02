@@ -74,10 +74,10 @@ const OFF_INFO_TEXT = {
 
 function genButtonText(label, isEnabled) {
     if (isEnabled) {
-        return "[Enabled] " + ON_LABELS[label]
+        return "[Default] [Enabled] " + ON_LABELS[label]
     }
 
-    return "[Default] [Disabled] " + OFF_LABELS[label]
+    return "[Disabled] " + OFF_LABELS[label]
 }
 function genInfoText(label, isEnabled) {
     if (isEnabled) {

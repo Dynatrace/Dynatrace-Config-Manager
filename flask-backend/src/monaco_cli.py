@@ -15,10 +15,12 @@
 import json
 import os
 
+import credentials
 import dirs
 import process_utils
 import proxy
 import os_helper
+import terraform_cli
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
@@ -59,12 +61,12 @@ def handle_subprocess_error(
 
 
 def save_finished(path, finished_file=None):
-    if finished_file == None:
-        finished_file = {"monaco_finished": True}
+    finished_file["monaco_finished"] = True
+    finished_file["finished_at"] = terraform_cli.get_formatted_timestamp()
 
     with open(get_path_finished_file(path), "w", encoding="UTF-8") as f:
         f.write(json.dumps(finished_file))
-
+    
 
 def load_finished(path):
     finished_file = {}

@@ -18,10 +18,12 @@ import IconButton from '@mui/material/IconButton';
 import { Box, Typography } from '@mui/material';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from '../context/TenantListContext';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import ClearIcon from '@mui/icons-material/Clear';
+import CheckIcon from '@mui/icons-material/Check';
 import { useConfirmAction } from '../migrate/ConfirmHook';
 import ConfirmAction from '../action/ConfirmAction';
 import { genTenantLabel } from '../credentials/TenantSelector';
-import { ERROR, useProgress } from '../progress/ProgressHook';
+import { DONE, ERROR, LOADING, useProgress } from '../progress/ProgressHook';
 import { useHandleExtract } from './ExtractionHooks';
 
 export default function ExtractButton({ api, label,
@@ -44,17 +46,20 @@ export default function ExtractButton({ api, label,
 
         const props = { fontSize: 'large' }
         let buttonIcon = null
+        let buttonColor = "primary"
 
-        if (progressComponent) {
+        if (progress === DONE) {
+            buttonColor = "success"
+            buttonIcon = (<CheckIcon {...props} />)
+        } else if (progress === LOADING) {
             buttonIcon = progressComponent
+        } else if (progress === ERROR) {
+            buttonColor = "error"
+            buttonIcon = (<ClearIcon {...props} />)
         } else {
             buttonIcon = (<PlayCircleOutlineIcon {...props} />)
         }
 
-        let buttonColor = "primary"
-        if (progress === ERROR) {
-            buttonColor = "error"
-        }
 
         return (
             <React.Fragment>

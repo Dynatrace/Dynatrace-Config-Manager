@@ -84,7 +84,7 @@ function reducer(state, action) {
 }
 
 function initState() {
-    return { enableDashboards: false, enableOmitDestroy: false, firstTimeUser: true, advancedMode: false }
+    return { enableDashboards: true, enableOmitDestroy: true, firstTimeUser: true, advancedMode: false }
 }
 
 export function useExecutionOptionsContextReducer() {
