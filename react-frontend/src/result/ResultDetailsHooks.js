@@ -111,6 +111,12 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
 
     return React.useCallback((lastActionId, setActionId, nbUpdate, terraformParams, module, uniqueName, nbUpdateError, planAPI, applyAPI) => {
 
+        if (nbUpdate > 0 || nbUpdateError > 0) {
+            // pass
+        } else {
+            return null
+        }
+
         let actionId = ""
         if (module && uniqueName && actionCompleted && actionCompleted[module] && actionCompleted[module][uniqueName]) {
             actionId = actionCompleted[module][uniqueName]
@@ -123,31 +129,33 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
         const applyButton = genApplyButton(actionId, handleTerraformCallComplete, terraformParams, isApplyDone, isPlanDone, lastActionId, applyAPI, previousPlanTerraformParams);
         const [planFocusProps, applyFocusProps] = genFocusProps(isApplyDone, isPlanDone)
 
+        let actionDetailsLabel = "Push selected configurations"
+        let actionDetailsVariant = "h6"
+        let allLabel = ""
+        if (module === ALL) {
+            actionDetailsLabel = (<b>Push all configurations</b>)
+            actionDetailsVariant = "h5"
+            allLabel = "ALL"
+        }
+
         return (
             <React.Fragment>
-                {(nbUpdate > 0 || nbUpdateError > 0) ?
-                    <Paper sx={{ ml: 1, mt: 2 }}>
-                        <EfficientAccordion
-                            defaultExpanded={true}
-                            label="Action details: "
-                            labelColor={null}
-                            componentList={[
-                                <React.Fragment>
-                                    <Box>
-                                        <Typography {...planFocusProps}>1. PLAN AND REVIEW</Typography>
-                                        {planButton}
-                                        {actionDetails[planActionLabel]}
-                                    </Box>
-                                    <Box sx={{ mt: 2 }}>
-                                        <Typography {...applyFocusProps}>2. APPLY CONFIGURATIONS </Typography>
-                                        {applyButton}
-                                        {actionDetails[applyActionLabel]}
-                                    </Box>
-                                </React.Fragment>
+                <Paper sx={{ ml: 1, mt: 2, overflow: "auto" }}>
+                    <Box sx={{ m: 2 }}>
+                        <Typography variant={actionDetailsVariant}>{actionDetailsLabel}</Typography>
+                        <Box>
+                            <Typography {...planFocusProps}>1. PLAN {allLabel} AND REVIEW</Typography>
+                            {planButton}
+                            {actionDetails[planActionLabel]}
+                        </Box>
+                        <Box sx={{ mt: 2 }}>
+                            <Typography {...applyFocusProps}>2. PUSH {allLabel} CONFIGURATIONS </Typography>
+                            {applyButton}
+                            {actionDetails[applyActionLabel]}
+                        </Box>
 
-                            ]} />
-                    </Paper>
-                    : null}
+                    </Box>
+                </Paper>
             </React.Fragment>
         )
     }, [actionCompleted, handleTerraformCallComplete, lastActionsInfo, setLastActionsInfo])

@@ -91,17 +91,18 @@ function genLogComponents(logMap) {
     for (const [moduleDir, logModule] of Object.entries(logMap)) {
         if (Object.keys(logMap).length === 1) {
             resourceComponents.push(
-                <TFLogModule logModule={logModule} />
+                <TFLogModule key={`Log-Module-${moduleDir}`} logModule={logModule} />
             )
         } else {
             resourceComponents.push(
                 <EfficientAccordion
+                    key={`Accordion-Module-${moduleDir}`}
                     label={Object.keys(logModule).length + " x " + moduleDir}
                     labelColor={"black"}
                     labelVariant="h6"
                     defaultExpanded={false}
                     componentList={
-                        [<TFLogModule logModule={logModule} />]
+                        [<TFLogModule key={`Log-Module-${moduleDir}`} logModule={logModule} />]
                     }
                 />
             )
