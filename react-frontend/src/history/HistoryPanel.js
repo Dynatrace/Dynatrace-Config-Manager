@@ -114,7 +114,7 @@ export default function HistoryPanel() {
         const addChevron = () => {
             crumbs.push(
                 <React.Fragment>
-                    <Grid item direction={"column"} display={"flex"} justifyContent={'center'}>
+                    <Grid item display={"flex"} justifyContent={'center'}>
                         <NavigateNextIcon />
                     </Grid>
                 </React.Fragment>

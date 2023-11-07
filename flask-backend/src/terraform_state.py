@@ -22,21 +22,60 @@ import terraform_cli
 import terraform_local
 import terraform_ui_util
 
-state_filename = "terraform.tfstate"
+STATE_FILENAME = "terraform.tfstate"
+STATE_ID_CACHE = "state-id-cache"
+
+
+def get_path_state_id_cache(config_main, config_target):
+    return dirs.prep_dir(
+        dirs.get_tenant_work_cache_sub_dir(config_main, config_target, STATE_ID_CACHE)
+    )
 
 
 def merge_state_into_config(tenant_key_main, tenant_key_target):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
+    copy_state(
+        terraform_cli.get_path_terraform_state_gen(config_main, config_target),
+        terraform_cli.get_path_terraform_config(config_main, config_target),
+    )
+
+
+def keep_state_for_IDs(tenant_key_main, tenant_key_target, tenant_key):
+    try:
+        config_main = credentials.get_api_call_credentials(tenant_key_main)
+        config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+        copy_state(
+            terraform_cli.get_path_terraform_config(config_main, config_target),
+            get_path_state_id_cache(config_main, config_target),
+            get_keyed_state_file_name(tenant_key),
+        )
+    except Exception as e:
+        print("INFO: Could not keep state for IDs, could be also be first run.")
+
+
+def get_keyed_state_file_path(config_main, config_target, tenant_key):
+    return dirs.forward_slash_join(
+        get_path_state_id_cache(config_main, config_target),
+        get_keyed_state_file_name(tenant_key),
+    )
+
+
+def get_keyed_state_file_name(tenant_key):
+    return f"{tenant_key}-{STATE_FILENAME}"
+
+
+def copy_state(path_from, path_to, dest_statefile=STATE_FILENAME):
     shutil.copy2(
         dirs.forward_slash_join(
-            terraform_cli.get_path_terraform_state_gen(config_main, config_target),
-            state_filename,
+            path_from,
+            STATE_FILENAME,
         ),
         dirs.forward_slash_join(
-            terraform_cli.get_path_terraform_config(config_main, config_target),
-            state_filename,
+            path_to,
+            dest_statefile,
         ),
     )
 

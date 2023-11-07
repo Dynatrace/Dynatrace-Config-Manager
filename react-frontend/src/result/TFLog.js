@@ -23,12 +23,13 @@ import TFLogModule from './TFLogModule';
 import StatsBar from './StatsBar';
 
 
+export default function TFLog({ historyItemLog: { modules: logs, other_lines: other, apply_complete, no_changes, stats },
+    actionLabel, actionId, defaultExpanded = false, hideStats = false }) {
 
-export default function TFLog({ historyItemLog: { modules: logs, other_lines: other, apply_complete, no_changes, stats }, actionLabel, actionId, defaultExpanded = false }) {
 
     return (
-        ((logs == null || Object.keys(logs).length === 0) && other == null) ? null :
-            <Paper sx={{ ml: -1, mt: 2 }}>
+        ((logs == null || Object.keys(logs).length === 0) && other == null && stats == null) ? null
+            : <Paper sx={{ ml: -1, mt: 2 }}>
                 {apply_complete === true && <Typography color="success.light" variant="h4">Apply Complete</Typography>}
                 {no_changes === true && <Typography color="secondary.main" variant="h5">Executed. No Changes.</Typography>}
                 <EfficientAccordion
@@ -38,17 +39,8 @@ export default function TFLog({ historyItemLog: { modules: logs, other_lines: ot
                     defaultExpanded={defaultExpanded}
                     componentList={
                         [
-                            <StatsBar stats={stats} />,
-                            other == null ? null :
-                                <EfficientAccordion
-                                    label="General execution info"
-                                    labelColor={STATUS_COLORS["Other"]}
-                                    labelVariant="h6"
-                                    defaultExpanded={false}
-                                    componentList={
-                                        [<TFAnsiText logList={other} />]
-                                    }
-                                />,
+                            genStatsBar(stats, hideStats),
+                            genGeneralInfo(other),
                             genLogComponents(logs),
                         ]
                     }
@@ -56,6 +48,34 @@ export default function TFLog({ historyItemLog: { modules: logs, other_lines: ot
             </Paper>
 
     )
+}
+
+function genStatsBar(stats, hideStats) {
+    if (hideStats) {
+        return null
+    } else {
+        return (
+            <StatsBar stats={stats} />
+        )
+    }
+}
+
+function genGeneralInfo(other) {
+    if (other == null || (other.length < 1)) {
+        return null
+    } else {
+        return (
+            <EfficientAccordion
+                label="General execution info"
+                labelColor={STATUS_COLORS["Other"]}
+                labelVariant="h6"
+                defaultExpanded={false}
+                componentList={
+                    [<TFAnsiText logList={other} />]
+                }
+            />
+        )
+    }
 }
 
 function genLogComponents(logMap) {
@@ -92,11 +112,17 @@ function genLogComponents(logMap) {
     return resourceComponents
 }
 
-function genLabel(terraform_action_label, actionId) {
+export function genTerraformExecutionLabelPrefix(terraform_action_label) {
     let prefix = "Planned changes details"
     if (terraform_action_label === applyActionLabel) {
         prefix = "Execution details"
     }
+
+    return prefix
+}
+
+function genLabel(terraform_action_label, actionId) {
+    let prefix = genTerraformExecutionLabelPrefix(terraform_action_label)
 
     return prefix + " for '" + actionId + "'"
 }

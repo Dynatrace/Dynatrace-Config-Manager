@@ -81,6 +81,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
 
         set_env_filename_export = terraform_cli_env.write_env_cmd_export(
             run_info,
+            tenant_key_main,
             tenant_data_main,
             config_main,
             config_target,
@@ -90,6 +91,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
         )
         set_env_filename_export_import = terraform_cli_env.write_env_cmd_export(
             run_info,
+            tenant_key_target,
             tenant_data_target,
             config_main,
             config_target,
@@ -147,23 +149,30 @@ def open_in_vscode(dir, path="."):
         print("Can't open VSCode as", vscodeExecutable, "isn't found.")
 
 
+ENV_VAR_EXPORT = "EXPORT"
+ENV_VAR_USE_CACHE = "CACHE"
+ENV_VAR_BASE = "BASE"
+
+
 def get_env_vars(
     run_info,
+    tenant_key_current,
     tenant_data_current,
     terraform_path,
-    config_main=None,
-    config_target=None,
-    cache_dir=None,
-    terraform_path_output=None,
-    use_cache=True,
+    config_main,
+    config_target,
+    cache_dir,
+    terraform_path_output,
+    env_var_type,
     history_log_path="",
     history_log_prefix="",
 ):
     env_vars = None
 
-    if use_cache:
+    if env_var_type == ENV_VAR_EXPORT:
         env_vars = terraform_cli_env.get_env_vars_export_dict(
             run_info,
+            tenant_key_current,
             tenant_data_current,
             terraform_path,
             config_main,
@@ -173,11 +182,23 @@ def get_env_vars(
             history_log_path,
             history_log_prefix,
         )
+
+    elif env_var_type == ENV_VAR_USE_CACHE:
+        env_vars = terraform_cli_env.get_env_vars_cache_dict(
+            run_info,
+            tenant_data_current,
+            terraform_path,
+            config_main,
+            config_target,
+            cache_dir,
+            history_log_path,
+            history_log_prefix,
+        )
+
     else:
         env_vars = terraform_cli_env.get_env_vars_base(
             tenant_data_current,
             terraform_path,
-            run_info,
             history_log_path,
             history_log_prefix,
         )
@@ -304,7 +325,7 @@ def terraform_execute(
     config_dir,
     cache_dir=None,
     is_config_creation=False,
-    use_cache=True,
+    env_var_type=ENV_VAR_EXPORT,
     return_log_content=False,
     is_targeted=False,
 ):
@@ -329,13 +350,14 @@ def terraform_execute(
 
     my_env = get_env_vars(
         run_info,
+        tenant_key_current,
         tenant_data_current,
         terraform_path,
         config_main,
         config_target,
         cache_dir,
         export_output_dir,
-        use_cache,
+        env_var_type,
         history_log_path,
         history_log_prefix=log_file_name,
     )
@@ -379,6 +401,7 @@ def add_timestamp_to_log_filename(log_path, log_filename):
     seasoned_log_filename = formatted_timestamp + "_" + log_filename
     log_file_path = dirs.forward_slash_join(log_path, seasoned_log_filename)
     return log_file_path
+
 
 def get_formatted_timestamp():
     timestamp = datetime.now()
@@ -442,7 +465,7 @@ def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
 
 
 def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
-    cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=False)
+    cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=True)
 
     terraform_execute(
         run_info,
@@ -476,7 +499,7 @@ def plan_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
         "plan_target",
         "Plan Target",
         CONFIG_DIR,
-        use_cache=False,
+        env_var_type=ENV_VAR_BASE,
         return_log_content=True,
         is_targeted=True,
     )
@@ -498,7 +521,7 @@ def apply_target(run_info, tenant_key_main, tenant_key_target, terraform_params)
         "apply_target",
         "apply Target",
         CONFIG_DIR,
-        use_cache=False,
+        env_var_type=ENV_VAR_BASE,
         return_log_content=True,
         is_targeted=True,
     )
@@ -522,7 +545,7 @@ def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_p
         "apply_multi_target",
         "apply Multi Target",
         terraform_local.MULTI_TARGET_DIR,
-        use_cache=False,
+        env_var_type=ENV_VAR_BASE,
         return_log_content=True,
         is_targeted=True,
     )
@@ -538,8 +561,10 @@ def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_p
     return ui_payload, log_dict
 
 
-def plan_all(run_info, tenant_key_main, tenant_key_target):
-    log_dict = run_plan_all(run_info, tenant_key_main, tenant_key_target)
+def plan_all(run_info, tenant_key_main, tenant_key_target, env_var_type=ENV_VAR_BASE):
+    log_dict = run_plan_all(
+        run_info, tenant_key_main, tenant_key_target, env_var_type=env_var_type
+    )
 
     def remove_destroy(type_trimmed, name):
         if (
@@ -562,7 +587,14 @@ def plan_all(run_info, tenant_key_main, tenant_key_target):
             get_path_terraform_config,
         )
         if re_run_plan:
-            log_dict = run_plan_all(run_info, tenant_key_main, tenant_key_target)
+            log_dict = run_plan_all(
+                run_info,
+                tenant_key_main,
+                tenant_key_target,
+                env_var_type=env_var_type,
+                log_label_suffix="post omit destroy",
+                log_filename_suffix="post_omit_destroy",
+            )
 
     ui_payload = terraform_local.write_UI_payloads_plan_all(
         tenant_key_main, tenant_key_target, log_dict
@@ -579,14 +611,23 @@ def run_plan_all(
     tenant_key_target,
     config_dir=CONFIG_DIR,
     multi_target=False,
+    env_var_type=ENV_VAR_BASE,
+    log_label_suffix="",
+    log_filename_suffix="",
 ):
     filename = "complete"
-    log_filename_prefix = "plan_all"
+    log_filename = "plan_all"
     log_label = "Plan All"
     if multi_target:
         filename = "targeted"
-        log_filename_prefix = "plan_multi_target"
+        log_filename = "plan_multi_target"
         log_label = "Plan Multi Target"
+
+    if log_label_suffix != "":
+        log_label = f"{log_label} {log_label_suffix}"
+
+    if log_filename_suffix != "":
+        log_filename = f"{log_filename}_{log_filename_suffix}"
 
     fileType = ".plan"
 
@@ -595,16 +636,21 @@ def run_plan_all(
     plan_filename = dirs.get_file_path(".", filename, fileType, absolute=False)
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
 
+    cache_dir = None
+    if env_var_type == ENV_VAR_USE_CACHE:
+        cache_dir = CACHE_DIR_IMPORT
+
     log_dict = terraform_execute(
         run_info,
         tenant_key_main,
         tenant_key_target,
         tenant_key_target,
         cmd_list,
-        log_filename_prefix,
+        log_filename,
         log_label,
         config_dir,
-        use_cache=False,
+        cache_dir,
+        env_var_type=env_var_type,
         return_log_content=True,
         is_targeted=multi_target,
     )
@@ -628,7 +674,7 @@ def apply_all(run_info, tenant_key_main, tenant_key_target):
         "apply_all",
         "apply All",
         CONFIG_DIR,
-        use_cache=False,
+        env_var_type=ENV_VAR_BASE,
         return_log_content=True,
     )
 

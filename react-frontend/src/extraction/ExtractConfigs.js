@@ -23,7 +23,7 @@ export default function ExtractConfigs({ tenantKeyType = TENANT_KEY_TYPE_MAIN })
     return (
         <React.Fragment>
             <ExtractButton api={EXTRACT_CONFIGS}
-                label="Extract Configs (Monaco cli)"
+                label="Extract Configs"
                 tenantKeyType={tenantKeyType} />
         </React.Fragment>
     );

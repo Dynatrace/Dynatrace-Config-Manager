@@ -152,6 +152,10 @@ def get_config_dict(
         if pre_migration:
             pass
         else:
+            terraform_state.keep_state_for_IDs(
+                tenant_key_main, tenant_key_target, tenant_key_target
+            )
+
             terraform_cli.create_terraform_repo(
                 run_info, pre_migration, tenant_key_main, tenant_key_target
             )
@@ -180,12 +184,14 @@ def get_config_dict(
             if "return_status" in run_info and run_info["return_status"] >= 300:
                 return all_tenant_config_dict, run_legacy_match, ui_payload
 
+            terraform_state.keep_state_for_IDs(
+                tenant_key_main, tenant_key_target, tenant_key_main
+            )
+
             terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
             ui_payload, log_dict = terraform_cli.plan_all(
-                run_info, tenant_key_main, tenant_key_target
+                run_info, tenant_key_main, tenant_key_target, env_var_type=terraform_cli.ENV_VAR_USE_CACHE
             )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
 
         if ui_payload is None:
             ui_payload = terraform_local.load_ui_payload(

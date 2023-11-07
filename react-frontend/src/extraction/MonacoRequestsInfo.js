@@ -26,7 +26,7 @@ export default function MonacoRequestsInfo({ tenantKeyType = TENANT_KEY_TYPE_MAI
 
     return (
         <React.Fragment>
-            <Typography>The Monaco extraction will send {tenant.monacoConcurrentRequests?tenant.monacoConcurrentRequests:DEFAULT_MONACO_CONCURRENT_REQUESTS} concurrent requests.</Typography>
+            <Typography>The extraction cli will send {tenant.monacoConcurrentRequests?tenant.monacoConcurrentRequests:DEFAULT_MONACO_CONCURRENT_REQUESTS} concurrent requests.</Typography>
             <Typography>If the extraction fails, it could be caused by rate limiting.</Typography>
             <Typography>You can reduce the number of concurrent requests 'per tenant' in the Credentials tab.</Typography>
         </React.Fragment>
