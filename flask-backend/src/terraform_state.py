@@ -23,7 +23,7 @@ import terraform_local
 import terraform_ui_util
 
 STATE_FILENAME = "terraform.tfstate"
-STATE_ID_CACHE = "state-id-cache"
+STATE_ID_CACHE = "cache_prev_state"
 
 
 def get_path_state_id_cache(config_main, config_target):

@@ -46,6 +46,9 @@ def gen_monaco_env(config, tenant_data, log_path=None):
     return my_env
 
 
+CACHE_VERSION_V_0_19 = "v0.19"
+
+
 def handle_subprocess_error(
     run_info, result, command, options, stdout, stderr, log_label
 ):
@@ -57,16 +60,19 @@ def handle_subprocess_error(
         result["stdout"] = stdout
     if stderr != "":
         result["stderr"] = stderr
-    print("ERROR Running Monaco ", log_label, ": ", result)
+    print("ERROR Running Extraction cli ", log_label, ": ", result)
 
 
-def save_finished(path, finished_file=None):
+def save_finished(path, finished_file, action_type, label):
     finished_file["monaco_finished"] = True
     finished_file["finished_at"] = terraform_cli.get_formatted_timestamp()
+    finished_file["cache_version"] = CACHE_VERSION_V_0_19
+    finished_file["action_type"] = action_type
+    finished_file["label"] = label
 
     with open(get_path_finished_file(path), "w", encoding="UTF-8") as f:
         f.write(json.dumps(finished_file))
-    
+
 
 def load_finished(path):
     finished_file = {}
@@ -83,6 +89,13 @@ def load_finished(path):
 def is_finished(path):
     finished_file = load_finished(path)
     if "monaco_finished" in finished_file:
-        return finished_file["monaco_finished"], finished_file
+        if (
+            "cache_version" in finished_file
+            and finished_file["cache_version"] == CACHE_VERSION_V_0_19
+        ):
+            return finished_file["monaco_finished"], finished_file, True
+        else:
+            print("ERROR: THIS CACHE IS OUT OF DATE, NEED TO RE-RUN EXTRACTION")
+            return False, finished_file, True
 
-    return False, finished_file
+    return False, finished_file, False

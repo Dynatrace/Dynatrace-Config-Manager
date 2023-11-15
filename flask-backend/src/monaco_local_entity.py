@@ -49,36 +49,6 @@ def load_matched_entities(tenant_key_target, tenant_key_main):
 
     results = matched_analysis_object.get_results()
 
-    metadata_analysis_object = LoadEntitiesMetadata()
-    metadata_analysis_object.setCurrentTenant("target")
-    path_entities_local = get_path_entities_local(config_target)
-    run_on_all_sub_files(path_entities_local, metadata_analysis_object, ".yaml")
-    metadata_analysis_object.setCurrentTenant("source")
-    path_entities_local = get_path_entities_local(config_main)
-    run_on_all_sub_files(path_entities_local, metadata_analysis_object, ".yaml")
-
-    results_metadata = metadata_analysis_object.get_results()
-
-    for entities_type, entity_match_key in results["match_key"].items():
-        for tenant_type, tenant_match_key in entity_match_key.items():
-            for key, key_value in tenant_match_key.items():
-                entities_metadata_key_value = ""
-                if tenant_type in results_metadata["match_key"][entities_type]:
-                    entities_metadata_key_value = results_metadata["match_key"][
-                        entities_type
-                    ][tenant_type][key]
-
-                if key_value == entities_metadata_key_value:
-                    pass
-                else:
-                    print(
-                        "Must Rerun, reason: ",
-                        tenant_type,
-                        key_value,
-                        entities_metadata_key_value,
-                    )
-                    return True, ({}, {})
-
     return False, (results["matched_entities"], results["entities_dict"])
 
 

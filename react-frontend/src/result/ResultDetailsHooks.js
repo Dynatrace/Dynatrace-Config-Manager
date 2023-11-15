@@ -236,7 +236,7 @@ function genPlanButton(nbUpdate, handleTerraformCallComplete, terraformParams, l
             <Box key="tfPlan" sx={{ ml: -1 }}>
                 <TerraformButton terraformAPI={planAPI} terraformParams={terraformParams}
                     handleChange={handleTerraformCallCompletePlan} getActionId={getActionId}
-                    label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" /*+ genTooManyLabel(nbUpdate)*/} confirm={false} />
+                    label={"Terraform Plan ( " + nbUpdate + " configs selected, will create a new plan )" /*+ genTooManyLabel(nbUpdate)*/} confirm={false} nbUpdate={nbUpdate} />
             </Box>
         );
     }

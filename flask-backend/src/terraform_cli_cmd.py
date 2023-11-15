@@ -17,7 +17,7 @@ import terraform_cli
 import windows_cmd_file_util
 
 
-def gen_export_cmd_list(run_info, import_state):
+def gen_export_cmd_list(run_info, import_state, create_dependencies=False):
     specific_schema_id = ""
 
     if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
@@ -32,7 +32,8 @@ def gen_export_cmd_list(run_info, import_state):
 
     if import_state:
         export_cmd_list.append("-import-state-v2")
-    else:
+
+    if create_dependencies:
         export_cmd_list.append("-migrate")
 
     if specific_schema_id != "":
@@ -41,8 +42,14 @@ def gen_export_cmd_list(run_info, import_state):
     return export_cmd_list
 
 
-def write_export_cmd(run_info, terraform_path, set_env_filename, import_state=False):
-    export_cmd_list = gen_export_cmd_list(run_info, import_state)
+def write_export_cmd(
+    run_info,
+    terraform_path,
+    set_env_filename,
+    import_state=False,
+    create_dependencies=False,
+):
+    export_cmd_list = gen_export_cmd_list(run_info, import_state, create_dependencies)
     export_cmd_line = " ".join(export_cmd_list)
 
     lines = [

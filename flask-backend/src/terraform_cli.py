@@ -62,7 +62,7 @@ def get_path_terraform_config(config_main, config_target):
     return dirs.prep_dir(get_path_terraform(config_main, config_target), CONFIG_DIR)
 
 
-def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_target):
+def create_terraform_repo(run_info, tenant_key_main, tenant_key_target):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
     tenant_data_main = tenant.load_tenant(tenant_key_main)
@@ -103,7 +103,11 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
             run_info, terraform_path, set_env_filename_export, import_state=False
         )
         terraform_cli_cmd.write_export_cmd(
-            run_info, terraform_path, set_env_filename_export_import, import_state=True
+            run_info,
+            terraform_path,
+            set_env_filename_export_import,
+            import_state=True,
+            create_dependencies=True,
         )
         terraform_cli_cmd.write_refresh_cmd(
             terraform_path, set_env_filename_export_import
@@ -135,10 +139,7 @@ def create_terraform_repo(run_info, pre_migration, tenant_key_main, tenant_key_t
 
     # print("Showing in explorer: ", export_cmd_path)
     # subprocess.Popen(r'explorer /select,"'+dirs.to_backward_slash(export_cmd_path)+r'"')
-    if pre_migration:
-        pass
-    else:
-        open_in_vscode(terraform_path)
+    open_in_vscode(terraform_path)
 
 
 def open_in_vscode(dir, path="."):
@@ -465,7 +466,9 @@ def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
 
 
 def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
-    cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=True)
+    cmd_list = terraform_cli_cmd.gen_export_cmd_list(
+        run_info, import_state=True, create_dependencies=True
+    )
 
     terraform_execute(
         run_info,

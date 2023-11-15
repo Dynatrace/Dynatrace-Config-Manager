@@ -90,11 +90,11 @@ export default function TFAnsiText({ logList }) {
             }
 
             for (let i = startLine; (i < logList.length && ansiLines.length < maxLines); i++) {
-                processLog(logList[i], (i + 1), searchText, ansiLines, changePageToLine, highlightLine, setHighlightLine);
+                processLog(logList[i], (i + 1), searchText, ansiLines, changePageToLine, highlightLine, setHighlightLine, "ansiLines");
             }
 
             for (let i = (startLine - 1); (i >= 0 && (ansiLines.length + missingAnsiLines.length) < maxLines); i--) {
-                processLog(logList[i], (i + 1), searchText, missingAnsiLines, changePageToLine, highlightLine, setHighlightLine);
+                processLog(logList[i], (i + 1), searchText, missingAnsiLines, changePageToLine, highlightLine, setHighlightLine, "missingAnsiLines");
             }
 
         }
@@ -154,7 +154,7 @@ export default function TFAnsiText({ logList }) {
     )
 }
 
-function processLog(moduleLine, lineNumber, searchText, ansiLines, changePageToLine, highlightLine, setHighlightLine) {
+function processLog(moduleLine, lineNumber, searchText, ansiLines, changePageToLine, highlightLine, setHighlightLine, keyPrefix) {
     let lineComponent = null
     if (searchText === "") {
         if (lineNumber === highlightLine) {
@@ -193,7 +193,7 @@ function processLog(moduleLine, lineNumber, searchText, ansiLines, changePageToL
     }
     if (textComponent) {
         ansiLines.push(
-            <React.Fragment key={`ansiLine-${ansiLines.length}`}>
+            <React.Fragment key={`${keyPrefix}-${ansiLines.length}`}>
                 <Grid item xs={1}>
                     {lineComponent}
                 </Grid>
