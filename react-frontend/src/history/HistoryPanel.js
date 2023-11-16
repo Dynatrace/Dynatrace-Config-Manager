@@ -71,7 +71,7 @@ export default function HistoryPanel() {
                 continue
             }
             components.push(
-                <Box>
+                <Box key={`history-${historyItem["name"]}`}>
                     <Button onClick={() => { setSelectedItem(historyItem) }} color={color}>
                         {" Name: " + convertTimestamp(historyItem["name"]) + " Nb Logs: " + historyItem["nb_logs"] + " Type: " + historyItem["sub_type"] + applyText}
                     </Button>
@@ -113,8 +113,8 @@ export default function HistoryPanel() {
 
         const addChevron = () => {
             crumbs.push(
-                <React.Fragment>
-                    <Grid item direction={"column"} display={"flex"} justifyContent={'center'}>
+                <React.Fragment key={`chevron-${crumbs.length}`}>
+                    <Grid item display={"flex"} justifyContent={'center'}>
                         <NavigateNextIcon />
                     </Grid>
                 </React.Fragment>
@@ -124,7 +124,7 @@ export default function HistoryPanel() {
 
         if (displayLevel >= LIST_LEVEL) {
             crumbs.push(
-                <Button
+                <Button key={`crumbs-${crumbs.length}`}
                     onClick={() => { setSelectedItem(null); setSelectedItemPrev(selectedItem); setSelectedHistoryLog(null); setSelectedHistoryLogPrev(selectedHistoryLog) }}
                 >
                     History List
@@ -134,7 +134,7 @@ export default function HistoryPanel() {
         if (displayLevel >= ITEM_LEVEL) {
             addChevron()
             crumbs.push(
-                <Button
+                <Button key={`crumbs-${crumbs.length}`}
                     onClick={() => { setSelectedHistoryLog(null); setSelectedHistoryLogPrev(selectedHistoryLog) }}
                 >
                     {selectedItem["sub_type"] + ": " + convertTimestamp(selectedItem["name"])}
@@ -144,7 +144,7 @@ export default function HistoryPanel() {
         if (displayLevel >= LOG_LEVEL) {
             addChevron()
             crumbs.push(
-                <Button
+                <Button key={`crumbs-${crumbs.length}`}
                     onClick={() => { }}
                 >
                     {selectedHistoryLog.log}

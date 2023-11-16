@@ -18,11 +18,17 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey, useTenantList } from '../context/TenantListContext';
+import { TENANT_KEY_TYPE_MAIN, TENANT_KEY_TYPE_TARGET, useTenant, useTenantKey, useTenantList } from '../context/TenantListContext';
 import { Box, Button } from '@mui/material';
 
-export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
+const tenantTypeLabel = {
+    [TENANT_KEY_TYPE_MAIN]: "Source",
+    [TENANT_KEY_TYPE_TARGET]: TENANT_KEY_TYPE_TARGET,
 
+}
+
+
+export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
     const { tenantKey, setTenantKey } = useTenantKey(tenantKeyType)
     const { tenant } = useTenant(tenantKey)
     const { tenantList } = useTenantList()
@@ -50,7 +56,7 @@ export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN })
                 labelId="tenant-select-labell"
                 id="tenant-select"
                 value={tenantKey}
-                label={tenantKeyType + " Tenant"}
+                label={tenantTypeLabel[tenantKeyType] + " Tenant"}
                 onChange={handleChangeTenantKey}
             >
                 {tenantItems}
@@ -75,7 +81,7 @@ export default function TenantSelector({ tenantKeyType = TENANT_KEY_TYPE_MAIN })
     return (
         <React.Fragment>
             <FormControl fullWidth>
-                <InputLabel id="tenant-select-label">{tenantKeyType + " Tenant"}</InputLabel>
+                <InputLabel id="tenant-select-label">{tenantTypeLabel[tenantKeyType] + " Tenant"}</InputLabel>
                 {selector}
             </FormControl>
             {linkToTenantUI}
@@ -108,7 +114,7 @@ export const genTenantLabel = (tenant, tenantKeyType) => {
     } else {
         url = ""
     }
-    label = "[" + tenantKeyType + "] " + tenant.key + ": " + label + url
+    label = "[" + tenantTypeLabel[tenantKeyType] + "] " + tenant.key + ": " + label + url
 
     return label
 }

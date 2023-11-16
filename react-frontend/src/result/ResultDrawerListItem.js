@@ -17,19 +17,25 @@ import * as React from 'react'
 import { Checkbox, FormControl, FormControlLabel } from '@mui/material'
 import { STATUS_COLORS, STATUS_PREFIX } from '../extraction/HorizontalStackedBar';
 
-export default function ResultDrawerListItem({ childKey, child, handleToggleList, forceCheck, forceUncheck }) {
+export default function ResultDrawerListItem({ childKey, child, handleToggleList, forceCheck, forceUncheckValue, allChecked, disabled }) {
 
     const [checked, setChecked] = React.useState("")
     const [wasForceChecked, setWasForceChecked] = React.useState(false)
 
     const checkedRef = React.useRef("");
 
+    React.useEffect(() => {
+        if (allChecked.includes(childKey)) {
+            setChecked(childKey)
+        }
+    }, [])
+
     const isChecked = React.useMemo(() => {
         return checked !== ""
     }, [checked])
 
     React.useEffect(() => {
-        if (forceCheck || forceUncheck) {
+        if (forceCheck || forceUncheckValue !== "") {
             return
         }
         if (checkedRef.current !== checked) {
@@ -37,9 +43,7 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
             checkedRef.current = checked
             handleToggleList(childKey, toggleOn)
         }
-    }, [childKey, checked, handleToggleList, forceCheck, forceUncheck])
-
-
+    }, [childKey, checked, handleToggleList, forceCheck, forceUncheckValue])
 
     React.useEffect(() => {
         if (forceCheck) {
@@ -55,7 +59,7 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
             }
         }
         if (isChecked) {
-            if (forceUncheck) {
+            if (forceUncheckValue !== "") {
                 setChecked("")
             }
         } else {
@@ -63,7 +67,7 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
                 setChecked(childKey)
             }
         }
-    }, [childKey, forceCheck, forceUncheck, isChecked, wasForceChecked])
+    }, [childKey, forceCheck, forceUncheckValue, wasForceChecked])
 
     const component = React.useMemo(() => {
 
@@ -84,12 +88,12 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
             <React.Fragment>
                 <FormControl sx={{ color: STATUS_COLORS[status] }} fullWidth>
                     <FormControlLabel control={<Checkbox checked={checked !== ""}
-                        onChange={() => { handleToggle(childKey) }} />} label={childName} disabled={forceCheck || forceUncheck} />
+                        onChange={() => { handleToggle(childKey) }} />} label={childName} disabled={disabled} />
                 </FormControl>
             </React.Fragment>
         )
 
-    }, [checked, childKey, child, isChecked, forceCheck, forceUncheck])
+    }, [checked, childKey, child, isChecked, disabled])
 
 
 

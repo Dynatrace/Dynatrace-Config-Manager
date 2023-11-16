@@ -36,7 +36,7 @@ export default function ExtractEntities({ tenantKeyType }) {
     return (
         <React.Fragment>
             <ExtractButton api={EXTRACT_ENTITY_V2}
-                label="Extract Entities (Monaco cli)"
+                label="Extract Entities"
                 tenantKeyType={tenantKeyType}
                 extraSearchParams={{ 'time_from_minutes': timeFromMinute, 'time_to_minutes': timeToMinute }} />
             <Box sx={{ ml: 2 }}>

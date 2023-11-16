@@ -15,6 +15,7 @@
 import dirs
 import monaco_cli_match
 import terraform_cli
+import terraform_state
 import windows_cmd_file_util
 
 TERRAFORM_FALSE = "false"
@@ -34,7 +35,6 @@ def write_env_cmd_base(tenant_data_current, terraform_path):
 def get_env_vars_base(
     tenant_data_current,
     terraform_path,
-    run_info=None,
     history_log_path="",
     history_log_prefix="",
 ):
@@ -67,6 +67,7 @@ def get_env_vars_base(
 
 def get_env_vars_export_dict(
     run_info,
+    tenant_key_current,
     tenant_data_current,
     terraform_path,
     config_main,
@@ -76,32 +77,104 @@ def get_env_vars_export_dict(
     history_log_path="",
     history_log_prefix="",
 ):
-    env_vars_export_extras = get_env_vars_export_extras(
-        run_info, config_main, config_target, cache_dir, terraform_path_output
+    env_vars_extras_export = get_env_vars_extras_export(
+        run_info,
+        config_main,
+        config_target,
+        terraform_path_output,
+        tenant_key_current,
+    )
+    env_vars_extras_cache = get_env_vars_extras_cache(
+        run_info,
+        config_main,
+        config_target,
+        cache_dir,
     )
     env_vars_base = get_env_vars_base(
         tenant_data_current,
         terraform_path,
-        run_info,
         history_log_path,
         history_log_prefix,
     )
 
-    env_vars = {**env_vars_base, **env_vars_export_extras}
+    env_vars = {**env_vars_base, **env_vars_extras_export, **env_vars_extras_cache}
 
     return env_vars
 
 
-def get_env_vars_export_extras(
-    run_info, config_main, config_target, cache_dir, terraform_path_output
+def get_env_vars_cache_dict(
+    run_info,
+    tenant_data_current,
+    terraform_path,
+    config_main,
+    config_target,
+    cache_dir,
+    history_log_path="",
+    history_log_prefix="",
 ):
-    cache_strict = TERRAFORM_FALSE
-    if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
-        cache_strict = TERRAFORM_TRUE
+    env_vars_extras_cache = get_env_vars_extras_cache(
+        run_info,
+        config_main,
+        config_target,
+        cache_dir,
+    )
+
+    env_vars_base = get_env_vars_base(
+        tenant_data_current,
+        terraform_path,
+        history_log_path,
+        history_log_prefix,
+    )
+
+    env_vars = {**env_vars_base, **env_vars_extras_cache}
+
+    return env_vars
+
+
+def get_env_vars_extras_export(
+    run_info,
+    config_main,
+    config_target,
+    terraform_path_output,
+    tenant_key_current,
+):
+    tenant_key_linked = ""
+    if config_main["tenant_key"] == tenant_key_current:
+        tenant_key_linked = config_target["tenant_key"]
+    else:
+        tenant_key_linked = config_main["tenant_key"]
 
     enable_dashboards = TERRAFORM_FALSE
     if run_info["enable_dashboards"] != None and run_info["enable_dashboards"] is True:
         enable_dashboards = TERRAFORM_TRUE
+
+    env_vars = {
+        "DYNATRACE_HCL_NO_FORMAT": "true",
+        "DYNATRACE_ATOMIC_DEPENDENCIES": "true",
+        "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
+        "DYNATRACE_PREV_STATE_ON": "true",
+        "DYNATRACE_PREV_STATE_PATH_THIS": terraform_state.get_keyed_state_file_path(
+            config_main, config_target, tenant_key_current
+        ),
+        "DYNATRACE_PREV_STATE_PATH_LINKED": terraform_state.get_keyed_state_file_path(
+            config_main, config_target, tenant_key_linked
+        ),
+    }
+    if terraform_path_output is not None:
+        env_vars["DYNATRACE_TARGET_FOLDER"] = terraform_path_output
+
+    return env_vars
+
+
+def get_env_vars_extras_cache(
+    run_info,
+    config_main,
+    config_target,
+    cache_dir,
+):
+    cache_strict = TERRAFORM_FALSE
+    if run_info["forced_schema_id"] != None and len(run_info["forced_schema_id"]) > 0:
+        cache_strict = TERRAFORM_TRUE
 
     env_vars = {
         "CACHE_OFFLINE_MODE": "true",
@@ -110,19 +183,15 @@ def get_env_vars_export_extras(
             cache_dir,
         ),
         "DYNATRACE_MIGRATION_CACHE_STRICT": cache_strict,
-        "DYNATRACE_HCL_NO_FORMAT": "true",
-        "DYNATRACE_ATOMIC_DEPENDENCIES": "true",
-        "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
         "DYNATRACE_IN_MEMORY_TAR_FOLDERS": "true",
     }
-    if terraform_path_output is not None:
-        env_vars["DYNATRACE_TARGET_FOLDER"] = terraform_path_output
 
     return env_vars
 
 
 def write_env_cmd_export(
     run_info,
+    tenant_key_current,
     tenant_data_current,
     config_main,
     config_target,
@@ -132,6 +201,7 @@ def write_env_cmd_export(
 ):
     env_vars = get_env_vars_export_dict(
         run_info,
+        tenant_key_current,
         tenant_data_current,
         terraform_path,
         config_main,

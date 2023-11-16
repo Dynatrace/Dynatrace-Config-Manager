@@ -748,7 +748,7 @@ class LoadEntities:
 
         elif ('entities' in entities_data):
             self.add_entities(entities_data['entities'])
-        # Flat Monaco json arrays
+        # Flat Extraction cli json arrays
         else:
             self.add_entities(entities_data)
 

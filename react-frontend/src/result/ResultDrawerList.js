@@ -14,10 +14,14 @@ limitations under the License.
 */
 
 import * as React from 'react'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import ResultDrawerListItem from './ResultDrawerListItem'
 import { STATUS_ORDER } from '../extraction/HorizontalStackedBar'
 import ResultDrawerListSchema from './ResultDrawerListSchema'
+
+export const UNCHECK_ALL = "UNCHECK_ALL"
+export const UNCHECK_ALL_A = `${UNCHECK_ALL}_A`
+export const UNCHECK_ALL_B = `${UNCHECK_ALL}_B`
 
 export default function ResultDrawerList({ result, contextNode, setContextNode }) {
 
@@ -72,7 +76,16 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             setCheckAllStatus(status)
             setChecked(keys)
         }
-    }, [checkAllStatus, setCheckAllStatus])
+    }, [checkAllStatus, setCheckAllStatus, setChecked])
+
+    const handleUnCheckAll = React.useCallback(() => {
+        let statusToSet = UNCHECK_ALL_A
+        if (checkAllStatus === UNCHECK_ALL_A) {
+            statusToSet = UNCHECK_ALL_B
+        }
+        setCheckAllStatus(statusToSet)
+        setChecked([])
+    }, [setCheckAllStatus, setChecked, checkAllStatus])
 
     React.useMemo(() => {
         let sendEmptyArray = false
@@ -146,11 +159,24 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                 || (entity_list && entity_list.toLowerCase().includes(contextNode.searchText))) {
                 nbFound++
 
+                const forceCheckStatus = status === checkAllStatus
+                const forceUncheckAll = checkAllStatus.startsWith(UNCHECK_ALL)
+                const forceUncheckStatus = (status !== checkAllStatus && checkAllStatus !== "" && !forceUncheckAll)
+                const forceUncheck = forceUncheckStatus || forceUncheckAll
+                const disabled = forceUncheckStatus || forceCheckStatus
+
+                let forceUncheckValue = ""
+                if(forceUncheck) {
+                    forceUncheckValue = checkAllStatus
+                }
+
                 items[status]["list"].push(
                     <ResultDrawerListItem key={key} childKey={key} child={child}
                         handleToggleList={handleToggleList} checked={checked.indexOf(key)}
-                        forceCheck={status === checkAllStatus}
-                        forceUncheck={status !== checkAllStatus && checkAllStatus !== ""} />
+                        forceCheck={forceCheckStatus}
+                        forceUncheckValue={forceUncheckValue}
+                        disabled={disabled}
+                        allChecked={checked} />
                 )
 
                 items[status]["keys"].push(key)
@@ -162,6 +188,17 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
         let name = GetNumberedLabel(topObject['module'], nbFound, nbMax)
 
         const componentList = []
+        let label_suffix = ""
+        if(checked && checked.length > 0) {
+            label_suffix = `(${checked.length} configs selected)`
+        }
+
+        componentList.push(
+
+            <Button sx={{ mt: 1 }} key="UncheckAll Button"
+                onClick={() => { handleUnCheckAll() }}
+            > Uncheck All Configs {label_suffix}</Button >
+        )
 
         const addStatusComponent = (status) => {
 
@@ -191,7 +228,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
         }
 
         return [componentList, name]
-    }, [handleToggleList, checked, topObject, keyArray, contextNode, checkAllStatus, handleSetCheckAllStatus])
+    }, [handleToggleList, checked, topObject, keyArray, contextNode, checkAllStatus, handleSetCheckAllStatus, handleUnCheckAll])
 
     const treeViewComponent = React.useMemo(() => {
         return (

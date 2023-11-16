@@ -144,7 +144,7 @@ export default function TenantConfig({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                label="Number of Concurrent Requests for Monaco cli calls to tenant" value={tenantMonacoConcurrentRequests}
+                                label="Number of Concurrent Requests for extraction cli calls to tenant" value={tenantMonacoConcurrentRequests}
                                 onChange={handleChangeMonacoConcurrentRequests} />
                         </FormControl>
                     </React.Fragment>

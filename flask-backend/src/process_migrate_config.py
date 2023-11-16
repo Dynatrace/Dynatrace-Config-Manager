@@ -56,14 +56,14 @@ def migrate_config(
     tenant_key_target,
     active_rules,
     context_params,
-    pre_migration=True,
+    pre_migration=False,
 ):
     matched_entities_dict, entities_dict, entity_legacy_match = get_match_dict(
         run_info, tenant_key_main, tenant_key_target, active_rules, context_params
     )
 
     all_tenant_config_dict, is_legacy_config_match, flat_result_table = get_config_dict(
-        run_info, tenant_key_main, tenant_key_target, entity_legacy_match, pre_migration
+        run_info, tenant_key_main, tenant_key_target, entity_legacy_match
     )
 
     if is_legacy_config_match:
@@ -115,9 +115,7 @@ def get_match_dict(
     return matched_entities_dict, entities_dict, run_legacy_match
 
 
-def get_config_dict(
-    run_info, tenant_key_main, tenant_key_target, entity_legacy_match, pre_migration
-):
+def get_config_dict(run_info, tenant_key_main, tenant_key_target, entity_legacy_match):
     all_tenant_config_dict = None
     run_legacy_match = entity_legacy_match
     ui_payload = None
@@ -126,7 +124,7 @@ def get_config_dict(
         pass
     else:
         run_legacy_match, flat_result_table = monaco_cli_match.try_monaco_match_configs(
-            run_info, tenant_key_main, tenant_key_target, pre_migration
+            run_info, tenant_key_main, tenant_key_target
         )
 
     if run_legacy_match:
@@ -149,43 +147,49 @@ def get_config_dict(
             run_legacy_match = False
 
     else:
-        if pre_migration:
-            pass
-        else:
-            terraform_cli.create_terraform_repo(
-                run_info, pre_migration, tenant_key_main, tenant_key_target
-            )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_state.keep_state_for_IDs(
+            tenant_key_main, tenant_key_target, tenant_key_target
+        )
 
-            terraform_cli.create_target_current_state(
-                run_info, tenant_key_main, tenant_key_target
-            )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_cli.create_terraform_repo(
+            run_info, tenant_key_main, tenant_key_target
+        )
+        if "return_status" in run_info and run_info["return_status"] >= 300:
+            return all_tenant_config_dict, run_legacy_match, ui_payload
 
-            terraform_cli.terraform_refresh_plan(
-                run_info, tenant_key_main, tenant_key_target
-            )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_cli.create_target_current_state(
+            run_info, tenant_key_main, tenant_key_target
+        )
+        if "return_status" in run_info and run_info["return_status"] >= 300:
+            return all_tenant_config_dict, run_legacy_match, ui_payload
 
-            terraform_cli.terraform_refresh_apply(
-                run_info, tenant_key_main, tenant_key_target
-            )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_cli.terraform_refresh_plan(
+            run_info, tenant_key_main, tenant_key_target
+        )
+        if "return_status" in run_info and run_info["return_status"] >= 300:
+            return all_tenant_config_dict, run_legacy_match, ui_payload
 
-            terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_cli.terraform_refresh_apply(
+            run_info, tenant_key_main, tenant_key_target
+        )
+        if "return_status" in run_info and run_info["return_status"] >= 300:
+            return all_tenant_config_dict, run_legacy_match, ui_payload
 
-            terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
-            ui_payload, log_dict = terraform_cli.plan_all(
-                run_info, tenant_key_main, tenant_key_target
-            )
-            if "return_status" in run_info and run_info["return_status"] >= 300:
-                return all_tenant_config_dict, run_legacy_match, ui_payload
+        terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
+        if "return_status" in run_info and run_info["return_status"] >= 300:
+            return all_tenant_config_dict, run_legacy_match, ui_payload
+
+        terraform_state.keep_state_for_IDs(
+            tenant_key_main, tenant_key_target, tenant_key_main
+        )
+
+        terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
+        ui_payload, log_dict = terraform_cli.plan_all(
+            run_info,
+            tenant_key_main,
+            tenant_key_target,
+            env_var_type=terraform_cli.ENV_VAR_USE_CACHE,
+        )
 
         if ui_payload is None:
             ui_payload = terraform_local.load_ui_payload(

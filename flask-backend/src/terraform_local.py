@@ -108,7 +108,9 @@ def update_ui_payload(apply, current):
         module_stats = module_current["stats"]
 
         for resource_apply in module_apply["data"]:
-            resource_current, res_idx = get_resource_current(resource_apply, module_current)
+            resource_current, res_idx = get_resource_current(
+                resource_apply, module_current
+            )
             if resource_current is None:
                 continue
 
@@ -322,6 +324,9 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
 
     variable_done = {}
     variable_list = []
+    local_reference_done = {}
+    local_reference_list = []
+    variable_list = []
     var_defs = {}
     main_tf = {}
     resources_tf_dict = {}
@@ -331,6 +336,8 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
         (
             variable_done,
             variable_list,
+            local_reference_done,
+            local_reference_list,
             var_defs,
             main_tf,
             resources_tf_dict,
@@ -338,6 +345,8 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
         ) = multi_target_plan(
             variable_done,
             variable_list,
+            local_reference_done,
+            local_reference_list,
             var_defs,
             main_tf,
             resources_tf_dict,
@@ -455,6 +464,8 @@ def copy_remaining_files(path, path_config):
 def multi_target_plan(
     variable_done,
     variable_list,
+    local_reference_done,
+    local_reference_list,
     var_defs,
     main_tf,
     resources_tf_dict,
@@ -478,6 +489,7 @@ def multi_target_plan(
         "___variables___.tf",
     ]
 
+    all_resources_found_dict = {}
     for dirpath, dirnames, filenames in os.walk(module_config_path):
         for filename in filenames:
             if filename in non_resource_file:
@@ -491,14 +503,16 @@ def multi_target_plan(
                 variable_list, variable_done = get_all_variables(
                     contents, variable_list, variable_done
                 )
+                local_reference_list, local_reference_done = get_all_local_references(
+                    contents, local_reference_list, local_reference_done
+                )
+                all_resources_found_dict = get_all_resources_from_tf_file(
+                    contents, all_resources_found_dict
+                )
 
-    if module_dir in resources_done:
-        pass
-    else:
-        resources_done[module_dir] = {}
-
-    for resource in resource_list:
-        resources_done[module_dir][resource] = True
+    resources_done = mark_resources_as_done(
+        resources_done, module_dir, resource_list, all_resources_found_dict
+    )
 
     variables_path = dirs.forward_slash_join(module_config_path, "___variables___.tf")
 
@@ -522,23 +536,16 @@ def multi_target_plan(
     for variable in variable_list:
         variable_done[variable] = True
 
-    resources_to_extract = {}
-    for sub_module in resources_tf_dict.keys():
-        resources = []
-        for resource in resources_tf_dict[sub_module].keys():
-            if resources_done[sub_module][resource] == True:
-                pass
-            else:
-                resources.append(resource)
-                resources_done[sub_module][resource] = True
-
-        if len(resources) >= 1:
-            resources_to_extract[sub_module] = resources
+    resources_to_extract, resources_done = prepare_resources_to_extract(
+        local_reference_list, resources_tf_dict, resources_done
+    )
 
     for sub_module, resources in resources_to_extract.items():
         (
             variable_done,
             variable_list,
+            local_reference_done,
+            local_reference_list,
             var_defs,
             main_tf,
             resources_tf_dict,
@@ -546,6 +553,8 @@ def multi_target_plan(
         ) = multi_target_plan(
             variable_done,
             variable_list,
+            local_reference_done,
+            local_reference_list,
             var_defs,
             main_tf,
             resources_tf_dict,
@@ -559,11 +568,77 @@ def multi_target_plan(
     return (
         variable_done,
         variable_list,
+        local_reference_done,
+        local_reference_list,
         var_defs,
         main_tf,
         resources_tf_dict,
         resources_done,
     )
+
+
+def mark_resources_as_done(
+    resources_done, module_dir, resource_list, all_resources_found_dict
+):
+    if module_dir in resources_done:
+        pass
+    else:
+        resources_done[module_dir] = {}
+
+    for resource in resource_list:
+        resources_done[module_dir][resource] = True
+
+    for all_type, all_resource_list in all_resources_found_dict.items():
+        if all_type in resources_done:
+            pass
+        else:
+            resources_done[all_type] = {}
+
+        for resource in all_resource_list:
+            resources_done[all_type][resource] = True
+
+    return resources_done
+
+
+def prepare_resources_to_extract(
+    local_reference_list, resources_tf_dict, resources_done
+):
+    resources_to_extract = {}
+    for sub_module in resources_tf_dict.keys():
+        resources = []
+        for resource in resources_tf_dict[sub_module].keys():
+            if resources_done[sub_module][resource] == True:
+                pass
+            else:
+                resources.append(resource)
+                resources_done[sub_module][resource] = True
+
+        if len(resources) >= 1:
+            resources_to_extract[sub_module] = resources
+
+    for local_reference in local_reference_list:
+        (ref_module, ref_resource) = extract_local_reference(local_reference)
+
+        if ref_module in resources_done:
+            pass
+        else:
+            resources_done[ref_module] = {}
+
+        if (
+            ref_resource in resources_done[ref_module]
+            and resources_done[ref_module][ref_resource] == True
+        ):
+            pass
+        else:
+            if ref_module in resources_to_extract:
+                pass
+            else:
+                resources_to_extract[ref_module] = []
+
+            resources_to_extract[ref_module].append(ref_resource)
+            resources_done[ref_module][ref_resource] = True
+
+    return resources_to_extract, resources_done
 
 
 # This code expects variables that start with ${var.dynatrace_
@@ -582,6 +657,45 @@ def get_all_variables(contents, variable_list, variable_done):
                 variable_list.append(variable)
 
     return variable_list, variable_done
+
+
+# This code expects local variables (resources) that start with ${dynatrace_
+def get_all_local_references(contents, local_reference_list, local_reference_done):
+    local_references_regex = r"(\${dynatrace_([^.]+[^}]+)})"
+
+    match_list = re.findall(local_references_regex, contents)
+
+    if len(match_list) >= 1:
+        for match in match_list:
+            (_, variable) = match
+            if variable in local_reference_done:
+                pass
+            else:
+                local_reference_done[variable] = False
+                local_reference_list.append(variable)
+
+    return local_reference_list, local_reference_done
+
+
+def get_all_resources_from_tf_file(contents, all_resources_found_dict):
+    all_resources_regex = r'resource "dynatrace_([^"]+)" "([^"]+)" {'
+
+    match_list = re.findall(all_resources_regex, contents)
+
+    if len(match_list) >= 1:
+        for match in match_list:
+            (type, name) = match
+            if type in all_resources_found_dict:
+                pass
+            else:
+                all_resources_found_dict[type] = {}
+
+            if name in all_resources_found_dict[type]:
+                pass
+            else:
+                all_resources_found_dict[type][name] = True
+
+    return all_resources_found_dict
 
 
 # This code will not support manually written variables unless they start with "variable"
@@ -794,6 +908,16 @@ def extract_resource(regex, line):
         return ""
     else:
         return m.group(1)
+
+
+def extract_local_reference(ref):
+    regex = r"([^\.]+)\.([^\.]+)\.[^\n\r]+"
+
+    m = re.search(regex, ref)
+    if m is None:
+        return ""
+    else:
+        return m.group(1), m.group(2)
 
 
 def file_contains_resource(file_path, resource_list):

@@ -22,7 +22,7 @@ export function WizardPage(props) {
 
   return (
     <React.Fragment>
-      <Grid item sx={{ mt: 2, mb: 1 }} direction={"column"} align={'center'}>
+      <Grid item sx={{ mt: 2, mb: 1 }} align={'center'}>
         <Typography variant='h4'>
           Assisted Config Migration
         </Typography>

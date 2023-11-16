@@ -34,9 +34,21 @@ def get_path_match_entities(config_main, config_target):
     return dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "mat_ent_mon")
 
 
+def get_path_match_entities_prev(config_main, config_target):
+    return dirs.get_tenant_work_cache_sub_dir(
+        config_main, config_target, "cache_prev_mat_ent"
+    )
+
+
 def get_path_match_configs(config_main, config_target):
     return dirs.get_tenant_work_cache_sub_dir(
         config_main, config_target, "mat_conf_mon"
+    )
+
+
+def get_path_match_configs_prev(config_main, config_target):
+    return dirs.get_tenant_work_cache_sub_dir(
+        config_main, config_target, "cache_prev_mat_conf"
     )
 
 
@@ -44,8 +56,30 @@ def get_path_match_entities_results(config_main, config_target):
     return dirs.prep_dir(get_path_match_entities(config_main, config_target), "results")
 
 
+def get_path_match_entities_results_only(config_main, config_target):
+    return get_path_match_entities_results(config_main, config_target)
+
+
+def get_path_match_entities_results_only_prev(config_main, config_target):
+    return dirs.forward_slash_join(
+        get_path_match_entities_prev(config_main, config_target), "results"
+    )
+
+
 def get_path_match_configs_results(config_main, config_target):
     return dirs.prep_dir(get_path_match_configs(config_main, config_target), "results")
+
+
+def get_path_match_configs_results_only(config_main, config_target):
+    return dirs.prep_dir(
+        get_path_match_configs(config_main, config_target), "results", "dict"
+    )
+
+
+def get_path_match_configs_results_only_prev(config_main, config_target):
+    return dirs.forward_slash_join(
+        get_path_match_configs_prev(config_main, config_target), "results", "dict"
+    )
 
 
 def get_path_match_configs_UI_payload(config_main, config_target):
@@ -85,7 +119,7 @@ def is_finished_match(match_type, tenant_key_target, tenant_key_main):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
-    is_finished, finished_file = monaco_cli.is_finished(
+    is_finished, finished_file, _ = monaco_cli.is_finished(
         match_type_options[match_type]["cache_path_func"](config_main, config_target)
     )
 
@@ -114,6 +148,8 @@ match_type_options = {
     "entities": {
         "cache_path_func": get_path_match_entities,
         "output_path_func": get_path_match_entities_results,
+        "result_path_func": get_path_match_entities_results_only,
+        "result_path_func_prev": get_path_match_entities_results_only_prev,
         "manifest_path_func": monaco_cli_download.get_path_entities,
         "yaml_path_func": get_path_match_entities_yaml,
         "entities_match_path_func": None,
@@ -125,6 +161,8 @@ match_type_options = {
     "configs": {
         "cache_path_func": get_path_match_configs,
         "output_path_func": get_path_match_configs_results,
+        "result_path_func": get_path_match_configs_results_only,
+        "result_path_func_prev": get_path_match_configs_results_only_prev,
         "manifest_path_func": monaco_cli_download.get_path_configs,
         "yaml_path_func": get_path_match_configs_yaml,
         "entities_match_path_func": get_path_match_entities_results,
@@ -169,7 +207,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
         print(
             "Match",
             match_type,
-            "using Monaco, see ",
+            "using Extraction cli, see ",
             log_file_path,
         )
 
@@ -208,11 +246,22 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
             "tenant_key_main": tenant_key_main,
             "tenant_key_target": tenant_key_target,
         }
+
+        copy_missing_match_types_from_older_extract(
+            config_main, config_target, match_type
+        )
+
+        copy_missing_match_types_from_older_extract(
+            config_main, config_target, match_type
+        )
+
         monaco_cli.save_finished(
             match_type_options[match_type]["cache_path_func"](
                 config_main, config_target
             ),
             finished_file,
+            "match",
+            match_type,
         )
     else:
         monaco_cli.handle_subprocess_error(
@@ -227,9 +276,69 @@ def delete_old_cache(config_main, config_target, match_type):
         config_main, config_target
     )
 
+    keep_monaco_results_from_older_extract(config_main, config_target, match_type)
+
     if os.path.exists(monaco_cache_path) and os.path.isdir(monaco_cache_path):
-        print("Deleting expired Monaco Match cache: ", monaco_cache_path)
+        print("Deleting expired Extraction cli Match cache: ", monaco_cache_path)
         shutil.rmtree(monaco_cache_path)
+
+
+def keep_monaco_results_from_older_extract(config_main, config_target, match_type):
+    monaco_cache_output = match_type_options[match_type]["result_path_func"](
+        config_main, config_target
+    )
+    monaco_cache_output_prev = match_type_options[match_type]["result_path_func_prev"](
+        config_main, config_target
+    )
+
+    try:
+        shutil.copytree(
+            monaco_cache_output,
+            monaco_cache_output_prev,
+            copy_function=shutil.copy2,
+            dirs_exist_ok=True,
+        )
+
+    except Exception as e:
+        print(
+            f"INFO1: Could not keep previous {match_type} matching results, could be also be first run."
+        )
+        print(f"INFO2: {e}")
+
+
+def copy_missing_match_types_from_older_extract(config_main, config_target, match_type):
+    monaco_cache_output_prev = match_type_options[match_type]["result_path_func_prev"](
+        config_main, config_target
+    )
+    monaco_cache_output = match_type_options[match_type]["result_path_func"](
+        config_main, config_target
+    )
+
+    if os.path.exists(monaco_cache_output_prev):
+        pass
+    else:
+        return
+
+    try:
+        os.makedirs(monaco_cache_output, exist_ok=True)
+
+        for file in os.listdir(monaco_cache_output_prev):
+            source_path = os.path.join(monaco_cache_output_prev, file)
+            destination_path = os.path.join(monaco_cache_output, file)
+
+            if os.path.exists(destination_path):
+                pass
+            else:
+                shutil.copy2(source_path, destination_path)
+
+    except Exception as e:
+        print(f"INFO: Problem copying previous match {match_type} results", e)
+
+"""
+"prevResultPath": match_type_options[match_type]["result_path_func_prev"](
+    config_main, config_target
+),
+"""
 
 
 def save_match_yaml(run_info, config_target, config_main, match_type):
@@ -299,6 +408,11 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
 def try_monaco_match_entities(run_info, tenant_key_main, tenant_key_target):
     match_type = "entities"
 
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+
+    delete_old_cache(config_main, config_target, match_type)
+
     run_legacy_match, result_tuple = try_monaco_match(
         run_info, match_type, tenant_key_main, tenant_key_target
     )
@@ -307,18 +421,13 @@ def try_monaco_match_entities(run_info, tenant_key_main, tenant_key_target):
     return run_legacy_match, matched_entities_dict, entities_dict
 
 
-def try_monaco_match_configs(
-    run_info, tenant_key_main, tenant_key_target, pre_migration
-):
+def try_monaco_match_configs(run_info, tenant_key_main, tenant_key_target):
     match_type = "configs"
 
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
-    if pre_migration:
-        pass
-    else:
-        delete_old_cache(config_main, config_target, match_type)
+    delete_old_cache(config_main, config_target, match_type)
 
     run_legacy_match, result_tuple = try_monaco_match(
         run_info, match_type, tenant_key_main, tenant_key_target
@@ -348,22 +457,22 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
         if match_type_options[match_type]["is_finished_match_func"](
             tenant_key_target, tenant_key_main
         ):
-            print("Attempt to load Monaco Matching cache")
+            print("Attempt to load Extraction cli Matching cache")
             must_rerun, result_tuple = match_type_options[match_type][
                 "load_match_func"
             ](tenant_key_target, tenant_key_main)
 
             if must_rerun == False:
-                print("Loaded Monaco cache successfully")
+                print("Loaded Extraction cli cache successfully")
                 run_legacy_match = False
             else:
-                print("Loaded Monaco cache was out of date")
+                print("Loaded Extraction cli cache was out of date")
         else:
-            print("No Monaco cache available")
+            print("No Extraction cli cache available")
             must_rerun = True
 
         if must_rerun == True:
-            print("Run Monaco Matching")
+            print("Run Extraction cli Matching")
 
             run_info_local = copy.deepcopy(run_info)
             run_info_local["aggregate_error"] = []
@@ -372,7 +481,7 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
             match_type_options[match_type]["match_func"](
                 run_info_local, tenant_key_target, tenant_key_main
             )
-            print("Monaco Match Output: ", run_info_local)
+            print("Extraction cli Match Output: ", run_info_local)
 
             if match_type_options[match_type]["is_finished_match_func"](
                 tenant_key_target, tenant_key_main
@@ -382,15 +491,15 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
                 ](tenant_key_target, tenant_key_main)
 
                 if must_rerun == False:
-                    print("Ran Monaco Matching successfully")
+                    print("Ran Extraction cli Matching successfully")
                     run_legacy_match = False
                 else:
                     print(
-                        "Attempt to run Monaco Match failed, will run legacy Match (must rerun?)"
+                        "Attempt to run Extraction cli Match failed, will run legacy Match (must rerun?)"
                     )
             else:
                 print(
-                    "Attempt to run Monaco Match failed, will run legacy Match (isn't finished)"
+                    "Attempt to run Extraction cli Match failed, will run legacy Match (isn't finished)"
                 )
 
     return run_legacy_match, result_tuple

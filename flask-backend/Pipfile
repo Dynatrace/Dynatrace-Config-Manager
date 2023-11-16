@@ -13,6 +13,7 @@ colorama = "*"
 cx-freeze = "*"
 charset-normalizer = "*"
 pyyaml = "*"
+urllib3 = "*"
 
 [dev-packages]
 

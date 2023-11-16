@@ -144,7 +144,7 @@ def extract(
         print(
             "Downloading",
             log_label,
-            "using Monaco, see ",
+            "using Extraction cli, see ",
             log_file_path,
         )
 
@@ -189,7 +189,7 @@ def extract(
         else:
             finished_file = add_to_finished(finished_file)
 
-        monaco_cli.save_finished(path, finished_file)
+        monaco_cli.save_finished(path, finished_file, "download", log_label)
     else:
         monaco_cli.handle_subprocess_error(
             run_info, result, command, options, stdout, stderr, ("Extract" + log_label)
@@ -211,10 +211,10 @@ def delete_old_cache_configs(config, path):
 
 
 def delete_old_cache(config, path, non_monaco_dir):
-    is_previous_finished, _ = monaco_cli.is_finished(path)
+    _, _, can_delete = monaco_cli.is_finished(path)
 
-    if is_previous_finished:
-        print("Deleting old Monaco cache: ", path)
+    if can_delete:
+        print("Deleting old Extraction cli cache: ", path)
         try:
             shutil.rmtree(path)
         except FileNotFoundError as e:
@@ -228,7 +228,7 @@ def delete_old_cache(config, path, non_monaco_dir):
         if os.path.exists(non_monaco_cache_path) and os.path.isdir(
             non_monaco_cache_path
         ):
-            print("Deleting pre-Monaco cache: ", non_monaco_cache_path)
+            print("Deleting pre-Extraction cache: ", non_monaco_cache_path)
             shutil.rmtree(non_monaco_cache_path)
 
 
@@ -248,7 +248,7 @@ def is_finished_download(get_path_func, config=None, tenant_key=None):
     if config == None:
         config = credentials.get_api_call_credentials(tenant_key)
 
-    is_finished, _ = monaco_cli.is_finished(get_path_func(config))
+    is_finished, _, _ = monaco_cli.is_finished(get_path_func(config))
 
     return is_finished
 
