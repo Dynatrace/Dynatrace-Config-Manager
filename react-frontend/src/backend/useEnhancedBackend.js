@@ -179,7 +179,7 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
                     completedSearchParams['action_id'] = entityFilter.getActionIdFunc()
                 }
 
-                const { enableDashboards, enableOmitDestroy } = options
+                const { enableDashboards, enableOmitDestroy, terraformParallelism } = options
 
                 if (enableDashboards === true) {
                     completedSearchParams['enable_dashboards'] = JSON.stringify(enableDashboards)
@@ -187,6 +187,10 @@ function useCompleteSearchParams(entityFilter, setEntityFilterApplyMigrationChec
 
                 if (enableOmitDestroy === true) {
                     completedSearchParams['enable_omit_destroy'] = JSON.stringify(enableOmitDestroy)
+                }
+
+                if (terraformParallelism && terraformParallelism !== "" && terraformParallelism > 0) {
+                    completedSearchParams['terraform_parallelism'] = terraformParallelism
                 }
 
             }
