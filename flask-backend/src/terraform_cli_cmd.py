@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import dirs
+import process_utils
 import terraform_cli
 import windows_cmd_file_util
 
@@ -123,12 +124,17 @@ def write_plan_cmd(terraform_path, set_env_filename):
     )
 
 
-def generate_cmd_list(command, extra_args, isRefresh=False, save_state=True):
+def generate_cmd_list(command, extra_args, isRefresh=False, save_state=True, run_info=None):
+    
+    parallelism = process_utils.DEFAULT_TERRAFORM_PARALLELISM
+    if(run_info is not None and "terraform_parallelism" in run_info and run_info["terraform_parallelism"] > 0):
+        parallelism = run_info["terraform_parallelism"]
+    
     cmd_list = [
         "terraform",
         command,
         "-lock=false",
-        "-parallelism=50",
+        f"-parallelism={parallelism}",
     ]
 
     # if save_state:
@@ -142,7 +148,7 @@ def generate_cmd_list(command, extra_args, isRefresh=False, save_state=True):
     return cmd_list
 
 
-def gen_plan_cmd_list(plan_file, is_refresh=False, save_state=True, target_info=None):
+def gen_plan_cmd_list(plan_file, is_refresh=False, save_state=True, target_info=None, run_info=None):
     extra_args = []
 
     if target_info is not None:
@@ -160,12 +166,12 @@ def gen_plan_cmd_list(plan_file, is_refresh=False, save_state=True, target_info=
     if save_state:
         extra_args.extend(["-out=" + plan_file, ">NUL"])
 
-    return generate_cmd_list("plan", extra_args, is_refresh, save_state)
+    return generate_cmd_list("plan", extra_args, is_refresh, save_state, run_info)
 
 
-def gen_apply_cmd_list(plan_file, is_refresh=False):
+def gen_apply_cmd_list(plan_file, is_refresh=False, run_info=None):
     extra_args = ["-auto-approve", plan_file]
-    return generate_cmd_list("apply", extra_args, is_refresh)
+    return generate_cmd_list("apply", extra_args, is_refresh, run_info=run_info)
 
 
 def write_refresh_cmd(terraform_path, set_env_filename):
