@@ -22,10 +22,14 @@ export const LOADING = "LOADING"
 export const ERROR = "ERROR"
 export const DONE = "DONE"
 
-export const useProgress = () => {
+export const useProgress = (setSubProgress = () => {}) => {
 
     const { progress, setProgress } = useProgressState()
     const progressComponent = useProgressIcon(progress === LOADING)
+
+    React.useEffect(() => {
+        setSubProgress(progress)
+    }, [progress, setSubProgress])
 
     return { progress, setProgress, progressComponent }
 }

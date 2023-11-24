@@ -47,6 +47,8 @@ def gen_monaco_env(config, tenant_data, log_path=None):
 
 
 CACHE_VERSION_V_0_19 = "v0.19"
+CACHE_VERSION_LATEST = "v0.19.2"
+VALID_CACHE_VERSION = [CACHE_VERSION_V_0_19, CACHE_VERSION_LATEST]
 
 
 def handle_subprocess_error(
@@ -66,7 +68,7 @@ def handle_subprocess_error(
 def save_finished(path, finished_file, action_type, label):
     finished_file["monaco_finished"] = True
     finished_file["finished_at"] = terraform_cli.get_formatted_timestamp()
-    finished_file["cache_version"] = CACHE_VERSION_V_0_19
+    finished_file["cache_version"] = CACHE_VERSION_LATEST
     finished_file["action_type"] = action_type
     finished_file["label"] = label
 
@@ -91,7 +93,7 @@ def is_finished(path):
     if "monaco_finished" in finished_file:
         if (
             "cache_version" in finished_file
-            and finished_file["cache_version"] == CACHE_VERSION_V_0_19
+            and finished_file["cache_version"] in VALID_CACHE_VERSION
         ):
             return finished_file["monaco_finished"], finished_file, True
         else:

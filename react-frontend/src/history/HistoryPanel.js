@@ -196,7 +196,7 @@ export default function HistoryPanel() {
     );
 }
 
-function convertTimestamp(inputTimestamp) {
+export function convertTimestamp(inputTimestamp) {
     if (inputTimestamp) {
         const [datePart, timePart] = inputTimestamp.split('_');
 
