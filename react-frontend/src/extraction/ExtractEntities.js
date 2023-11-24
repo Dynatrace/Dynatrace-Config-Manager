@@ -14,10 +14,11 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { EXTRACT_ENTITY_V2 } from '../backend/backend';
+import { EXTRACT_ENTITY_V2, GET_FINISHED_DOWNLOAD_ENTITIES } from '../backend/backend';
 import ExtractButton from './ExtractButton';
-import { Box, TextField } from '@mui/material';
+import { Box, Grid, TextField } from '@mui/material';
 import { FormControl } from '@mui/base';
+import ExtractionInfo from './ExtractionInfo';
 
 export const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
 export const timeToNow = 0
@@ -25,6 +26,7 @@ export const timeToNow = 0
 export default function ExtractEntities({ tenantKeyType }) {
     const [timeFromMinute, setTimeFromMinute] = React.useState(timeFrom7WeeksMinutes)
     const [timeToMinute, setTimeToMinute] = React.useState(timeToNow)
+    const [subProgress, setSubProgress] = React.useState("")
 
     const handleTimeFromMinute = (event) => {
         setTimeFromMinute(event.target.value)
@@ -35,10 +37,18 @@ export default function ExtractEntities({ tenantKeyType }) {
 
     return (
         <React.Fragment>
-            <ExtractButton api={EXTRACT_ENTITY_V2}
-                label="Extract Entities"
-                tenantKeyType={tenantKeyType}
-                extraSearchParams={{ 'time_from_minutes': timeFromMinute, 'time_to_minutes': timeToMinute }} />
+            <Grid container direction={'row'} alignItems={'center'} >
+                <Grid item>
+                    <ExtractButton api={EXTRACT_ENTITY_V2}
+                        label="Extract Entities"
+                        tenantKeyType={tenantKeyType}
+                        extraSearchParams={{ 'time_from_minutes': timeFromMinute, 'time_to_minutes': timeToMinute }}
+                        setSubProgress={setSubProgress} />
+                </Grid>
+                <Grid item>
+                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_ENTITIES} tenantKeyType={tenantKeyType} extractionProgress={subProgress} />
+                </Grid>
+            </Grid>
             <Box sx={{ ml: 2 }}>
                 <React.Fragment>
                     <FormControl>
