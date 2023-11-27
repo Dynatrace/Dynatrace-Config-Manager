@@ -14,7 +14,7 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { EXTRACT_CONFIGS, EXTRACT_ENTITY_V2, GET_FINISHED_DOWNLOAD_CONFIGS, GET_FINISHED_DOWNLOAD_ENTITIES, backendPost } from "../backend/backend";
+import { EXTRACT_CONFIGS, EXTRACT_ENTITY_V2, backendGet, backendPost } from "../backend/backend";
 import { timeFrom7WeeksMinutes, timeToNow } from './ExtractEntities';
 import { DONE, ERROR, LOADING, useProgress } from '../progress/ProgressHook';
 
@@ -53,36 +53,29 @@ export function useHandleExtract(tenantKey, extraSearchParams, setProgress, api)
     }, [tenantKey, api, setProgress, extraSearchParams]);
 }
 
-/*
-export function useFinishedEntitiesInfo(tenantKey) {
-    return useFinishedInfo(tenantKey, GET_FINISHED_DOWNLOAD_ENTITIES)
-}
-
-export function useFinishedConfigsInfo(tenantKey) {
-    return useFinishedInfo(tenantKey, GET_FINISHED_DOWNLOAD_CONFIGS)
-}
-
-export function useFinishedInfo(tenantKey, api) {
+export function useFinishedInfo(tenantKey, api, setFinishedData) {
     const { progress, setProgress, progressComponent } = useProgress()
 
     const getFinished = React.useCallback(() => {
+        setFinishedData(null)
         const searchParams = { 'tenant_key': tenantKey };
 
         setProgress(LOADING);
         const thenFunction = promise => promise
             .then(response => {
-                setProgress(DONE);
                 return response.json();
+            })
+            .then(data => {
+                setFinishedData(data)
+                setProgress(DONE);
             })
 
         const catchFunction = (error) => {
             setProgress(ERROR)
         }
 
-        backendPost(api, null, searchParams, thenFunction, catchFunction, false);
-    }, [tenantKey, api, setProgress]);
+        backendGet(api, searchParams, thenFunction, catchFunction, false);
+    }, [tenantKey, api, setProgress, setFinishedData]);
 
     return { progress, progressComponent, getFinished }
 }
-
-*/

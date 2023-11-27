@@ -432,7 +432,7 @@ def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
         run_info, "refresh" + ".plan"
     )
 
-    cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=True)
+    cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=True, run_info=run_info)
     terraform_execute(
         run_info,
         tenant_key_main,
@@ -451,7 +451,7 @@ def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
         run_info, "refresh" + ".plan"
     )
 
-    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=True)
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=True, run_info=run_info)
     terraform_execute(
         run_info,
         tenant_key_main,
@@ -490,7 +490,7 @@ def plan_target(run_info, tenant_key_main, tenant_key_target, terraform_params):
     )
 
     cmd_list = terraform_cli_cmd.gen_plan_cmd_list(
-        plan_filename, is_refresh=False, target_info=terraform_params
+        plan_filename, is_refresh=False, target_info=terraform_params, run_info=run_info
     )
 
     return terraform_execute(
@@ -513,7 +513,7 @@ def apply_target(run_info, tenant_key_main, tenant_key_target, terraform_params)
         run_info, "targeted" + ".plan"
     )
 
-    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False, run_info=run_info)
 
     log_dict = terraform_execute(
         run_info,
@@ -537,7 +537,7 @@ def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_p
         run_info, "targeted" + ".plan"
     )
 
-    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False, run_info=run_info)
 
     log_dict = terraform_execute(
         run_info,
@@ -637,7 +637,7 @@ def run_plan_all(
     filename = process_utils.add_action_id_to_filename(run_info, filename)
 
     plan_filename = dirs.get_file_path(".", filename, fileType, absolute=False)
-    cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False)
+    cmd_list = terraform_cli_cmd.gen_plan_cmd_list(plan_filename, is_refresh=False, run_info=run_info)
 
     cache_dir = None
     if env_var_type == ENV_VAR_USE_CACHE:
@@ -666,7 +666,7 @@ def apply_all(run_info, tenant_key_main, tenant_key_target):
         run_info, "complete" + ".plan"
     )
 
-    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False)
+    cmd_list = terraform_cli_cmd.gen_apply_cmd_list(plan_filename, is_refresh=False, run_info=run_info)
 
     log_dict = terraform_execute(
         run_info,

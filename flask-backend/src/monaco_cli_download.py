@@ -254,11 +254,11 @@ def is_finished_download(get_path_func, config=None, tenant_key=None):
 
 
 def get_finished_download_configs(tenant_key):
-    return monaco_cli.load_finished(get_path_configs, tenant_key=tenant_key)
+    return get_finished_download(get_path_configs, tenant_key=tenant_key)
 
 
 def get_finished_download_entities(tenant_key):
-    return monaco_cli.load_finished(get_path_entities, tenant_key=tenant_key)
+    return get_finished_download(get_path_entities, tenant_key=tenant_key)
 
 
 def get_finished_download(get_path_func, config=None, tenant_key=None):

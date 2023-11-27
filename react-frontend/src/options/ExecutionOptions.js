@@ -13,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, FormControl, Grid, TextField, Typography } from '@mui/material';
 import * as React from 'react';
 import { useExecutionOptionsState } from '../context/ExecutionContext';
 
 export default function ExecutionOptions() {
 
-    const { enableDashboards, enableOmitDestroy, setEnableDashboards, setEnableOmitDestroy } = useExecutionOptionsState()
+    const { enableDashboards, enableOmitDestroy, terraformParallelism, setEnableDashboards, setEnableOmitDestroy, setTerraformParallelism } = useExecutionOptionsState()
+
+    const [terraformParallelismInput, setTerraformParallelismInput] = React.useState(terraformParallelism)
 
     const handleEnableDashboardsToggle = React.useCallback(() => {
         setEnableDashboards(!enableDashboards)
@@ -28,6 +30,15 @@ export default function ExecutionOptions() {
     const handleEnableOmitDestroy = React.useCallback(() => {
         setEnableOmitDestroy(!enableOmitDestroy)
     }, [setEnableOmitDestroy, enableOmitDestroy])
+
+    const handleSetTerraformParallelism = React.useCallback((event) => {
+        let newValue = event.target.value
+        setTerraformParallelismInput(newValue)
+        if (!newValue || newValue === "" || newValue < 1) {
+            newValue = "1"
+        }
+        setTerraformParallelism(Number(newValue))
+    }, [setTerraformParallelism])
 
     return (
         <React.Fragment>
@@ -39,6 +50,20 @@ export default function ExecutionOptions() {
                 <Button onClick={handleEnableOmitDestroy} {...genButtonProps(enableOmitDestroy)}>{genButtonText(ENABLE_OMIT_DESTROY, enableOmitDestroy)}</Button>
                 <Typography>{genInfoText(ENABLE_OMIT_DESTROY, enableOmitDestroy)}</Typography>
             </Box>
+            <Grid container>
+                <Grid item xs={5}>
+                    <FormControl fullWidth>
+                        <TextField id={"terraformParallelism-field"}
+                            type="number"
+                            variant="standard"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            label="Terraform parallelism parameter, or threads (10: lower Memory usage, 50: faster processing)" value={terraformParallelismInput}
+                            onChange={handleSetTerraformParallelism} />
+                    </FormControl>
+                </Grid>
+            </Grid>
         </React.Fragment>
     );
 }

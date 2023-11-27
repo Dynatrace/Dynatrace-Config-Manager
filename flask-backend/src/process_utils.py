@@ -82,6 +82,8 @@ def get_tenant_schemas_definitions_dict(run_info, is_target_tenant):
     ]
 
 
+DEFAULT_TERRAFORM_PARALLELISM = 10
+
 def get_run_info(
     tenant_key_main,
     tenant_key_target=None,
@@ -98,6 +100,7 @@ def get_run_info(
     preemptive_config_copy=False,
     enable_dashboards=False,
     enable_omit_destroy=False,
+    terraform_parallelism=DEFAULT_TERRAFORM_PARALLELISM,
     time_from_minutes=None,
     time_to_minutes=None,
     action_id=None,
@@ -127,6 +130,7 @@ def get_run_info(
     run_info["preemptive_config_copy"] = preemptive_config_copy
     run_info["enable_dashboards"] = enable_dashboards
     run_info["enable_omit_destroy"] = enable_omit_destroy
+    run_info["terraform_parallelism"] = terraform_parallelism
     run_info["time_from_minutes"] = time_from_minutes
     run_info["time_to_minutes"] = time_to_minutes
     run_info["action_id"] = action_id

@@ -28,11 +28,12 @@ import { useHandleExtract } from './ExtractionHooks';
 
 export default function ExtractButton({ api, label,
     descLabel = "This action will OVERWRITE your last extraction, if any.",
-    tenantKeyType = TENANT_KEY_TYPE_MAIN, extraSearchParams = {} }) {
+    tenantKeyType = TENANT_KEY_TYPE_MAIN, extraSearchParams = {},
+    setSubProgress = () => { } }) {
 
     const { tenantKey } = useTenantKey(tenantKeyType)
     const { tenant: tenantTarget } = useTenant(tenantKey)
-    const { progress, setProgress, progressComponent } = useProgress()
+    const { progress, setProgress, progressComponent } = useProgress(setSubProgress)
 
     const tenantLabel = React.useMemo(() => {
         return genTenantLabel({ ...tenantTarget, 'key': tenantKey }, "Target")
