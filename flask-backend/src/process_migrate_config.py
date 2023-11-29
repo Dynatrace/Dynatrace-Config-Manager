@@ -91,6 +91,7 @@ def migrate_config(
 def get_match_dict(
     run_info, tenant_key_main, tenant_key_target, active_rules, context_params
 ):
+    print("\nOneTopology - step 1/2 - Match entities")
     (
         run_legacy_match,
         matched_entities_dict,
@@ -100,7 +101,7 @@ def get_match_dict(
     )
 
     if run_legacy_match:
-        print("Legacy Entity Matching Disabled")
+        # print("Legacy Entity Matching Disabled")
         process_utils.add_aggregate_error(
             run_info,
             f"ERROR: Entities not downloaded?",
@@ -123,21 +124,23 @@ def get_config_dict(run_info, tenant_key_main, tenant_key_target, entity_legacy_
     if run_legacy_match:
         pass
     else:
+        print("\nOneTopology - step 2/2 - Match configs and replace entity IDs")
         run_legacy_match, flat_result_table = monaco_cli_match.try_monaco_match_configs(
             run_info, tenant_key_main, tenant_key_target
         )
 
+    print("\nOneTopology - Complete")
     if run_legacy_match:
-        print("Using Legacy Matching")
         config_function = process_match_settings_2_0.match_config
 
         if run_info["forced_match"]:
+            print("Using Legacy Matching")
             config_function = process_match_settings_2_0.match_config_forced_live
 
         if run_info["forced_match"]:
             all_tenant_config_dict = config_function(run_info)
         else:
-            print("Legacy Config Matching disabled for complete tenant matching")
+            # print("Legacy Config Matching disabled for complete tenant matching")
 
             process_utils.add_aggregate_error(
                 run_info,
@@ -147,49 +150,61 @@ def get_config_dict(run_info, tenant_key_main, tenant_key_target, entity_legacy_
             run_legacy_match = False
 
     else:
+        print("\nTerraComposer - step 1/9 - keep IDs terraform target")
         terraform_state.keep_state_for_IDs(
             tenant_key_main, tenant_key_target, tenant_key_target
         )
 
+        print("\nTerraComposer - step 2/9 - Create Terraform repo")
         terraform_cli.create_terraform_repo(
             run_info, tenant_key_main, tenant_key_target
         )
         if "return_status" in run_info and run_info["return_status"] >= 300:
             return all_tenant_config_dict, run_legacy_match, ui_payload
 
+        print("\nTerraComposer - step 3/9 - Create Target env. state")
         terraform_cli.create_target_current_state(
             run_info, tenant_key_main, tenant_key_target
         )
         if "return_status" in run_info and run_info["return_status"] >= 300:
             return all_tenant_config_dict, run_legacy_match, ui_payload
 
+        print("\nTerraComposer - step 4/9 - Plan Refresh Target env. state")
         terraform_cli.terraform_refresh_plan(
             run_info, tenant_key_main, tenant_key_target
         )
         if "return_status" in run_info and run_info["return_status"] >= 300:
             return all_tenant_config_dict, run_legacy_match, ui_payload
 
+        print("\nTerraComposer - step 5/9 - Apply Refresh Target env. state")
         terraform_cli.terraform_refresh_apply(
             run_info, tenant_key_main, tenant_key_target
         )
         if "return_status" in run_info and run_info["return_status"] >= 300:
             return all_tenant_config_dict, run_legacy_match, ui_payload
 
+        print("\nTerraComposer - step 6/9 - Create Source env. tf files")
         terraform_cli.create_work_hcl(run_info, tenant_key_main, tenant_key_target)
         if "return_status" in run_info and run_info["return_status"] >= 300:
             return all_tenant_config_dict, run_legacy_match, ui_payload
 
+        print("\nTerraComposer - step 7/9 - Keep IDs Terraform Source")
         terraform_state.keep_state_for_IDs(
             tenant_key_main, tenant_key_target, tenant_key_main
         )
 
+        print("\nTerraComposer - step 8/9 - Merge Target State with Source TF files")
         terraform_state.merge_state_into_config(tenant_key_main, tenant_key_target)
+        
+        print("\nTerraComposer - step 9/9 - Terraform Plan All")
         ui_payload, log_dict = terraform_cli.plan_all(
             run_info,
             tenant_key_main,
             tenant_key_target,
             env_var_type=terraform_cli.ENV_VAR_USE_CACHE,
         )
+        
+        print("\nTerraComposer - Complete\n")
 
         if ui_payload is None:
             ui_payload = terraform_local.load_ui_payload(

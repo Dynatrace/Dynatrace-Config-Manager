@@ -63,13 +63,9 @@ export function WizRun({ showNextTab }) {
     handleExtractConfigsTarget()
   }, [handleExtractConfigsSource, handleExtractConfigsTarget])
 
-  const handlePushAll = React.useCallback(() => {
-    handleApplyAll()
-  }, [handleExtractConfigsSource, handleExtractConfigsTarget])
-
   const handleAdvanced = React.useCallback(() => {
     setAdvancedMode(true)
-  }, [handleExtractConfigsSource, handleExtractConfigsTarget])
+  }, [setAdvancedMode])
 
   React.useEffect(() => {
     if (progressConfigsSource === DONE && progressEntitiesSource === NOT_STARTED) {
@@ -98,7 +94,7 @@ export function WizRun({ showNextTab }) {
         return [MatrixDisabled, "Running. this could take a while...", disabled]
       }
     }
-    return [MatrixBlue, "Run the extraction and post-processing phases", disabled]
+    return [MatrixBlue, "Prepare for migration", disabled]
   }, [progressConfigsSource, progressConfigsTarget, progressPostProcess])
 
   const [pushAllButtonColor, pushAllButtonMessage, pushAllButtonDisabled] = React.useMemo(() => {
@@ -151,7 +147,7 @@ export function WizRun({ showNextTab }) {
                 {genStatusComponent(progressConfigsTarget, progressComponentConfigsTarget, "Extract target tenant configs")}
                 {genStatusComponent(progressEntitiesSource, progressComponentEntitiesSource, "Extract source tenant entities")}
                 {genStatusComponent(progressEntitiesTarget, progressComponentEntitiesTarget, "Extract target tenant entities")}
-                {genStatusComponent(progressPostProcess, progressComponentPostProcess, "Post-Process the extracted data")}
+                {genStatusComponent(progressPostProcess, progressComponentPostProcess, "Execute OneTopology & TerraComposer")}
               </Box>
             </Grid>
             <Grid item xs={5}>
@@ -162,21 +158,6 @@ export function WizRun({ showNextTab }) {
                 <Typography sx={{ ml: 2 }}>
                   This is a complex multiple step action
                   <br /> Depending on the size of tenants, it could take a while.
-                  <br /> <br /> 1. Create the cache:
-                </Typography>
-                <Typography sx={{ ml: 4 }}>
-                  - Extract entities from both tenants
-                  <br /> - Extract configs from both tenants
-                </Typography>
-                <Typography sx={{ ml: 2 }}>
-                  <br /> 2. Work on the cache to prepare for migration (post-process):
-                </Typography>
-                <Typography sx={{ ml: 4 }}>
-                  - Match entity IDs that may have changed
-                  <br /> - Replace Source entity IDs with Target IDs
-                  <br /> - Create terraform state for Target tenant
-                  <br /> - Create terraform resource files for Source tenant
-                  <br /> - Run a terraform Plan to understand differences
                 </Typography>
               </Box>
             </Grid>
@@ -190,14 +171,12 @@ export function WizRun({ showNextTab }) {
                 <Typography color="black" variant={"h6"}>Status prior to migration</Typography>
                 <StatsBar stats={planStats} />
                 <Typography sx={{ ml: 2 }}>
-                  <br /> Push <b>All</b> configs will prepare your Target tenant for a migration
-                  <br /> Or help complete configs after entities are migrated
+                  <br /> Ready to Add and Change configurations in your Target environment.
                 </Typography>
-                <Typography sx={{ ml: 4 }}>
-                  - If you need more control, switch to Advanced mode and go to the Manage Configs Tab.
-                  <br /> - You will always be able to change between modes.
+                <Typography sx={{ ml: 2 }}>
+                  <br /> - If you need more control, switch to Advanced mode and go to the Manage Configs Tab.
                 </Typography>
-                <Button sx={{ mx: 2, mt: 4 }} {...genMatrixButtonProps(pushAllButtonColor)} disabled={pushAllButtonDisabled} onClick={handlePushAll}>{pushAllButtonMessage}</Button>
+                <Button sx={{ mx: 2, mt: 4 }} {...genMatrixButtonProps(pushAllButtonColor)} disabled={pushAllButtonDisabled} onClick={handleApplyAll}>{pushAllButtonMessage}</Button>
                 {progressApplyAll !== NOT_STARTED ?
                   null
                   :
@@ -215,11 +194,11 @@ export function WizRun({ showNextTab }) {
                   - Run a terraform Apply
                 </Typography>
                 <Typography sx={{ ml: 2 }}>
-                  <br /> Note 1: Configs can and will be pushed BEFORE the entities are migrated.
-                  <br /> <br /> Note 2: After migration, some entities will be given a different ID in the Target tenant.
+                  <br /> a. Before a migration: Configurations will be pre-pushed even if your entities are not migrated.
+                  <br /> <br /> b. After a migration: Some entities will be given a different ID in the Target tenant.
                 </Typography>
                 <Typography sx={{ ml: 4 }}>
-                  - There are ways to mitigate, but it will always happen.
+                  - OneTopology will update configurations with the new IDs
                   <br /> - Running this tool after migrating entities will help you avoid missing configs.
                 </Typography>
               </Box>

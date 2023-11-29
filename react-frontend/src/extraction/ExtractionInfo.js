@@ -49,13 +49,16 @@ const LATEST_CACHE_VERSIONS = {
     [ENTITIES]: [LATEST_CACHE_VERSION],
 }
 
-export default function ExtractionInfo({ api, tenantKeyType, extractionProgress }) {
+const twelveHours = (12 * 60 * 60 * 1000)
+
+export default function ExtractionInfo({ api, tenantKeyType, extractionProgress, setIsOldCache }) {
     const [finishedData, setFinishedData] = React.useState({})
     const { tenantKey } = useTenantKey(tenantKeyType)
     const { progressComponent, getFinished } = useFinishedInfo(tenantKey, api, setFinishedData)
 
     React.useEffect(() => {
         setFinishedData(null)
+        setIsOldCache(true)
 
         if (extractionProgress === DONE || extractionProgress === NOT_STARTED) {
             getFinished()
@@ -64,65 +67,82 @@ export default function ExtractionInfo({ api, tenantKeyType, extractionProgress 
 
     }, [extractionProgress])
 
+    const finishedInfo = React.useMemo(() => {
+        if (finishedData) {
+            // pass
+        } else {
+            return null
+        }
+
+
+        let extractedAtLabel = ""
+        let isOldLabel = null
+        if (FINISHED_AT in finishedData) {
+            const extractedAt = convertTimestamp(finishedData[FINISHED_AT])
+            if ((new Date() - new Date(extractedAt)) > twelveHours) {
+                isOldLabel = (
+                    <b>[old] </b>
+                )
+                setIsOldCache(true)
+            } else {
+                setIsOldCache(false)
+            }
+            extractedAtLabel = `Extracted at ${convertTimestamp(finishedData[FINISHED_AT])}`
+        }
+
+        let cache_version = "pre-v0.19"
+        let outdatedLabel = ""
+        let outdatedColor = ""
+
+        if (CACHE_VERSION in finishedData) {
+            cache_version = finishedData[CACHE_VERSION]
+        }
+
+        let type = ANY
+        if (TYPE_LABEL in finishedData) {
+            type = finishedData[TYPE_LABEL]
+        }
+
+        if (BREAKING_CACHE_VERSIONS[type].includes(cache_version)) {
+            outdatedColor = "error.light"
+            outdatedLabel = "Cache incompatible, please re-extract"
+        } else if (OUTDATED_CACHE_VERSIONS[type].includes(cache_version)) {
+            outdatedColor = "warning.light"
+            outdatedLabel = "Re-extract cache for better entity matching"
+        } else if (LATEST_CACHE_VERSIONS[type].includes(cache_version)) {
+            cache_version = ""
+            outdatedLabel = ""
+        }
+
+        if (extractedAtLabel === "") {
+            extractedAtLabel = cache_version
+        } else if (cache_version === "") {
+            // pass
+        } else {
+            extractedAtLabel = `${extractedAtLabel}, ${cache_version}`
+        }
+
+        return (
+            <Grid container direction={"column"} alignItems={'center'}>
+                <Grid item>
+                    <Typography>{isOldLabel}{extractedAtLabel}</Typography>
+                </Grid>
+                {outdatedLabel === "" ? null
+                    : <Grid item>
+                        <Typography color={outdatedColor}>{outdatedLabel}</Typography>
+                    </Grid>
+                }
+            </Grid>)
+
+    }, [finishedData])
+
 
     return (
         <React.Fragment>
             <Grid container direction={'row'} alignItems={'center'} >
                 {progressComponent}
-                {!finishedData ? null
-                    : genFinishedAt(finishedData)}
+                {finishedInfo}
             </Grid>
         </React.Fragment >
     );
-}
-
-function genFinishedAt(finishedData) {
-    let extractedAtLabel = ""
-    if (FINISHED_AT in finishedData) {
-        extractedAtLabel = `Extracted at ${convertTimestamp(finishedData[FINISHED_AT])}`
-    }
-
-    let cache_version = "pre-v0.19"
-    let outdatedLabel = ""
-    let outdatedColor = ""
-
-    if (CACHE_VERSION in finishedData) {
-        cache_version = finishedData[CACHE_VERSION]
-    }
-
-    let type = ANY
-    if (TYPE_LABEL in finishedData) {
-        type = finishedData[TYPE_LABEL]
-    }
-
-    if (BREAKING_CACHE_VERSIONS[type].includes(cache_version)) {
-        outdatedColor = "error.light"
-        outdatedLabel = "Cache incompatible, please re-extract"
-    } else if (OUTDATED_CACHE_VERSIONS[type].includes(cache_version)) {
-        outdatedColor = "warning.light"
-        outdatedLabel = "Re-extract cache for better entity matching"
-    } else if (LATEST_CACHE_VERSIONS[type].includes(cache_version)) {
-        cache_version = ""
-        outdatedLabel = ""
-    }
-
-    if (extractedAtLabel === "") {
-        extractedAtLabel = cache_version
-    } else if (cache_version === "") {
-        // pass
-    } else {
-        extractedAtLabel = `${extractedAtLabel}, ${cache_version}`
-    }
-
-    return (
-        <Grid direction={"column"} alignItems={'center'}>
-            <Grid item>
-                <Typography>{extractedAtLabel}</Typography>
-            </Grid>
-            {outdatedLabel === "" ? null
-                : <Grid item>
-                    <Typography color={outdatedColor}>{outdatedLabel}</Typography>
-                </Grid>
-            }
-        </Grid>)
 }

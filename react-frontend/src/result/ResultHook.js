@@ -271,7 +271,7 @@ export const useMigrationResultHook = () => {
         if (extractedData
             && 'modules' in extractedData) {
 
-            let label = "All Configs, per module"
+            let label = "Configurations"
 
             components.push(
                 <React.Fragment key="modules">
@@ -282,23 +282,9 @@ export const useMigrationResultHook = () => {
 
         }
 
-        /*
-        if (extractedData
-            && 'legend' in extractedData) {
-            components.push(
-                <Typography sx={{ mt: 1 }}>Status Legend: </Typography>
-            )
-            for (const [actionLetter, action] of Object.entries(extractedData['legend'])) {
-                components.push(
-                    <Typography sx={{ ml: 1 }}>{actionLetter + ": " + action}</Typography>
-                )
-            }
-        }
-        */
-
         return components
 
-    }, [extractedData, searchText])
+    }, [extractedData, searchText, handleContextMenu])
 
     const resultComponents = React.useMemo(() => {
         if (!_.isEmpty(extractedData)) {

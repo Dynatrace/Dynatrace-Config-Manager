@@ -64,7 +64,7 @@ def is_path_too_long(path):
 
 
 def get_monaco_exec_dir():
-    return prep_dir(get_forward_slash_cwd(), "..", "monaco")
+    return prep_dir(get_forward_slash_cwd(), "..", "one-topology")
 
 
 def get_terraform_exec_dir():

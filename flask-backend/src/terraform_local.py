@@ -304,6 +304,7 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
+    print("\nTerraComposer - Prepare Quick Multi Targeting - Started")
     path = get_path_terraform_multi_target(config_main, config_target)
     terraform_cli.delete_old_dir(path, label="multi_target")
     path_config = terraform_cli.get_path_terraform_config(config_main, config_target)
@@ -372,6 +373,9 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
     write_main_tf_file(main_tf, path)
     create_sub_state(tenant_key_main, tenant_key_target, resources_done)
     copy_remaining_files(path, path_config)
+    
+    print("TerraComposer - Prepare Quick Multi Targeting - Done\n")
+
 
     return terraform_cli.run_plan_all(
         run_info,

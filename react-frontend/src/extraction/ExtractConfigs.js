@@ -15,12 +15,11 @@ limitations under the License.
 
 import * as React from 'react';
 import { EXTRACT_CONFIGS, GET_FINISHED_DOWNLOAD_CONFIGS } from '../backend/backend';
-import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 import ExtractButton from './ExtractButton';
 import { Grid } from '@mui/material';
 import ExtractionInfo from './ExtractionInfo';
 
-export default function ExtractConfigs({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
+export default function ExtractConfigs({ tenantKeyType, setIsOldCache }) {
     const [subProgress, setSubProgress] = React.useState("")
 
     return (
@@ -33,7 +32,7 @@ export default function ExtractConfigs({ tenantKeyType = TENANT_KEY_TYPE_MAIN })
                         setSubProgress={setSubProgress} />
                 </Grid>
                 <Grid item>
-                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_CONFIGS} tenantKeyType={tenantKeyType} extractionProgress={subProgress} />
+                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_CONFIGS} tenantKeyType={tenantKeyType} extractionProgress={subProgress} setIsOldCache={setIsOldCache} />
                 </Grid>
             </Grid>
         </React.Fragment>

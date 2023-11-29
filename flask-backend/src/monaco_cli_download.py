@@ -26,7 +26,7 @@ import terraform_cli
 
 
 def get_path_monaco_logs(config):
-    return dirs.get_tenant_data_cache_sub_dir(config, "monaco_logs")
+    return dirs.get_tenant_data_cache_sub_dir(config, "extraction_cli_logs")
 
 
 def get_path_entities(config):
@@ -108,14 +108,10 @@ def extract(
     config = credentials.get_api_call_credentials(tenant_key)
     path = get_path_func(config)
 
-    log_file_path = terraform_cli.add_timestamp_to_log_filename(
-        path, "monaco_download_" + log_label + ".log"
-    )
-
     delete_cache_func(config, path)
 
     log_file_path = terraform_cli.add_timestamp_to_log_filename(
-        get_path_monaco_logs(config), "monaco_download_" + log_label + ".log"
+        get_path_monaco_logs(config), "extraction_cli_download_" + log_label + ".log"
     )
 
     tenant_data = tenant.load_tenant(tenant_key)

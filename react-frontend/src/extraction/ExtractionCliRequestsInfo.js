@@ -13,22 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import * as React from 'react';
 import { TENANT_KEY_TYPE_MAIN, useTenant, useTenantKey } from '../context/TenantListContext';
 import { DEFAULT_MONACO_CONCURRENT_REQUESTS } from '../credentials/TenantConfig';
 
 
-export default function MonacoRequestsInfo({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
+export default function ExtractionCliRequestsInfo({ tenantKeyType = TENANT_KEY_TYPE_MAIN }) {
 
     const { tenantKey } = useTenantKey(tenantKeyType)
     const { tenant } = useTenant(tenantKey)
 
     return (
-        <React.Fragment>
-            <Typography>The extraction cli will send {tenant.monacoConcurrentRequests?tenant.monacoConcurrentRequests:DEFAULT_MONACO_CONCURRENT_REQUESTS} concurrent requests.</Typography>
+        <Box sx={{ ml: 2, mt: 2 }}>
+            <Typography>The extraction cli will send {tenant.monacoConcurrentRequests ? tenant.monacoConcurrentRequests : DEFAULT_MONACO_CONCURRENT_REQUESTS} concurrent requests.</Typography>
             <Typography>If the extraction fails, it could be caused by rate limiting.</Typography>
             <Typography>You can reduce the number of concurrent requests 'per tenant' in the Credentials tab.</Typography>
-        </React.Fragment>
+        </Box>
     );
 }

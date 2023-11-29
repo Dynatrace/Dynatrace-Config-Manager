@@ -37,26 +37,12 @@ def terraform_plan_target():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        """
-        log_dict = {}
-
-        if len(terraform_params) > 40:
-        """
         log_dict = terraform_local.plan_multi_target(
             run_info,
             tenant_key_main,
             tenant_key_target,
             terraform_params,
         )
-        """
-        else:
-            log_dict = terraform_cli.plan_target(
-                run_info,
-                tenant_key_main,
-                tenant_key_target,
-                terraform_params,
-            )
-        """
 
         result = {}
         result["log_dict"] = log_dict

@@ -419,7 +419,7 @@ def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
         tenant_key_target,
         tenant_key_target,
         cmd_list,
-        "import",
+        "tc_import",
         "Import State",
         STATE_GEN_DIR,
         CACHE_DIR_IMPORT,
@@ -439,7 +439,7 @@ def terraform_refresh_plan(run_info, tenant_key_main, tenant_key_target):
         tenant_key_target,
         tenant_key_target,
         cmd_list,
-        "refresh_plan",
+        "tc_refresh_plan",
         "Refresh Plan [refresh state only]",
         STATE_GEN_DIR,
         CACHE_DIR_IMPORT,
@@ -458,7 +458,7 @@ def terraform_refresh_apply(run_info, tenant_key_main, tenant_key_target):
         tenant_key_target,
         tenant_key_target,
         cmd_list,
-        "refresh_apply",
+        "tc_refresh_apply",
         "Apply Plan [refresh state only]",
         STATE_GEN_DIR,
         CACHE_DIR_IMPORT,
@@ -476,7 +476,7 @@ def create_work_hcl(run_info, tenant_key_main, tenant_key_target):
         tenant_key_target,
         tenant_key_main,
         cmd_list,
-        "export_work_hcl",
+        "tc_export_work_hcl",
         "Export Work HCL",
         CONFIG_DIR,
         CACHE_DIR,
@@ -590,6 +590,7 @@ def plan_all(run_info, tenant_key_main, tenant_key_target, env_var_type=ENV_VAR_
             get_path_terraform_config,
         )
         if re_run_plan:
+            print("\TerraComposer - step 10/9 - extra step - Terraform Plan All for Omit Destroy")
             log_dict = run_plan_all(
                 run_info,
                 tenant_key_main,
