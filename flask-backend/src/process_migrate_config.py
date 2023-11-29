@@ -131,10 +131,10 @@ def get_config_dict(run_info, tenant_key_main, tenant_key_target, entity_legacy_
 
     print("\nOneTopology - Complete")
     if run_legacy_match:
-        print("Using Legacy Matching")
         config_function = process_match_settings_2_0.match_config
 
         if run_info["forced_match"]:
+            print("Using Legacy Matching")
             config_function = process_match_settings_2_0.match_config_forced_live
 
         if run_info["forced_match"]:
