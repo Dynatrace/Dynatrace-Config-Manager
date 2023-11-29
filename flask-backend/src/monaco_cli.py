@@ -24,7 +24,7 @@ import terraform_cli
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
-MONACO_EXEC = f"monaco-{os_helper.OS}-amd64{os_helper.EXEC_EXTENSION}"
+MONACO_EXEC = f"one-topology-{os_helper.OS}-amd64{os_helper.EXEC_EXTENSION}"
 
 
 def get_path_finished_file(type_path):
@@ -62,7 +62,7 @@ def handle_subprocess_error(
         result["stdout"] = stdout
     if stderr != "":
         result["stderr"] = stderr
-    print("ERROR Running Extraction cli ", log_label, ": ", result)
+    print("ERROR Running OneTopology ", log_label, ": ", result)
 
 
 def save_finished(path, finished_file, action_type, label):

@@ -17,7 +17,6 @@ import * as React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import TFLog, { genTerraformExecutionLabelPrefix } from './TFLog';
 import TerraformButton from '../terraform/TerraformButton';
-import EfficientAccordion from './EfficientAccordion';
 import { ALL } from './ResultDrawerDetailsAll';
 import { getTimestampActionId } from '../date/DateFormatter';
 import StatsBar from './StatsBar';
@@ -129,7 +128,7 @@ export function useGenTerraformActionComponent(actionCompleted, handleTerraformC
         const applyButton = genApplyButton(actionId, handleTerraformCallComplete, terraformParams, isApplyDone, isPlanDone, lastActionId, applyAPI, previousPlanTerraformParams);
         const [planFocusProps, applyFocusProps] = genFocusProps(isApplyDone, isPlanDone)
 
-        let actionDetailsLabel = "Push selected configurations"
+        let actionDetailsLabel = "TerraComposer - Push selected configurations"
         let actionDetailsVariant = "h6"
         let allLabel = ""
         if (module === ALL) {

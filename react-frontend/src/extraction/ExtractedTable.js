@@ -17,13 +17,125 @@ import * as React from 'react';
 import { Grid, IconButton, Typography } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import HorizontalStackedBar, { STATUS_ORDER } from './HorizontalStackedBar';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
 export const defaultColumnArray = ['data', '0']
 
+const SORT_ORDER_ASC = "ASC"
+const SORT_ORDER_DESC = "DESC"
+
+const SORT_BY_MODULE = "module"
+const SORT_BY_DONE = "done"
+const SORT_BY_ADD = "add"
+const SORT_BY_DESTROY = "destroy"
+const SORT_BY_CHANGE = "change"
+const SORT_BY_ERROR = "error"
+
+const SORT_STATUS_TO_CODE = {
+    [SORT_BY_DONE]: "I",
+    [SORT_BY_ADD]: "A",
+    [SORT_BY_DESTROY]: "D",
+    [SORT_BY_CHANGE]: "U",
+    [SORT_BY_ERROR]: "E",
+}
+
+const SORT_BY_LIST = [SORT_BY_DONE, SORT_BY_ADD, SORT_BY_DESTROY, SORT_BY_CHANGE, SORT_BY_ERROR]
+
 export default function ExtractedTable({ data, resultKey, keyArray, handleClickMenu, searchText }) {
 
+    const [sortByOrder, setSortByOrder] = React.useState([])
+    const [sortedData, setSortedData] = React.useState([])
+    const effectiveSortByOrder = React.useMemo(() => {
+        return getEffectiveSortByOrder(sortByOrder);
+    }, [sortByOrder])
+
+    const sortData = React.useCallback((newSortByOrder, dataToSort) => {
+        if (dataToSort && dataToSort.length > 0) {
+            const [sortBy, sortOrder] = newSortByOrder
+
+            let newSortedData = [...dataToSort]
+            if (sortBy === SORT_BY_MODULE) {
+                newSortedData = newSortedData.sort(genSortByModule(sortOrder));
+            } else {
+                newSortedData = newSortedData.sort(genSortByStatus(sortOrder, sortBy));
+            }
+
+            setSortedData(newSortedData)
+        }
+    }, [setSortedData])
+
+    React.useEffect(() => {
+        if (data && data.length > 0) {
+            let sortedDataIndex = [...data]
+            for (const idx in data) {
+                sortedDataIndex[idx]["realIdx"] = idx
+            }
+            sortData(effectiveSortByOrder, sortedDataIndex)
+        } else {
+            setSortedData([])
+            setSortByOrder([])
+        }
+    }, [data])
+
+    const handleSortBy = React.useCallback((newSortBy) => {
+        let newSortOrder = SORT_ORDER_ASC
+        const [sortBy, sortOrder] = effectiveSortByOrder
+
+        if (sortBy === newSortBy) {
+            if (sortOrder === SORT_ORDER_ASC) {
+                newSortOrder = SORT_ORDER_DESC
+            }
+        } else if (newSortBy === SORT_BY_MODULE) {
+            // pass
+        } else {
+            newSortOrder = SORT_ORDER_DESC
+        }
+
+        setSortByOrder([newSortBy, newSortOrder])
+    }, [setSortByOrder, effectiveSortByOrder])
+
+    const sortButtons = React.useMemo(() => {
+        const [sortBy, sortOrder] = effectiveSortByOrder
+
+        let sortOrderIcon = (<ArrowUpwardIcon color="primary" />)
+        if (sortOrder === SORT_ORDER_DESC) {
+            sortOrderIcon = (<ArrowDownwardIcon color="primary" />)
+        }
+
+        let sortStatusesButtons = []
+        const sizeStatus = 12 / 5
+        for (const sortByButton of SORT_BY_LIST) {
+            sortStatusesButtons.push(
+                genSortButton(sortByButton, sizeStatus, handleSortBy, sortBy, sortOrderIcon)
+            )
+        }
+
+        let sortButtons = (
+
+            <Grid key={`sortButtons`} container>
+                {genSortButton(SORT_BY_MODULE, 3, handleSortBy, sortBy, sortOrderIcon)}
+                <Grid item xs={9}>
+                    <Grid container>
+                        {sortStatusesButtons}
+                    </Grid>
+                </Grid>
+            </Grid>
+        )
+
+        return sortButtons
+    }, [effectiveSortByOrder, handleSortBy])
+
+
+    React.useEffect(() => {
+        if (effectiveSortByOrder.length > 0) {
+            sortData(effectiveSortByOrder, sortedData)
+        }
+    }, [effectiveSortByOrder])
+
+
     const hsBarComponents = React.useMemo(() => {
-        if (data && keyArray) {
+        if (sortedData && keyArray) {
             // pass
         } else {
             return null
@@ -32,10 +144,10 @@ export default function ExtractedTable({ data, resultKey, keyArray, handleClickM
         let hsBarComponents = []
         let id = 0
 
-        for (const [idx, row] of Object.entries(data)) {
+        for (const row of Object.values(sortedData)) {
 
             let columnArray = [...defaultColumnArray]
-            let rowArray = [...keyArray, idx]
+            let rowArray = [...keyArray, row["realIdx"]]
             let ctxMenuBtnInfo = { 'value': { resultKey, 'rowArray': rowArray, 'columnArray': [...rowArray, ...columnArray], 'searchText': searchText } }
 
             let { statuses, foundText } = searchForText(row, searchText);
@@ -72,9 +184,89 @@ export default function ExtractedTable({ data, resultKey, keyArray, handleClickM
 
         return hsBarComponents
 
-    }, [data, searchText, handleClickMenu, keyArray, resultKey])
+    }, [sortedData, searchText, handleClickMenu, keyArray, resultKey, sortByOrder])
 
-    return hsBarComponents
+    return (
+        <React.Fragment>
+            {sortButtons}
+            {hsBarComponents}
+        </React.Fragment>
+    )
+}
+
+function getEffectiveSortByOrder(sortByOrder) {
+    let effectiveSortByOrder = [SORT_BY_MODULE, SORT_ORDER_ASC];
+    if (sortByOrder.length > 0) {
+        effectiveSortByOrder = sortByOrder;
+    }
+    return effectiveSortByOrder;
+}
+
+function genSortByModule(sortOrder) {
+    let greater = 1
+    let lesser = -1
+
+    if (sortOrder === SORT_ORDER_DESC) {
+        greater = -1
+        lesser = 1
+    }
+
+    return (a, b) => {
+        const valueA = a["module"];
+        const valueB = b["module"];
+
+        if (valueA < valueB) {
+            return lesser;
+        } else if (valueA > valueB) {
+            return greater;
+        } else {
+            return 0;
+        }
+    }
+}
+
+function genSortByStatus(sortOrder, sortBy) {
+    const sortByActionCode = SORT_STATUS_TO_CODE[sortBy]
+
+    let greater = 1
+    let lesser = -1
+
+    if (sortOrder === SORT_ORDER_DESC) {
+        greater = -1
+        lesser = 1
+    }
+
+    return (a, b) => {
+        let valueA = -1
+        if (sortByActionCode in a["stats"]) {
+            valueA = a["stats"][sortByActionCode]
+        }
+
+        let valueB = -1
+        if (sortByActionCode in b["stats"]) {
+            valueB = b["stats"][sortByActionCode]
+        }
+
+        if (valueA < valueB) {
+            return lesser;
+        } else if (valueA > valueB) {
+            return greater;
+        } else {
+            return 0;
+        }
+    }
+}
+
+function genSortButton(sortByButton, sizeStatus, handleSortBy, sortBy, sortOrderIcon) {
+    return <Grid item key={sortByButton} xs={sizeStatus}>
+        <IconButton
+            variant="outlined"
+            onClick={() => { handleSortBy(sortByButton); }}
+        >
+            Sort by {sortByButton}
+            {sortBy === sortByButton ? sortOrderIcon : null}
+        </IconButton>
+    </Grid>;
 }
 
 function searchForText(row, searchText) {

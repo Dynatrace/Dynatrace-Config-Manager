@@ -14,7 +14,6 @@ limitations under the License.
 */
 
 import * as React from 'react'
-import _ from 'lodash';
 import { Box, CircularProgress } from '@mui/material';
 
 export const NOT_STARTED = "NOT STARTED"
@@ -22,7 +21,7 @@ export const LOADING = "LOADING"
 export const ERROR = "ERROR"
 export const DONE = "DONE"
 
-export const useProgress = (setSubProgress = () => {}) => {
+export const useProgress = (setSubProgress = () => { }) => {
 
     const { progress, setProgress } = useProgressState()
     const progressComponent = useProgressIcon(progress === LOADING)

@@ -197,7 +197,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
         run_info, False, config_main, config_target
     )
     log_file_path = terraform_cli.add_timestamp_to_log_filename(
-        history_log_path, "monaco_match_" + match_type + ".log"
+        history_log_path, "one_topology_" + match_type + ".log"
     )
 
     my_env = monaco_cli.gen_monaco_env(config_target, tenant_data, log_file_path)
@@ -207,7 +207,7 @@ def match(run_info, match_type, tenant_key_target, tenant_key_main=None):
         print(
             "Match",
             match_type,
-            "using Extraction cli, see ",
+            "using OneTopology, see ",
             log_file_path,
         )
 
@@ -279,7 +279,7 @@ def delete_old_cache(config_main, config_target, match_type):
     keep_monaco_results_from_older_extract(config_main, config_target, match_type)
 
     if os.path.exists(monaco_cache_path) and os.path.isdir(monaco_cache_path):
-        print("Deleting expired Extraction cli Match cache: ", monaco_cache_path)
+        print("Deleting expired OneTopology cache: ", monaco_cache_path)
         shutil.rmtree(monaco_cache_path)
 
 
@@ -457,22 +457,22 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
         if match_type_options[match_type]["is_finished_match_func"](
             tenant_key_target, tenant_key_main
         ):
-            print("Attempt to load Extraction cli Matching cache")
+            print("Attempt to load OneTopology cache")
             must_rerun, result_tuple = match_type_options[match_type][
                 "load_match_func"
             ](tenant_key_target, tenant_key_main)
 
             if must_rerun == False:
-                print("Loaded Extraction cli cache successfully")
+                print("Loaded OneTopology cache successfully")
                 run_legacy_match = False
             else:
-                print("Loaded Extraction cli cache was out of date")
+                print("Loaded OneTopology cache was out of date")
         else:
-            print("No Extraction cli cache available")
+            print("No OneTopology cache available")
             must_rerun = True
 
         if must_rerun == True:
-            print("Run Extraction cli Matching")
+            print("Run OneTopology Matching")
 
             run_info_local = copy.deepcopy(run_info)
             run_info_local["aggregate_error"] = []
@@ -481,7 +481,7 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
             match_type_options[match_type]["match_func"](
                 run_info_local, tenant_key_target, tenant_key_main
             )
-            print("Extraction cli Match Output: ", run_info_local)
+            print("OneTopology Match Output: ", run_info_local)
 
             if match_type_options[match_type]["is_finished_match_func"](
                 tenant_key_target, tenant_key_main
@@ -491,15 +491,15 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
                 ](tenant_key_target, tenant_key_main)
 
                 if must_rerun == False:
-                    print("Ran Extraction cli Matching successfully")
+                    print("Ran OneTopology successfully")
                     run_legacy_match = False
                 else:
                     print(
-                        "Attempt to run Extraction cli Match failed, will run legacy Match (must rerun?)"
+                        "Attempt to run OneTopology failed"
                     )
             else:
                 print(
-                    "Attempt to run Extraction cli Match failed, will run legacy Match (isn't finished)"
+                    "Attempt to run OneTopology failed"
                 )
 
     return run_legacy_match, result_tuple

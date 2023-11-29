@@ -141,7 +141,7 @@ def extract_config(tenant_key, tenant_data, headers):
     else:
         config["monaco_concurrent_requests"] = 10
 
-    # Not using this feature currently, would have to adapt with Extraction cli/Terraform 
+    # Not using this feature currently, would have to adapt with OneTopology/Terraform 
     '''
     if (
         "disableSSLVerification" in tenant_data
