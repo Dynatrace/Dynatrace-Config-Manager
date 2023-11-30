@@ -65,7 +65,7 @@ function useHandlePost(handleChange, api, backendPost, setProgress = () => { }) 
             const catchFunction = (error) => {
                 setProgress(ERROR)
             }
-            backendPost(api, null, searchParams, thenFunction, catchFunction)
+            backendPost(api, null, searchParams, thenFunction, catchFunction, false)
         }
 
         return postFunction

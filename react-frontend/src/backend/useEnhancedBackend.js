@@ -65,9 +65,9 @@ export function useEnhancedBackendFunctions(completeSearchParams, payloadTerrafo
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
                 return backendGet(api_method, completedSearchParams, thenFunction, catchFunction)
             },
-            "backendPost": (api_method, payload, searchParams, thenFunction, catchFunction) => {
+            "backendPost": (api_method, payload, searchParams, thenFunction, catchFunction, showAlert = true) => {
                 const completedSearchParams = completeSearchParams(api_method, searchParams)
-                return backendPost(api_method, payloadTerraform, completedSearchParams, thenFunction, catchFunction)
+                return backendPost(api_method, payloadTerraform, completedSearchParams, thenFunction, catchFunction, showAlert)
 
             },
             "backendDelete": (api_method, payload, searchParams, thenFunction, catchFunction) => {

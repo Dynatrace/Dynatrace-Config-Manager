@@ -23,7 +23,7 @@ import ExtractionInfo from './ExtractionInfo';
 export const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
 export const timeToNow = 0
 
-export default function ExtractEntities({ tenantKeyType, setIsOldCache }) {
+export default function ExtractEntities({ tenantKeyType, setCacheDetails }) {
     const [timeFromMinute, setTimeFromMinute] = React.useState(timeFrom7WeeksMinutes)
     const [timeToMinute, setTimeToMinute] = React.useState(timeToNow)
     const [subProgress, setSubProgress] = React.useState("")
@@ -46,7 +46,7 @@ export default function ExtractEntities({ tenantKeyType, setIsOldCache }) {
                         setSubProgress={setSubProgress} />
                 </Grid>
                 <Grid item>
-                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_ENTITIES} tenantKeyType={tenantKeyType} extractionProgress={subProgress} setIsOldCache={setIsOldCache} />
+                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_ENTITIES} tenantKeyType={tenantKeyType} extractionProgress={subProgress} setCacheDetails={setCacheDetails} />
                 </Grid>
             </Grid>
             <Box sx={{ ml: 2 }}>

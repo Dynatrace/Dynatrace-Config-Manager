@@ -19,7 +19,7 @@ import ExtractButton from './ExtractButton';
 import { Grid } from '@mui/material';
 import ExtractionInfo from './ExtractionInfo';
 
-export default function ExtractConfigs({ tenantKeyType, setIsOldCache }) {
+export default function ExtractConfigs({ tenantKeyType, setCacheDetails }) {
     const [subProgress, setSubProgress] = React.useState("")
 
     return (
@@ -32,7 +32,7 @@ export default function ExtractConfigs({ tenantKeyType, setIsOldCache }) {
                         setSubProgress={setSubProgress} />
                 </Grid>
                 <Grid item>
-                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_CONFIGS} tenantKeyType={tenantKeyType} extractionProgress={subProgress} setIsOldCache={setIsOldCache} />
+                    <ExtractionInfo api={GET_FINISHED_DOWNLOAD_CONFIGS} tenantKeyType={tenantKeyType} extractionProgress={subProgress} setCacheDetails={setCacheDetails} />
                 </Grid>
             </Grid>
         </React.Fragment>
