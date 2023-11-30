@@ -25,10 +25,10 @@ import { usePostProcessEntityFilter } from '../migrate/PostProcessHooks';
 import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 
 export default function ExtractionSection() {
-    const [isOldCacheConfigsSource, setIsOldCacheConfigsSource] = React.useState(true)
-    const [isOldCacheConfigsTarget, setIsOldCacheConfigsTarget] = React.useState(true)
-    const [isOldCacheEntitiesSource, setIsOldCacheEntitiesSource] = React.useState(true)
-    const [isOldCacheEntitiesTarget, setIsOldCacheEntitiesTarget] = React.useState(true)
+    const [cacheDetailsConfigsSource, setCacheDetailsConfigsSource] = React.useState(true)
+    const [cacheDetailsConfigsTarget, setCacheDetailsConfigsTarget] = React.useState(true)
+    const [cacheDetailsEntitiesSource, setCacheDetailsEntitiesSource] = React.useState(true)
+    const [cacheDetailsEntitiesTarget, setCacheDetailsEntitiesTarget] = React.useState(true)
     const gridConfigList = useMigrationGridConfig()
 
     const entityFilter = usePostProcessEntityFilter()
@@ -39,18 +39,18 @@ export default function ExtractionSection() {
 
         for (const keyType of gridConfigList) {
 
-            let setIsOldCacheConfigs = setIsOldCacheConfigsTarget
-            let setIsOldCacheEntities = setIsOldCacheEntitiesTarget
+            let setCacheDetailsConfigs = setCacheDetailsConfigsTarget
+            let setCacheDetailsEntities = setCacheDetailsEntitiesTarget
             if (keyType === TENANT_KEY_TYPE_MAIN) {
-                setIsOldCacheConfigs = setIsOldCacheConfigsSource
-                setIsOldCacheEntities = setIsOldCacheEntitiesSource
+                setCacheDetailsConfigs = setCacheDetailsConfigsSource
+                setCacheDetailsEntities = setCacheDetailsEntitiesSource
             }
 
             gridComponentList.push(
                 <React.Fragment key={keyType}>
                     <Grid item xs={5} id={keyType}>
-                        <ExtractConfigs tenantKeyType={keyType} setIsOldCache={setIsOldCacheConfigs} />
-                        <ExtractEntities tenantKeyType={keyType} setIsOldCache={setIsOldCacheEntities} />
+                        <ExtractConfigs tenantKeyType={keyType} setCacheDetails={setCacheDetailsConfigs} />
+                        <ExtractEntities tenantKeyType={keyType} setCacheDetails={setCacheDetailsEntities} />
                         <ExtractionCliRequestsInfo tenantKeyType={keyType} />
                     </Grid>
                     <Grid item xs={1} />
@@ -63,13 +63,20 @@ export default function ExtractionSection() {
     const [cacheTitleColor, prepareTitleColor] = React.useMemo(() => {
         let cacheTitleColor = null
         let prepareTitleColor = "primary.main"
-        if(isOldCacheConfigsSource || isOldCacheConfigsTarget || isOldCacheEntitiesSource || isOldCacheEntitiesTarget) {
+        if (cacheDetailsConfigsSource["isOld"] || cacheDetailsConfigsTarget["isOld"] || cacheDetailsEntitiesSource["isOld"] || cacheDetailsEntitiesTarget["isOld"]) {
             cacheTitleColor = "primary.main"
             prepareTitleColor = null
         }
 
         return [cacheTitleColor, prepareTitleColor]
-    }, [isOldCacheConfigsSource, isOldCacheConfigsTarget, isOldCacheEntitiesSource, isOldCacheEntitiesTarget])
+    }, [cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget])
+
+    const isCacheIncomplete = React.useMemo(() => {
+        if (cacheDetailsConfigsSource["isMissing"] || cacheDetailsConfigsTarget["isMissing"] || cacheDetailsEntitiesSource["isMissing"] || cacheDetailsEntitiesTarget["isMissing"]) {
+            return true
+        }
+        return false
+    }, [cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget])
 
     return (
         <React.Fragment>
@@ -80,25 +87,33 @@ export default function ExtractionSection() {
                 </Grid>
             </Paper>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
-                <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>
-                <ExecutionOptions />
-                {genWarningOldCache(isOldCacheConfigsSource, isOldCacheConfigsTarget, isOldCacheEntitiesSource, isOldCacheEntitiesTarget)}
-                <MigrateButtonControlled handleChange={() => { }}
-                    entityFilter={entityFilter}
-                    label={"Prepare for migration, do this when extractions are completed"}
-                    confirm={true} descLabel={""} />
+                <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>                {
+                    isCacheIncomplete ? <Typography sx={{ my: 6 }} variant="h4" color="secondary.main" align='center'>Please extract entities & configs for both tenants before you proceed.</Typography>
+                        : (
+                            <React.Fragment>
+                                <ExecutionOptions />
+
+                                {genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget)}
+
+                                : <MigrateButtonControlled handleChange={() => { }}
+                                    entityFilter={entityFilter}
+                                    label={"Execute OneTopology & TerraComposer"}
+                                    confirm={true} descLabel={""} />
+                            </React.Fragment>
+                        )
+                }
             </Paper>
         </React.Fragment >
     );
 }
 
-function genWarningOldCache(isOldCacheConfigsSource, isOldCacheConfigsTarget, isOldCacheEntitiesSource, isOldCacheEntitiesTarget) {
+function genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget) {
 
     let title = null
     let warningTarget = null
     let warningSource = null
 
-    if (isOldCacheConfigsSource || isOldCacheConfigsTarget || isOldCacheEntitiesSource || isOldCacheEntitiesTarget) {
+    if (cacheDetailsConfigsSource["isOld"] || cacheDetailsConfigsTarget["isOld"] || cacheDetailsEntitiesSource["isOld"] || cacheDetailsEntitiesTarget["isOld"]) {
         // pass
     } else {
         return null
@@ -107,7 +122,7 @@ function genWarningOldCache(isOldCacheConfigsSource, isOldCacheConfigsTarget, is
     let titleColor = "secondary.main"
 
 
-    if (isOldCacheConfigsTarget || isOldCacheEntitiesTarget) {
+    if (cacheDetailsConfigsTarget["isOld"] || cacheDetailsEntitiesTarget["isOld"]) {
 
         titleColor = "error.main"
 
@@ -119,7 +134,7 @@ function genWarningOldCache(isOldCacheConfigsSource, isOldCacheConfigsTarget, is
         )
     }
 
-    if (isOldCacheConfigsSource || isOldCacheEntitiesSource) {
+    if (cacheDetailsConfigsSource["isOld"] || cacheDetailsEntitiesSource["isOld"]) {
         warningSource = (
             <Typography key="oldCacheWarningSource" sx={{ ml: 2, mb: 2 }} color="secondary.main" >
                 <b>Source</b> Environment: Using an old cache for the is a good way to apply configs from a backup.

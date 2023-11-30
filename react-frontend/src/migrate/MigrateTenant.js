@@ -26,13 +26,11 @@ export default function MigrateTenant() {
 
     const handleChange = React.useCallback((data) => {
         if (data === null) {
-            setProgress(LOADING)
             return
         }
 
         const { ui_payload } = data
         if (ui_payload) {
-            setProgress(DONE)
             setExtractedData(ui_payload)
         } else {
             setProgress(ERROR)
@@ -43,7 +41,7 @@ export default function MigrateTenant() {
 
     return (
         <React.Fragment>
-            <MigrateButtonUncontrolled handleChange={handleChange} label={"Reload"} confirm={false} progressComponent={progressComponent} progress={progress} runOnce={true} api={TERRAFORM_LOAD_UI_PAYLOAD} />
+            <MigrateButtonUncontrolled handleChange={handleChange} label={"Reload"} confirm={false} progressComponent={progressComponent} progress={progress} runOnce={true} api={TERRAFORM_LOAD_UI_PAYLOAD} setProgress={setProgress} />
             {resultComponents}
         </React.Fragment>
     );

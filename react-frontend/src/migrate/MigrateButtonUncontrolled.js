@@ -18,9 +18,9 @@ import { MIGRATE_SETTINGS_2_0 } from '../backend/backend';
 import { useHandlePostCurrent } from '../backend/useHandlePost';
 import MigrateButton from './MigrateButton';
 
-export default function MigrateButtonUncontrolled({ handleChange, label, progressComponent = null, progress = "", confirm = false, runOnce = false, api = MIGRATE_SETTINGS_2_0 }) {
+export default function MigrateButtonUncontrolled({ handleChange, label, progressComponent = null, progress = "", confirm = false, runOnce = false, api = MIGRATE_SETTINGS_2_0, setProgress = () => { } }) {
 
-    const { handlePost } = useHandlePostCurrent(handleChange, api)
+    const { handlePost } = useHandlePostCurrent(handleChange, api, setProgress)
 
     return (
         <MigrateButton label={label} handlePost={handlePost} confirm={confirm} progressComponent={progressComponent} progress={progress} runOnce={runOnce} />

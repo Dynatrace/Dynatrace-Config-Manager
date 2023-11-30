@@ -51,14 +51,15 @@ const LATEST_CACHE_VERSIONS = {
 
 const twelveHours = (12 * 60 * 60 * 1000)
 
-export default function ExtractionInfo({ api, tenantKeyType, extractionProgress, setIsOldCache }) {
+export default function ExtractionInfo({ api, tenantKeyType, extractionProgress, setCacheDetails }) {
     const [finishedData, setFinishedData] = React.useState({})
     const { tenantKey } = useTenantKey(tenantKeyType)
     const { progressComponent, getFinished } = useFinishedInfo(tenantKey, api, setFinishedData)
 
     React.useEffect(() => {
         setFinishedData(null)
-        setIsOldCache(true)
+        console.log(setCacheDetails)
+        setCacheDetails({ "isOld": true })
 
         if (extractionProgress === DONE || extractionProgress === NOT_STARTED) {
             getFinished()
@@ -74,6 +75,10 @@ export default function ExtractionInfo({ api, tenantKeyType, extractionProgress,
             return null
         }
 
+        if ("cacheError" in finishedData) {
+            setCacheDetails({ "isOld": false, "isMissing": true })
+            return (<Typography key="cacheError" color="secondary.main">{finishedData["cacheError"]}</Typography>)
+        }
 
         let extractedAtLabel = ""
         let isOldLabel = null
@@ -83,9 +88,9 @@ export default function ExtractionInfo({ api, tenantKeyType, extractionProgress,
                 isOldLabel = (
                     <b>[old] </b>
                 )
-                setIsOldCache(true)
+                setCacheDetails({ "isOld": true })
             } else {
-                setIsOldCache(false)
+                setCacheDetails({ "isOld": false })
             }
             extractedAtLabel = `Extracted at ${convertTimestamp(finishedData[FINISHED_AT])}`
         }

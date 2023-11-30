@@ -61,18 +61,24 @@ export function useFinishedInfo(tenantKey, api, setFinishedData) {
         const searchParams = { 'tenant_key': tenantKey };
 
         setProgress(LOADING);
+
+        const catchFunction = (error) => {
+            setFinishedData({ "cacheError": "No cache available, please run extraction." })
+            setProgress(ERROR)
+        }
+
         const thenFunction = promise => promise
             .then(response => {
                 return response.json();
             })
             .then(data => {
-                setFinishedData(data)
-                setProgress(DONE);
+                if (Object.keys(data).length === 0) {
+                    catchFunction(data)
+                } else {
+                    setFinishedData(data)
+                    setProgress(DONE);
+                }
             })
-
-        const catchFunction = (error) => {
-            setProgress(ERROR)
-        }
 
         backendGet(api, searchParams, thenFunction, catchFunction, false);
     }, [tenantKey, api, setProgress, setFinishedData]);
