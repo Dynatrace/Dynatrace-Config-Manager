@@ -95,7 +95,7 @@ export default function ExtractionSection() {
 
                                 {genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget)}
 
-                                : <MigrateButtonControlled handleChange={() => { }}
+                                <MigrateButtonControlled handleChange={() => { }}
                                     entityFilter={entityFilter}
                                     label={"Execute OneTopology & TerraComposer"}
                                     confirm={true} descLabel={""} />
