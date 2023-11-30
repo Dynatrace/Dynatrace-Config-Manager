@@ -58,7 +58,6 @@ export default function ExtractionInfo({ api, tenantKeyType, extractionProgress,
 
     React.useEffect(() => {
         setFinishedData(null)
-        console.log(setCacheDetails)
         setCacheDetails({ "isOld": true })
 
         if (extractionProgress === DONE || extractionProgress === NOT_STARTED) {
