@@ -40,6 +40,7 @@ const readScopeList =
   - Read configuration
   - Read network zones
   - Read Credential Vault
+  - Read synthetic monitors, locations, and nodes
 `
 
 const readScopeSection =
@@ -86,8 +87,20 @@ export default function DocumAPIToken({ url = undefined, tenantKeyType = undefin
                     ...multiLinesToComponent(readScopeSection),
                 ]
                 } />))
-            documList.push(<Typography variant='h6'>Curl command creation:</Typography>)
-            documList.push(...multiLinesToComponent(curlRead))
+
+            if (tenantKeyType === undefined) {
+                documList.push((<EfficientAccordion
+                    defaultExpanded={false}
+                    label="Source tenant curl command"
+                    labelColor={null}
+                    componentList={[
+                        ...multiLinesToComponent(curlRead),
+                    ]
+                    } />))
+            } else {
+                documList.push(<Typography variant='h6'>Curl command for token creation:</Typography>)
+                documList.push(...multiLinesToComponent(curlRead))
+            }
 
         }
 
@@ -102,14 +115,21 @@ export default function DocumAPIToken({ url = undefined, tenantKeyType = undefin
                     ...multiLinesToComponent(writeScopeSection),
                 ]
                 } />))
-            documList.push((<EfficientAccordion
-                defaultExpanded={false}
-                label="Target tenant curl command"
-                labelColor={null}
-                componentList={[
-                    ...multiLinesToComponent(curlWrite),
-                ]
-                } />))
+
+
+            if (tenantKeyType === undefined) {
+                documList.push((<EfficientAccordion
+                    defaultExpanded={false}
+                    label="Target tenant curl command"
+                    labelColor={null}
+                    componentList={[
+                        ...multiLinesToComponent(curlWrite),
+                    ]
+                    } />))
+            } else {
+                documList.push(<Typography variant='h6'>Curl command for token creation:</Typography>)
+                documList.push(...multiLinesToComponent(curlWrite))
+            }
         }
 
         return documList
@@ -162,7 +182,7 @@ export function genCurlCommands(url) {
     const urlSuffix =
         ` -H "Authorization: Api-Token XXXXXXXX"`
     const readTokenValue =
-        `"entities.read","networkZones.read","settings.read","slo.read","credentialVault.read","DataExport","ReadConfig"`
+        `"entities.read","networkZones.read","settings.read","slo.read","credentialVault.read","DataExport","ReadConfig","ReadSyntheticData"`
     const writeTokenValue =
         `"networkZones.write","settings.write","slo.write","CaptureRequestData","credentialVault.write","ExternalSyntheticIntegration","WriteConfig"`
 
