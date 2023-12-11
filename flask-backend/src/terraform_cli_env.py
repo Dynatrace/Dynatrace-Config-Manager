@@ -59,6 +59,7 @@ def get_env_vars_base(
         "DYNATRACE_HEREDOC": "false",
         "DYNATRACE_NO_REFRESH_ON_IMPORT": "true",
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
+        "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": "true",
         # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
     }
 
