@@ -224,7 +224,6 @@ def get_os_env_terraform():
         return my_env
 
     if "PATH" in my_env:
-        print(my_env["PATH"])
 
         path_separator = ":"
         if os_helper.IS_WINDOWS:
@@ -233,8 +232,6 @@ def get_os_env_terraform():
         new_path = f"{tf_exec_details['local_terraform_path']}{path_separator}{my_env['PATH']}"
 
         my_env["PATH"] = new_path
-
-        print(my_env["PATH"])
 
     return my_env
 

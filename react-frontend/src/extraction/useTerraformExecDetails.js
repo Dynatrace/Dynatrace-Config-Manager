@@ -46,7 +46,6 @@ export function useTerraformExecDetails() {
         } else {
             return { isTerraformError, terraformErrorComponent, terraformInfo }
         }
-        console.log(terraformExecDetails)
 
 
         if (terraformExecDetails && "is_terraform_installed_locally" in terraformExecDetails && terraformExecDetails['is_terraform_installed_locally'] === true) {
