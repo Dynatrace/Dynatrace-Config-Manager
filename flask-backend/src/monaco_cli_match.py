@@ -381,15 +381,6 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
             match_config["skipSpecificTypes"] = False
             match_config["specificTypes"] = [run_info["forced_schema_id"]]
         else:
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            print("DEBUG DO NOT COMMIT!!!")
-            match_config["skipSpecificTypes"] = True
-            match_config["specificTypes"] = ["builtin:host.monitoring"]
             pass
             # print("Skip Dashboards for better performance")
             # print("TODO: Add Toggle in the UI")
