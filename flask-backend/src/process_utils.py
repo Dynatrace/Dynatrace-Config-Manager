@@ -101,6 +101,7 @@ def get_run_info(
     enable_dashboards=False,
     enable_omit_destroy=False,
     terraform_parallelism=DEFAULT_TERRAFORM_PARALLELISM,
+    enable_ultra_parallel=False,
     time_from_minutes=None,
     time_to_minutes=None,
     action_id=None,
@@ -131,6 +132,7 @@ def get_run_info(
     run_info["enable_dashboards"] = enable_dashboards
     run_info["enable_omit_destroy"] = enable_omit_destroy
     run_info["terraform_parallelism"] = terraform_parallelism
+    run_info["enable_ultra_parallel"] = enable_ultra_parallel
     run_info["time_from_minutes"] = time_from_minutes
     run_info["time_to_minutes"] = time_to_minutes
     run_info["action_id"] = action_id

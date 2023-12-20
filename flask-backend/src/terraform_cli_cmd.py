@@ -12,9 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import os
+import shutil
+
 import dirs
+import os_helper
 import process_utils
 import terraform_cli
+import terraform_cli_cmd
 import windows_cmd_file_util
 
 
@@ -124,14 +129,27 @@ def write_plan_cmd(terraform_path, set_env_filename):
     )
 
 
-def generate_cmd_list(command, extra_args, isRefresh=False, save_state=True, run_info=None):
-    
+TERRAFORM_EXEC = "terraform"
+
+
+def generate_cmd_list(
+    command, extra_args, isRefresh=False, save_state=True, run_info=None
+):
     parallelism = process_utils.DEFAULT_TERRAFORM_PARALLELISM
-    if(run_info is not None and "terraform_parallelism" in run_info and run_info["terraform_parallelism"] > 0):
+    if (
+        run_info is not None
+        and "terraform_parallelism" in run_info
+        and run_info["terraform_parallelism"] > 0
+    ):
         parallelism = run_info["terraform_parallelism"]
-    
+
+    terraform_exec = TERRAFORM_EXEC
+    tf_exec_details = get_terraform_executable_details()
+    if tf_exec_details["is_terraform_installed_locally"] == True:
+        terraform_exec = tf_exec_details["absolute_terraform_exec_path_local"]
+
     cmd_list = [
-        "terraform",
+        terraform_exec,
         command,
         "-lock=false",
         f"-parallelism={parallelism}",
@@ -148,7 +166,9 @@ def generate_cmd_list(command, extra_args, isRefresh=False, save_state=True, run
     return cmd_list
 
 
-def gen_plan_cmd_list(plan_file, is_refresh=False, save_state=True, target_info=None, run_info=None):
+def gen_plan_cmd_list(
+    plan_file, is_refresh=False, save_state=True, target_info=None, run_info=None
+):
     extra_args = []
 
     if target_info is not None:
@@ -201,3 +221,38 @@ def write_refresh_cmd(terraform_path, set_env_filename):
     windows_cmd_file_util.write_lines_to_file(
         dirs.get_file_path(terraform_path, "refresh", ".cmd"), lines
     )
+
+
+def get_terraform_executable_details():
+    is_terraform_installed = shutil.which(terraform_cli_cmd.TERRAFORM_EXEC) is not None
+
+    terraform_dir = get_absolute_terraform_dir_local()
+
+    absolute_terraform_exec_path_local = get_absolute_terraform_exec_path_local()
+
+    is_terraform_locally_installed = os.path.exists(absolute_terraform_exec_path_local)
+
+    return {
+        "is_terraform_installed": is_terraform_installed,
+        "is_terraform_installed_locally": is_terraform_locally_installed,
+        "local_terraform_path": terraform_dir,
+        "absolute_terraform_exec_path_local": absolute_terraform_exec_path_local,
+    }
+
+
+def get_absolute_terraform_exec_path_local():
+    terraform_dir = get_absolute_terraform_dir_local()
+
+    executable = terraform_cli_cmd.TERRAFORM_EXEC
+    if os_helper.IS_WINDOWS:
+        executable += ".exe"
+
+    return dirs.forward_slash_join(terraform_dir, executable)
+
+
+def get_absolute_terraform_dir_local():
+    terraform_dir = dirs.to_forward_slash(
+        os.path.abspath(dirs.get_terraform_exec_dir())
+    )
+
+    return terraform_dir

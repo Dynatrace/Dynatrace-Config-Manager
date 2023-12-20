@@ -334,6 +334,7 @@ def copy_missing_match_types_from_older_extract(config_main, config_target, matc
     except Exception as e:
         print(f"INFO: Problem copying previous match {match_type} results", e)
 
+
 """
 "prevResultPath": match_type_options[match_type]["result_path_func_prev"](
     config_main, config_target
@@ -494,12 +495,8 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
                     print("Ran OneTopology successfully")
                     run_legacy_match = False
                 else:
-                    print(
-                        "Attempt to run OneTopology failed"
-                    )
+                    print("Attempt to run OneTopology failed")
             else:
-                print(
-                    "Attempt to run OneTopology failed"
-                )
+                print("Attempt to run OneTopology failed")
 
     return run_legacy_match, result_tuple

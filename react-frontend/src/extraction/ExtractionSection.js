@@ -23,6 +23,7 @@ import MigrateButtonControlled from '../migrate/MigrateButtonControlled';
 import ExecutionOptions from '../options/ExecutionOptions';
 import { usePostProcessEntityFilter } from '../migrate/PostProcessHooks';
 import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
+import { useTerraformExecDetails } from './useTerraformExecDetails';
 
 export default function ExtractionSection() {
     const [cacheDetailsConfigsSource, setCacheDetailsConfigsSource] = React.useState(true)
@@ -30,6 +31,7 @@ export default function ExtractionSection() {
     const [cacheDetailsEntitiesSource, setCacheDetailsEntitiesSource] = React.useState(true)
     const [cacheDetailsEntitiesTarget, setCacheDetailsEntitiesTarget] = React.useState(true)
     const gridConfigList = useMigrationGridConfig()
+    const { isTerraformError, terraformErrorComponent, terraformInfo } = useTerraformExecDetails()
 
     const entityFilter = usePostProcessEntityFilter()
 
@@ -87,24 +89,45 @@ export default function ExtractionSection() {
                 </Grid>
             </Paper>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
-                <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>                {
-                    isCacheIncomplete ? <Typography sx={{ my: 6 }} variant="h4" color="secondary.main" align='center'>Please extract entities & configs for both tenants before you proceed.</Typography>
-                        : (
-                            <React.Fragment>
-                                <ExecutionOptions />
-
-                                {genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget)}
-
-                                <MigrateButtonControlled handleChange={() => { }}
-                                    entityFilter={entityFilter}
-                                    label={"Execute OneTopology & TerraComposer"}
-                                    confirm={true} descLabel={""} />
-                            </React.Fragment>
-                        )
+                <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>
+                {
+                    isTerraformError ? terraformErrorComponent
+                        : genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter)
                 }
             </Paper>
         </React.Fragment >
     );
+}
+
+function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter) {
+
+    if (isCacheIncomplete) {
+        return (
+            <Typography sx={{ my: 6 }} variant="h4" color="secondary.main" align='center'>Please extract entities & configs for both tenants before you proceed.</Typography>
+        )
+    }
+
+    return (
+        <React.Fragment>
+            <Grid container sx={{ mt: 2, ml: 1 }} direction={'row'}>
+                <Grid item xs={5}>
+
+                    {genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget)}
+
+                    <MigrateButtonControlled handleChange={() => { }}
+                        entityFilter={entityFilter}
+                        label={"Execute OneTopology & TerraComposer"}
+                        confirm={true} descLabel={""} />
+                    <Typography sx={{ ml: 1 }}>{terraformInfo}</Typography>
+                </Grid>
+                <Grid item xs={1} />
+                <Grid item xs={5}>
+                    <ExecutionOptions />
+                </Grid>
+                <Grid item xs={1} />
+            </Grid>
+        </React.Fragment >
+    )
 }
 
 function genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget) {

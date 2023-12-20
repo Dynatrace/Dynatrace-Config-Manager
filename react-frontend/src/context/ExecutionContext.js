@@ -84,7 +84,7 @@ function reducer(state, action) {
 }
 
 function initState() {
-    return { enableDashboards: true, enableOmitDestroy: true, firstTimeUser: true, advancedMode: false, terraformParallelism: 10 }
+    return { enableDashboards: true, enableOmitDestroy: true, firstTimeUser: true, advancedMode: false, terraformParallelism: 10, enableUltraParallel: true }
 }
 
 export function useExecutionOptionsContextReducer() {
@@ -116,12 +116,13 @@ export function useExecutionOptionsStateValue() {
     if ("terraformParallelism" in contextState) {
         terraformParallelism = contextState["terraformParallelism"]
     }
+    const enableUltraParallel = contextState['enableUltraParallel'] === true
 
-    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism }
+    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism, enableUltraParallel }
 }
 
 export function useExecutionOptionsState() {
-    const { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism } = useExecutionOptionsStateValue()
+    const { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism, enableUltraParallel } = useExecutionOptionsStateValue()
     const contextDispatch = useContextDispatch()
 
     const setProperty = (property, value) => {
@@ -132,7 +133,6 @@ export function useExecutionOptionsState() {
     const setEnableDashboards = (value) => {
         setProperty("enableDashboards", value)
     }
-
 
     const setEnableOmitDestroy = (value) => {
         setProperty("enableOmitDestroy", value)
@@ -150,6 +150,10 @@ export function useExecutionOptionsState() {
         setProperty("terraformParallelism", value)
     }
 
+    const setEnableUltraParallel = (value) => {
+        setProperty("enableUltraParallel", value)
+    }
 
-    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism, setEnableDashboards, setEnableOmitDestroy, setFirstTimeUser, setAdvancedMode, setTerraformParallelism }
+
+    return { enableDashboards, enableOmitDestroy, firstTimeUser, advancedMode, terraformParallelism, enableUltraParallel, setEnableDashboards, setEnableOmitDestroy, setFirstTimeUser, setAdvancedMode, setTerraformParallelism, setEnableUltraParallel }
 }

@@ -14,10 +14,11 @@ limitations under the License.
 */
 
 import * as React from 'react'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, FormControl, Grid, IconButton, TextField, Typography } from '@mui/material'
 import ResultDrawerListItem from './ResultDrawerListItem'
 import { STATUS_ORDER } from '../extraction/HorizontalStackedBar'
 import ResultDrawerListSchema from './ResultDrawerListSchema'
+import ClearIcon from '@mui/icons-material/Clear';
 
 export const UNCHECK_ALL = "UNCHECK_ALL"
 export const UNCHECK_ALL_A = `${UNCHECK_ALL}_A`
@@ -28,6 +29,18 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
     const [checked, setChecked] = React.useState([])
     const [checkAllStatus, setCheckAllStatus] = React.useState("")
     const [currentKey, setCurrentKey] = React.useState("")
+    const [searchTextInput, setSearchTextInput] = React.useState(contextNode.searchText)
+    const [searchText, setSearchText] = React.useState(contextNode.searchText)
+
+
+    const handleLaunchSearch = React.useCallback(() => {
+        setSearchText(searchTextInput.toLowerCase())
+    }, [setSearchText, searchTextInput])
+
+    const handleClearSearchText = React.useCallback(() => {
+        setSearchText("");
+        setSearchTextInput("");
+    }, [setSearchTextInput])
 
     const keyArray = React.useMemo(() => {
         return contextNode.columnArray
@@ -134,8 +147,8 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
 
         const items = {}
         let nbFound = 0
-        let schemaFound = (contextNode.searchText === ""
-            || topObject['module'].toLowerCase().includes(contextNode.searchText))
+        let schemaFound = (searchText === ""
+            || topObject['module'].toLowerCase().includes(searchText))
 
 
         for (const [key, child] of Object.entries(itemList)) {
@@ -155,8 +168,8 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
             }
 
             if (schemaFound
-                || (key_id && key_id.toLowerCase().includes(contextNode.searchText))
-                || (entity_list && entity_list.toLowerCase().includes(contextNode.searchText))) {
+                || (key_id && key_id.toLowerCase().includes(searchText))
+                || (entity_list && entity_list.toLowerCase().includes(searchText))) {
                 nbFound++
 
                 const forceCheckStatus = status === checkAllStatus
@@ -166,18 +179,21 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                 const disabled = forceUncheckStatus || forceCheckStatus
 
                 let forceUncheckValue = ""
-                if(forceUncheck) {
+                if (forceUncheck) {
                     forceUncheckValue = checkAllStatus
                 }
 
-                items[status]["list"].push(
-                    <ResultDrawerListItem key={key} childKey={key} child={child}
-                        handleToggleList={handleToggleList} checked={checked.indexOf(key)}
-                        forceCheck={forceCheckStatus}
-                        forceUncheckValue={forceUncheckValue}
-                        disabled={disabled}
-                        allChecked={checked} />
-                )
+                if (items[status]["list"].length < 500) {
+                    items[status]["list"].push(
+                        <ResultDrawerListItem key={key} childKey={key} child={child}
+                            handleToggleList={handleToggleList} checked={checked.indexOf(key)}
+                            forceCheck={forceCheckStatus}
+                            forceUncheckValue={forceUncheckValue}
+                            disabled={disabled}
+                            allChecked={checked} />
+                    )
+
+                }
 
                 items[status]["keys"].push(key)
 
@@ -189,7 +205,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
 
         const componentList = []
         let label_suffix = ""
-        if(checked && checked.length > 0) {
+        if (checked && checked.length > 0) {
             label_suffix = `(${checked.length} configs selected)`
         }
 
@@ -228,7 +244,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
         }
 
         return [componentList, name]
-    }, [handleToggleList, checked, topObject, keyArray, contextNode, checkAllStatus, handleSetCheckAllStatus, handleUnCheckAll])
+    }, [handleToggleList, checked, topObject, keyArray, searchText, checkAllStatus, handleSetCheckAllStatus, handleUnCheckAll])
 
     const treeViewComponent = React.useMemo(() => {
         return (
@@ -242,6 +258,27 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                 }}
             >
                 <Typography>{listName}</Typography>
+                <Grid container>
+                    <Grid item xs={10}>
+
+                        <FormControl fullWidth>
+                            <TextField id={"search-field"} variant="standard"
+                                label="Text to search for (Hit enter to search)" value={searchTextInput} onChange={(event) => {
+                                    setSearchTextInput(event.target.value)
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        handleLaunchSearch()
+                                    }
+                                }} />
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <IconButton onClick={handleClearSearchText}>
+                            <ClearIcon />
+                        </IconButton>
+                    </Grid>
+                </Grid>
                 <Box
                     sx={{
                         height: 700,
@@ -253,7 +290,7 @@ export default function ResultDrawerList({ result, contextNode, setContextNode }
                 </Box>
             </Box >
         )
-    }, [listItems, listName])
+    }, [listItems, listName, searchTextInput])
 
 
     return treeViewComponent

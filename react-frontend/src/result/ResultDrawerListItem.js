@@ -35,9 +35,6 @@ export default function ResultDrawerListItem({ childKey, child, handleToggleList
     }, [checked])
 
     React.useEffect(() => {
-        if (forceCheck || forceUncheckValue !== "") {
-            return
-        }
         if (checkedRef.current !== checked) {
             const toggleOn = checkedRef.current === ""
             checkedRef.current = checked

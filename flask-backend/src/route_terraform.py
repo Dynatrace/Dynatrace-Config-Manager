@@ -16,9 +16,11 @@ from flask import Flask, request, Blueprint
 from flask_cors import cross_origin
 import flask_utils
 import json
+
 import process_utils
 import response_utils
 import terraform_cli
+import terraform_cli_cmd
 import terraform_local
 import terraform_history
 
@@ -86,7 +88,7 @@ def terraform_plan_all():
     tenant_key_main = flask_utils.get_arg("tenant_key_main", "0")
     tenant_key_target = flask_utils.get_arg("tenant_key_target", "0")
     action_id = flask_utils.get_arg("action_id")
-    
+
     run_info = {
         "aggregate_error": [],
         "return_status": 200,
@@ -118,7 +120,9 @@ def terraform_apply_all():
     run_info = {"aggregate_error": [], "return_status": 200, "action_id": action_id}
 
     def call_process():
-        ui_payload, log_dict = terraform_cli.apply_all(run_info, tenant_key_main, tenant_key_target)
+        ui_payload, log_dict = terraform_cli.apply_all(
+            run_info, tenant_key_main, tenant_key_target
+        )
 
         result = {}
         result["ui_payload"] = ui_payload
@@ -270,5 +274,14 @@ def terraform_open_history_log_in_vscode():
         result = {}
 
         return result
+
+    return response_utils.call_and_get_response(call_process)
+
+
+@blueprint_route_terraform.route("/terraform_check_exec", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_check_exec():
+    def call_process():
+        return terraform_cli_cmd.get_terraform_executable_details()
 
     return response_utils.call_and_get_response(call_process)

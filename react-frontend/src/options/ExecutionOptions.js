@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Box, Button, FormControl, Grid, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import * as React from 'react';
 import { useExecutionOptionsState } from '../context/ExecutionContext';
 
 export default function ExecutionOptions() {
 
-    const { enableDashboards, enableOmitDestroy, terraformParallelism, setEnableDashboards, setEnableOmitDestroy, setTerraformParallelism } = useExecutionOptionsState()
+    const { enableDashboards, enableOmitDestroy, terraformParallelism, enableUltraParallel, setEnableDashboards, setEnableOmitDestroy, setTerraformParallelism, setEnableUltraParallel } = useExecutionOptionsState()
 
     const [terraformParallelismInput, setTerraformParallelismInput] = React.useState(terraformParallelism)
 
@@ -40,6 +40,10 @@ export default function ExecutionOptions() {
         setTerraformParallelism(Number(newValue))
     }, [setTerraformParallelism])
 
+    const handleEnableUltraParallelToggle = React.useCallback(() => {
+        setEnableUltraParallel(!enableUltraParallel)
+    }, [setEnableUltraParallel, enableUltraParallel])
+
     return (
         <React.Fragment>
             <Box sx={{ my: 1 }}>
@@ -50,20 +54,20 @@ export default function ExecutionOptions() {
                 <Button onClick={handleEnableOmitDestroy} {...genButtonProps(enableOmitDestroy)}>{genButtonText(ENABLE_OMIT_DESTROY, enableOmitDestroy)}</Button>
                 <Typography>{genInfoText(ENABLE_OMIT_DESTROY, enableOmitDestroy)}</Typography>
             </Box>
-            <Grid container>
-                <Grid item xs={5}>
-                    <FormControl fullWidth>
-                        <TextField id={"terraformParallelism-field"}
-                            type="number"
-                            variant="standard"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            label="Terraform parallelism parameter, or threads (10: lower Memory usage, 50: faster processing)" value={terraformParallelismInput}
-                            onChange={handleSetTerraformParallelism} />
-                    </FormControl>
-                </Grid>
-            </Grid>
+            <Box sx={{ my: 1 }}>
+                <Button onClick={handleEnableUltraParallelToggle} {...genButtonProps(enableUltraParallel)}>{genButtonText(ENABLE_ULTRA_PARALLEL, enableUltraParallel)}</Button>
+                <Typography>{genInfoText(ENABLE_ULTRA_PARALLEL, enableUltraParallel)}</Typography>
+            </Box>
+            <FormControl fullWidth>
+                <TextField id={"terraformParallelism-field"}
+                    type="number"
+                    variant="standard"
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    label="Terraform parallelism parameter, or threads (5: lower Memory usage, 15: faster processing)" value={terraformParallelismInput}
+                    onChange={handleSetTerraformParallelism} />
+            </FormControl>
         </React.Fragment>
     );
 }
@@ -78,23 +82,28 @@ function genButtonProps(isEnabled) {
 
 const ENABLE_DASHBOARDS = 'enableDashboards'
 const ENABLE_OMIT_DESTROY = 'enableOmitDestroy'
+const ENABLE_ULTRA_PARALLEL = 'enableUltraParallel'
 
 
 const ON_LABELS = {
     [ENABLE_DASHBOARDS]: "Dashboards",
     [ENABLE_OMIT_DESTROY]: "Omit Destroy Actions",
+    [ENABLE_ULTRA_PARALLEL]: "Ultra Parallel",
 }
 const OFF_LABELS = {
     [ENABLE_DASHBOARDS]: "Dashboards",
     [ENABLE_OMIT_DESTROY]: "Omit Destroy Actions",
+    [ENABLE_ULTRA_PARALLEL]: "Ultra Parallel",
 }
 const ON_INFO_TEXT = {
     [ENABLE_DASHBOARDS]: "Could slow down the process",
     [ENABLE_OMIT_DESTROY]: "Will make the Apply less risky, but omit the deletion of a default config for example",
+    [ENABLE_ULTRA_PARALLEL]: "Will run faster, exponential gains beyond 20'000 configs",
 }
 const OFF_INFO_TEXT = {
     [ENABLE_DASHBOARDS]: "Will speed up the process",
     [ENABLE_OMIT_DESTROY]: "Will work towards a complete sync, but could delete new configs pushed to the destination environment",
+    [ENABLE_ULTRA_PARALLEL]: "Will create a single tf file per resource, making it easier to use outside of the tool",
 }
 
 function genButtonText(label, isEnabled) {

@@ -37,7 +37,7 @@ export function WizRun({ showNextTab }) {
   const { tenant: { label: labelTarget } } = useTenant(tenantKeyTarget)
 
 
-  const { enableDashboards, enableOmitDestroy, setEnableDashboards, setEnableOmitDestroy, setAdvancedMode } = useExecutionOptionsState()
+  const { enableDashboards, enableOmitDestroy, enableUltraParallel, setEnableDashboards, setEnableOmitDestroy, setAdvancedMode, setEnableUltraParallel } = useExecutionOptionsState()
   React.useEffect(() => {
     if (enableDashboards !== true) {
       setEnableDashboards(true)
@@ -45,6 +45,10 @@ export function WizRun({ showNextTab }) {
     }
     if (enableOmitDestroy !== true) {
       setEnableOmitDestroy(true)
+      return
+    }
+    if (enableUltraParallel !== true) {
+      setEnableUltraParallel(true)
       return
     }
   })

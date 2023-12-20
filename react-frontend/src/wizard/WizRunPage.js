@@ -17,14 +17,19 @@ import * as React from 'react';
 import MigrateContext from '../context/components/MigrateContext';
 import MigrateContextLoad from '../context/components/MigrateContextLoad';
 import { WizRun } from './WizRun';
+import { useTerraformExecDetails } from '../extraction/useTerraformExecDetails';
 
 export function WizRunPage({ showNextTab }) {
+
+
+  const { isTerraformError, terraformErrorComponent } = useTerraformExecDetails()
 
   return (
     <React.Fragment>
       <MigrateContext>
         <MigrateContextLoad>
-          <WizRun showNextTab={showNextTab} />
+          {isTerraformError ? terraformErrorComponent
+            : <WizRun showNextTab={showNextTab} />}
         </MigrateContextLoad>
       </MigrateContext>
     </React.Fragment>
