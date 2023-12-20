@@ -140,8 +140,10 @@ def get_env_vars_extras_export(
     tenant_key_current,
 ):
     tenant_key_linked = ""
+    is_source_export = False
     if config_main["tenant_key"] == tenant_key_current:
         tenant_key_linked = config_target["tenant_key"]
+        is_source_export = True
     else:
         tenant_key_linked = config_main["tenant_key"]
 
@@ -149,11 +151,20 @@ def get_env_vars_extras_export(
     if run_info["enable_dashboards"] != None and run_info["enable_dashboards"] is True:
         enable_dashboards = TERRAFORM_TRUE
 
+    enable_ultra_parallel = TERRAFORM_FALSE
+    if (
+        run_info["enable_ultra_parallel"] != None
+        and run_info["enable_ultra_parallel"] is True
+    ):
+        enable_ultra_parallel = TERRAFORM_TRUE
+
     env_vars = {
-        "DYNATRACE_HCL_NO_FORMAT": "true",
-        "DYNATRACE_ATOMIC_DEPENDENCIES": "true",
+        "DYNATRACE_QUICK_INIT": TERRAFORM_TRUE,
+        "DYNATRACE_HCL_NO_FORMAT": TERRAFORM_TRUE,
+        "DYNATRACE_ATOMIC_DEPENDENCIES": TERRAFORM_TRUE,
         "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
-        "DYNATRACE_PREV_STATE_ON": "true",
+        "DYNATRACE_ULTRA_PARALLEL": enable_ultra_parallel,
+        "DYNATRACE_PREV_STATE_ON": TERRAFORM_TRUE,
         "DYNATRACE_PREV_STATE_PATH_THIS": terraform_state.get_keyed_state_file_path(
             config_main, config_target, tenant_key_current
         ),
@@ -163,6 +174,12 @@ def get_env_vars_extras_export(
     }
     if terraform_path_output is not None:
         env_vars["DYNATRACE_TARGET_FOLDER"] = terraform_path_output
+
+    if is_source_export:
+        env_vars["DYNATRACE_IMPORT_STATE_PATH"] = dirs.forward_slash_join(
+            terraform_cli.get_path_terraform_state_gen(config_main, config_target),
+            terraform_state.STATE_FILENAME,
+        )
 
     return env_vars
 
@@ -178,13 +195,13 @@ def get_env_vars_extras_cache(
         cache_strict = TERRAFORM_TRUE
 
     env_vars = {
-        "CACHE_OFFLINE_MODE": "true",
+        "CACHE_OFFLINE_MODE": TERRAFORM_TRUE,
         "DYNATRACE_MIGRATION_CACHE_FOLDER": dirs.forward_slash_join(
             monaco_cli_match.get_path_match_configs_results(config_main, config_target),
             cache_dir,
         ),
         "DYNATRACE_MIGRATION_CACHE_STRICT": cache_strict,
-        "DYNATRACE_IN_MEMORY_TAR_FOLDERS": "true",
+        "DYNATRACE_IN_MEMORY_TAR_FOLDERS": TERRAFORM_TRUE,
     }
 
     return env_vars

@@ -38,6 +38,8 @@ export const TERRAFORM_APPLY_TARGET = 'terraform_apply_target'
 export const TERRAFORM_PLAN_ALL = 'terraform_plan_all'
 export const TERRAFORM_APPLY_ALL = 'terraform_apply_all'
 
+export const TERRAFORM_CHECK = 'terraform_check_exec'
+
 export const PLAN_ALL_RESOURCE_DIFF = 'terraform_plan_all_resource_diff'
 
 export const TERRAFORM_HISTORY = 'terraform_history_configs'

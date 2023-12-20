@@ -45,14 +45,16 @@ def migrate_settings_2_0():
     pre_migration = flask_utils.get_arg_bool('pre_migration', True)
     enable_dashboards = flask_utils.get_arg_bool('enable_dashboards', False)
     enable_omit_destroy = flask_utils.get_arg_bool('enable_omit_destroy', False)
+    enable_ultra_parallel = flask_utils.get_arg_bool('enable_ultra_parallel', False)
     terraform_parallelism = flask_utils.get_arg_int('terraform_parallelism', process_utils.DEFAULT_TERRAFORM_PARALLELISM)
+    
     action_id = flask_utils.get_arg("action_id")
 
     run_info = process_utils.get_run_info(
         tenant_key_main, tenant_key_target, context_params, entity_filter, use_environment_cache=use_environment_cache,
         forced_entity_id_main=forced_entity_id_main, forced_entity_id_target=forced_entity_id_target, forced_schema_id=forced_schema_id, forced_key_id=forced_key_id,
         forced_keep_action_only=forced_keep_action_only, preemptive_config_copy=preemptive_config_copy, enable_dashboards=enable_dashboards,
-        enable_omit_destroy=enable_omit_destroy, terraform_parallelism=terraform_parallelism, action_id=action_id)
+        enable_omit_destroy=enable_omit_destroy, terraform_parallelism=terraform_parallelism, enable_ultra_parallel=enable_ultra_parallel, action_id=action_id)
 
     def call_process():
         result = process_migrate_config.migrate_config(

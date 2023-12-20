@@ -373,9 +373,8 @@ def plan_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_pa
     write_main_tf_file(main_tf, path)
     create_sub_state(tenant_key_main, tenant_key_target, resources_done)
     copy_remaining_files(path, path_config)
-    
-    print("TerraComposer - Prepare Quick Multi Targeting - Done\n")
 
+    print("TerraComposer - Prepare Quick Multi Targeting - Done\n")
 
     return terraform_cli.run_plan_all(
         run_info,
@@ -500,19 +499,26 @@ def multi_target_plan(
                 continue
 
             file_path = dirs.forward_slash_join(dirpath, filename)
-            resource_found, contents = file_contains_resource(file_path, resource_list)
+            resource_found, content_list = file_contains_resource(
+                file_path, resource_list
+            )
             if resource_found:
                 output_path = dirs.forward_slash_join(module_path, filename)
-                write_resource(output_path, contents)
-                variable_list, variable_done = get_all_variables(
-                    contents, variable_list, variable_done
-                )
-                local_reference_list, local_reference_done = get_all_local_references(
-                    contents, local_reference_list, local_reference_done
-                )
-                all_resources_found_dict = get_all_resources_from_tf_file(
-                    contents, all_resources_found_dict
-                )
+                write_resource(output_path, content_list)
+
+                for contents in content_list:
+                    variable_list, variable_done = get_all_variables(
+                        contents, variable_list, variable_done
+                    )
+                    (
+                        local_reference_list,
+                        local_reference_done,
+                    ) = get_all_local_references(
+                        contents, local_reference_list, local_reference_done
+                    )
+                    all_resources_found_dict = get_all_resources_from_tf_file(
+                        contents, all_resources_found_dict
+                    )
 
     resources_done = mark_resources_as_done(
         resources_done, module_dir, resource_list, all_resources_found_dict
@@ -742,7 +748,7 @@ def get_variables_definition(file_path, variable_list):
                     current_var_details = []
 
     except FileNotFoundError:
-        print("File not found.")
+        pass
 
     return var_defs
 
@@ -804,7 +810,7 @@ def get_main_tf_definition(file_path, variable_list, module_dir):
                             ] = variable
 
     except FileNotFoundError:
-        print("File not found.")
+        print("File not found get_main_tf_definition.")
 
     return main_tf, resource_dict
 
@@ -873,7 +879,7 @@ def get_resources_tf(
                     current_res_details = []
 
     except FileNotFoundError:
-        print("File not found.")
+        print("File not found get_resources_tf.")
 
     return resources_tf_dict, resources_done
 
@@ -926,26 +932,48 @@ def extract_local_reference(ref):
 
 def file_contains_resource(file_path, resource_list):
     do_copy = False
-    contents = ""
+    contents_list = []
 
     try:
-        with open(file_path, "r", encoding="UTF-8") as file:
-            contents = file.read()
+        split_contents = split_bundle_by_resource(file_path)
 
+        for resource_contents in split_contents:
             for string in resource_list:
-                if f'" "{string}" {{' in contents:
+                if f'" "{string}" {{' in resource_contents:
                     do_copy = True
+                    contents_list.append(resource_contents)
                     break
 
     except FileNotFoundError:
-        print("File not found.")
+        print("File not found extract_local_reference.")
 
     if do_copy:
-        return do_copy, contents
+        return do_copy, contents_list
 
-    return do_copy, ""
+    return do_copy, []
 
 
-def write_resource(path, contents):
+def split_bundle_by_resource(filename, delimiter="# BUNDLE-ITEM"):
+    resource_list = []
+
+    with open(filename, "r") as file:
+        current_resource = []
+        for line in file:
+            if delimiter in line:
+                if current_resource:
+                    resource_list.append("".join(current_resource))
+                    current_resource = []
+                current_resource.append(line)
+            else:
+                current_resource.append(line)
+
+        if current_resource:
+            resource_list.append("".join(current_resource))
+
+    return resource_list
+
+
+def write_resource(path, content_list):
     with open(path, "w", encoding="UTF-8") as output_file:
-        output_file.write(contents)
+        for contents in content_list:
+            output_file.write(contents)

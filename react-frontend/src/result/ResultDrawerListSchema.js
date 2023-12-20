@@ -17,7 +17,7 @@ import * as React from 'react'
 import EfficientAccordion from './EfficientAccordion'
 import { STATUS_COLORS, STATUS_LABELS } from '../extraction/HorizontalStackedBar'
 import { GetNumberedLabel } from './ResultDrawerList'
-import { Checkbox, FormControl, FormControlLabel } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, Typography } from '@mui/material';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 
@@ -30,16 +30,21 @@ export default function ResultDrawerListSchema({ status, list, nbMax, keys, chec
                     onChange={() => { handleSetCheckAllStatus(status, keys) }}
                     icon={<RadioButtonUncheckedIcon />} checkedIcon={<RadioButtonCheckedIcon />}
                 />}
-                label={"Select All" /*+ genTooManyLabel(keys.length)*/} />
+                label={`Select: All ${keys.length} configs` /*+ genTooManyLabel(keys.length)*/} />
         </FormControl>
     )
 
+    let warning = null
+    if(list.length < keys.length) {
+        warning = <Typography>Manual selection restricted to first {list.length} elements. <br/> Use Search box above to find other elements.</Typography>
+    }
+
     return (
         <EfficientAccordion
-            label={GetNumberedLabel(STATUS_LABELS[status], list.length, nbMax)}
+            label={GetNumberedLabel(STATUS_LABELS[status], keys.length, nbMax)}
             labelColor={STATUS_COLORS[status]}
             componentList={
-                [button, ...list]
+                [button, warning, ...list]
             }
         />
     )
