@@ -35,6 +35,7 @@ PLAN_MODULE_SECTION_END = "    }"
 
 ERROR_SECTION_CHAR_START = "╷"
 ERROR_SECTION_CHAR_END = "╵"
+WARNING_SECTION_LABEL = "│ Warning:"
 
 
 def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
@@ -92,6 +93,10 @@ def create_dict_from_terraform_log(terraform_log, terraform_log_cleaned):
 
             if module_line_cleaned == "" and line_cleaned.startswith(module_line_tag):
                 module_line_cleaned = line_cleaned
+                    
+            if is_error:
+                if line_cleaned.startswith(WARNING_SECTION_LABEL):
+                    is_error = False
 
             if done_tag != "" and line_cleaned.startswith(done_tag):
                 done_processing = True

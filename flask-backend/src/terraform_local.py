@@ -956,7 +956,7 @@ def file_contains_resource(file_path, resource_list):
 def split_bundle_by_resource(filename, delimiter="# BUNDLE-ITEM"):
     resource_list = []
 
-    with open(filename, "r") as file:
+    with open(filename, "r", encoding="UTF-8") as file:
         current_resource = []
         for line in file:
             if delimiter in line:
