@@ -16,6 +16,7 @@
     "@testing-library/user-event": "^13.5.0",
     "ansi-to-react": "^6.1.6",
     "dayjs": "^1.11.5",
+    "follow-redirects": "^1.15.4",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "react": "^18.1.0",
