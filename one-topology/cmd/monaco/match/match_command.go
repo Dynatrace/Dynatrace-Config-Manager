@@ -19,8 +19,8 @@ package match
 import (
 	"fmt"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/cmdutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/runner/completion"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/cmdutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/runner/completion"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )

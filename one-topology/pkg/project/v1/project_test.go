@@ -19,12 +19,12 @@
 package v1
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/files"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/template"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/testutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/files"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/testutils"
 	"testing"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
 	"github.com/spf13/afero"
 	"gotest.tools/assert"
 )

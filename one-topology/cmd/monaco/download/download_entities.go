@@ -19,14 +19,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/cmdutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/environment"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/errutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/client"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/download/entities"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
-	project "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/cmdutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/environment"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/errutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/download/entities"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
 )
 

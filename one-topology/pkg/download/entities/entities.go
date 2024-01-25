@@ -21,16 +21,16 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/idutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/idutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/client"
-	config "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/coordinate"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/value"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/template"
-	v2 "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
+	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/value"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
+	v2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 )
 
 // Downloader is responsible for downloading Settings 2.0 objects

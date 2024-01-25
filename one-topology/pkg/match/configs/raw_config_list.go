@@ -20,14 +20,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/errutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	config "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/download/classic"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/entities"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/rules"
-	project "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/errutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/download/classic"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
 )
 

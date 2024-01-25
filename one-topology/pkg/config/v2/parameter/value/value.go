@@ -15,8 +15,8 @@
 package value
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/template"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
 )
 
 // ValueParameterType specifies the type of the parameter used in config files

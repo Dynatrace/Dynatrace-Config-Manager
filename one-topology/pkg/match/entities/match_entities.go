@@ -17,9 +17,9 @@ package entities
 import (
 	"fmt"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match"
-	project "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
 )
 

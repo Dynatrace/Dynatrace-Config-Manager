@@ -17,7 +17,7 @@ package match
 import (
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/rules"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
 func compareIndexes(resultListPtr *CompareResultList, indexSource []IndexEntry, indexTarget []IndexEntry, indexRule rules.IndexRule, indexRuleType rules.IndexRuleType) bool {

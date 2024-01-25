@@ -18,8 +18,8 @@ package template
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/errutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/files"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/errutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/files"
 	"regexp"
 	"strings"
 

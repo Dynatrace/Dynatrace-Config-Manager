@@ -22,9 +22,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/throttle"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/rules"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/rest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/throttle"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/rest"
 )
 
 const pathEntitiesObjects = "/api/v2/entities"

@@ -19,7 +19,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/rest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/rest"
 	"net/http"
 	"net/url"
 )

@@ -20,11 +20,11 @@ package v1
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/files"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/files"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/template"
 	"testing"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
 	"gotest.tools/assert"
 )
 

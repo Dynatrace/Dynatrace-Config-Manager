@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	config "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2"
+	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 )
 
 func TestNewMatchProcessing(t *testing.T) {

@@ -23,9 +23,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
 )

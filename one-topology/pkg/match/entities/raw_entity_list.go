@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"sort"
 
-	config "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match"
-	project "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 )
 
 type RawEntityList struct {

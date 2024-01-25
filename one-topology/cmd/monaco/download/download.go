@@ -19,12 +19,12 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/errutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/download"
-	project "github.com/dynatrace/dynatrace-configuration-as-code/pkg/project/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/errutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/download"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
 )
 

@@ -18,7 +18,7 @@ package regex
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"regexp"
 )
 

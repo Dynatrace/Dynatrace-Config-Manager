@@ -17,20 +17,20 @@
 package v2
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/errutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/testutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/coordinate"
-	envParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/environment"
-	refParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/reference"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/errutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/testutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
+	envParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/environment"
+	refParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/reference"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 	"path/filepath"
 	"testing"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/value"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/value"
 	"gotest.tools/assert"
 )
 

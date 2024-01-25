@@ -21,8 +21,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/timeutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/timeutils"
 )
 
 const MinWaitDuration = 1 * time.Second

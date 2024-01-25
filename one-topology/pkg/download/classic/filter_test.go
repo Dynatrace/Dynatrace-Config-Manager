@@ -19,8 +19,8 @@
 package classic
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/client"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

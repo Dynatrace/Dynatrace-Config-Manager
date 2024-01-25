@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/version"
 
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"

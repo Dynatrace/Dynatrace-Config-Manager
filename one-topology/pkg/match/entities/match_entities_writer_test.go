@@ -20,8 +20,8 @@ import (
 	"reflect"
 	"testing"
 
-	config "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match"
+	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 )
 
 func TestGenMultiMatchedMap(t *testing.T) {

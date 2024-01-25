@@ -17,14 +17,14 @@
 package v2
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/coordinate"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/compound"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/environment"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/list"
-	ref "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/reference"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/value"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/template"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/compound"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/environment"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/list"
+	ref "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/reference"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/value"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/afero"
 	"gotest.tools/assert"

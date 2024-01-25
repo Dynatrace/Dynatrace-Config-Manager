@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/files"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/slices"
-	version2 "github.com/dynatrace/dynatrace-configuration-as-code/internal/version"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/files"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/slices"
+	version2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/version"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 )
