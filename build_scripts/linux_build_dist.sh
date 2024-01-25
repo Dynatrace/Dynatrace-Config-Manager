@@ -4,6 +4,9 @@ sh ./linux_build_dist.sh
 cd ../react-frontend/
 sh ./linux_build_dist.sh
 
+cd ../one-topology/
+sh ./linux_build_dist.sh
+
 cd ..
 cd Dynatrace_Config_Manager-linux64
 7z u -tzip ../DTCM_linux64.zip * -xr\!data -uq0
