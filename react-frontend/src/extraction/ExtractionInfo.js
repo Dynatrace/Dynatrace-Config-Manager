@@ -31,7 +31,8 @@ const ENTITIES = "entities"
 
 const OLD_VERSION = "pre-v0.19"
 const V0_19 = "v0.19"
-const LATEST_CACHE_VERSION = "v0.19.2"
+const V0_19_2 = "v0.19.2"
+const LATEST_CACHE_VERSION = "v1.2"
 
 const BREAKING_CACHE_VERSIONS = {
     [ANY]: [OLD_VERSION],
@@ -40,13 +41,17 @@ const BREAKING_CACHE_VERSIONS = {
 }
 const OUTDATED_CACHE_VERSIONS = {
     [ANY]: [],
-    [CONFIGS]: [],
+    [CONFIGS]: [V0_19_2],
     [ENTITIES]: [V0_19]
+}
+const OUTDATED_CACHE_MESSAGE = {
+    [CONFIGS]: "Re-extract cache for better config coverage",
+    [ENTITIES]: "Re-extract cache for better entity matching",
 }
 const LATEST_CACHE_VERSIONS = {
     [ANY]: [LATEST_CACHE_VERSION],
-    [CONFIGS]: [V0_19, LATEST_CACHE_VERSION],
-    [ENTITIES]: [LATEST_CACHE_VERSION],
+    [CONFIGS]: [LATEST_CACHE_VERSION],
+    [ENTITIES]: [V0_19_2,LATEST_CACHE_VERSION],
 }
 
 const twelveHours = (12 * 60 * 60 * 1000)
@@ -112,7 +117,7 @@ export default function ExtractionInfo({ api, tenantKeyType, extractionProgress,
             outdatedLabel = "Cache incompatible, please re-extract"
         } else if (OUTDATED_CACHE_VERSIONS[type].includes(cache_version)) {
             outdatedColor = "warning.light"
-            outdatedLabel = "Re-extract cache for better entity matching"
+            outdatedLabel = OUTDATED_CACHE_MESSAGE[type]
         } else if (LATEST_CACHE_VERSIONS[type].includes(cache_version)) {
             cache_version = ""
             outdatedLabel = ""

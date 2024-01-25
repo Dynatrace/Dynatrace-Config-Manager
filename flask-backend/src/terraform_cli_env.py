@@ -39,10 +39,12 @@ def get_env_vars_base(
     history_log_prefix="",
 ):
     log_file_path = "terraform-provider-dynatrace.http.log"
+    log_prefix = "terraform-provider-dynatrace"
     if history_log_prefix == "":
         pass
     else:
         log_file_path = history_log_prefix + ".http.log"
+        log_prefix = history_log_prefix
 
     if history_log_path == "":
         pass
@@ -60,6 +62,8 @@ def get_env_vars_base(
         "DYNATRACE_NO_REFRESH_ON_IMPORT": "true",
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
         "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": "true",
+        "DYNATRACE_DEBUG": "true",
+        "DYNATRACE_LOG_DEBUG_PREFIX": log_prefix,
         # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
     }
 
