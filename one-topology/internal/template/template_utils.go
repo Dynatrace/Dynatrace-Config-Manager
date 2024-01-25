@@ -18,8 +18,8 @@ package template
 
 import (
 	"encoding/json"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/regex"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/regex"
 	"reflect"
 	"strings"
 )

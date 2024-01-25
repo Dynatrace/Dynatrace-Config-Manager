@@ -20,9 +20,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/idutils"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/rest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/idutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/rest"
 	"gotest.tools/assert"
 	"net/http"
 	"net/http/httptest"

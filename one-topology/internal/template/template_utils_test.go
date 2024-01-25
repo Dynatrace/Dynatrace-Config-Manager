@@ -19,7 +19,7 @@
 package template
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/regex"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/regex"
 	"gotest.tools/assert"
 	"testing"
 )

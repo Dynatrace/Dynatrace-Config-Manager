@@ -19,9 +19,9 @@
 package download
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/client"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"

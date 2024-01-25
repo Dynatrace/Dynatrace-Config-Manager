@@ -19,10 +19,10 @@
 package client
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/maps"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/slices"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/rest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/maps"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/slices"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/rest"
 	"net/http"
 	"net/http/httptest"
 	"os"

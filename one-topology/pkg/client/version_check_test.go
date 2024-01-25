@@ -19,7 +19,7 @@
 package client
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/version"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

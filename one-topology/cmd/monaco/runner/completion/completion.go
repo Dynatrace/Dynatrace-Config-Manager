@@ -20,13 +20,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/files"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/maps"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/slices"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/files"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/maps"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/slices"
 	"github.com/spf13/pflag"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/api"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/api"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )

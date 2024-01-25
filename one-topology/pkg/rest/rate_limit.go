@@ -22,9 +22,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/throttle"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/timeutils"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/throttle"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/timeutils"
 )
 
 // rateLimitStrategy ensures that the concrete implementation of the rate limiting strategy can be hidden

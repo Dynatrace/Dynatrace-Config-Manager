@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/afero"
 	"gotest.tools/assert"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 )
 
 const workingDirPath = `/home/test/monaco/match`

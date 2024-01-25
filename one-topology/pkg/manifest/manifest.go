@@ -16,7 +16,7 @@ package manifest
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/maps"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/maps"
 )
 
 // EnvironmentType is used to identify the type of the environment.

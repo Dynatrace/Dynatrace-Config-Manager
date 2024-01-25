@@ -15,11 +15,11 @@
 package runner
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/download"
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/match"
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/version"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/featureflags"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/download"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/featureflags"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"

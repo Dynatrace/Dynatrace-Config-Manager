@@ -20,9 +20,9 @@ package manifest
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	monacoVersion "github.com/dynatrace/dynatrace-configuration-as-code/internal/version"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	monacoVersion "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/version"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"

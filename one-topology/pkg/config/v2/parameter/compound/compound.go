@@ -17,13 +17,13 @@ package compound
 import (
 	"bytes"
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/strings"
-	template2 "github.com/dynatrace/dynatrace-configuration-as-code/internal/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/strings"
+	template2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/template"
 	templ "text/template" // nosemgrep: go.lang.security.audit.xss.import-text-template.import-text-template
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/coordinate"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
 )
 
 // CompoundParameterType specifies the type of the parameter used in config files

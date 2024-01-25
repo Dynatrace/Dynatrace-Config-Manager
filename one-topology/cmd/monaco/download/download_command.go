@@ -20,15 +20,15 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/version"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/client"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/manifest"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/version"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/cmd/monaco/runner/completion"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/runner/completion"
 )
 
 func GetDownloadCommand(fs afero.Fs, command Command) (downloadCmd *cobra.Command) {

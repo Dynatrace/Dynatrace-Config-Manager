@@ -19,7 +19,7 @@
 package featureflags_test
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/featureflags"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/featureflags"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/rules"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
 func TestCompareIndex(t *testing.T) {

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 )
 
 type PrettyPrintableError interface {

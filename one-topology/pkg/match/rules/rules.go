@@ -15,7 +15,7 @@
 package rules
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/slices"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/slices"
 )
 
 type RuleTypeList interface {

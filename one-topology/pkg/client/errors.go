@@ -19,7 +19,7 @@ package client
 import (
 	"fmt"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/environment"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/environment"
 )
 
 type RespError struct {

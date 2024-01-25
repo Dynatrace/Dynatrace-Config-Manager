@@ -15,16 +15,16 @@
 package v2
 
 import (
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/json"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/coordinate"
-	configErrors "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/errors"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
-	compoundParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/compound"
-	envParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/environment"
-	listParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/list"
-	refParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/reference"
-	valueParam "github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter/value"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/template"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/json"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
+	configErrors "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/errors"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
+	compoundParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/compound"
+	envParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/environment"
+	listParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/list"
+	refParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/reference"
+	valueParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/value"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
 )
 
 const (

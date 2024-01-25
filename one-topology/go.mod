@@ -1,4 +1,4 @@
-module github.com/dynatrace/dynatrace-configuration-as-code
+module github.com/Dynatrace/Dynatrace-Config-Manager/one-topology
 
 require (
 	github.com/cloudflare/ahocorasick v0.0.0-20210425175752-730270c3e184

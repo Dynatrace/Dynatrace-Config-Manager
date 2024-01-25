@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 )
 
 type RetrySetting struct {

@@ -18,9 +18,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/log"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match"
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/match/rules"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
 // ByWeightTypeValue implements sort.Interface for []IndexRule based on

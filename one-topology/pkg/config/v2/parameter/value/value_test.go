@@ -18,10 +18,10 @@ package value
 
 import (
 	"fmt"
-	"github.com/dynatrace/dynatrace-configuration-as-code/internal/json"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/json"
 	"testing"
 
-	"github.com/dynatrace/dynatrace-configuration-as-code/pkg/config/v2/parameter"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
 
 	"gotest.tools/assert"
 )
