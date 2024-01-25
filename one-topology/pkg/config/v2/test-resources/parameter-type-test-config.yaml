@@ -1,0 +1,83 @@
+configs:
+  - id: parameter_type_test
+    type:
+      api: "some-api"
+    config:
+      name: "Parameter Type Test Config"
+      template: templating-integration-test-template.json #not used here
+      parameters:
+        simple_value: "SIMPLE VALUE"
+        full_value:
+          type: value
+          value: "TEST VALUE"
+        complex_value:
+          type: value
+          value:
+            sub_property: true
+        simple_reference: ["reference_cfg", "name"]
+        multiline_reference:
+          - "reference_cfg"
+          - "name"
+        full_reference:
+          type: reference
+          project: "some project"
+          configType: "some api"
+          configId: "reference_cfg"
+          property: "name"
+        environment:
+          type: environment
+          name: "HELLO_THERE"
+          defaultValue: "General Kenobi!"
+        list:
+          type: list
+          values:
+            - "one"
+            - "two"
+            - "three"
+        list_array:
+          type: list
+          values: ["one", "two", "three"]
+        list_full_values:
+          type: list
+          values:
+            - type: value
+              value: "one"
+            - type: value
+              value: "two"
+            - type: value
+              value: "three"
+        list_complex_values:
+          type: list
+          values:
+            - type: value
+              value:
+                first: Mace
+                last: Windu
+            - type: value
+              value:
+                first: Obi-Wan
+                last: Kenobi
+            - type: value
+              value:
+                first: Anakin
+                last: Skywalker
+        compound_value:
+          type: compound
+          format: "{{.simple_value}} {{.full_value}} {{.environment}} {{.simple_reference}} {{.full_reference}} {{.complex_value.sub_property}}"
+          references:
+            - simple_value
+            - full_value
+            - environment
+            - simple_reference
+            - full_reference
+            - complex_value
+        empty_compound:
+          type: compound
+          format: ""
+          references: []
+        compound_on_compound:
+          type: compound
+          format: "{{.compound_value}} {{.empty_compound}}"
+          references:
+            - compound_value
+            - empty_compound
