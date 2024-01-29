@@ -24,7 +24,7 @@ import terraform_cli
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
-MONACO_EXEC = f"one-topology-{os_helper.OS}-amd64{os_helper.EXEC_EXTENSION}"
+MONACO_EXEC = f"one-topology-{os_helper.OS}-{os_helper.ARCHITECTURE}{os_helper.EXEC_EXTENSION}"
 
 
 def get_path_finished_file(type_path):

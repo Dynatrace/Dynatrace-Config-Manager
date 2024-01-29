@@ -45,7 +45,7 @@ PLAN_FILE = "terraform.plan"
 STATE_GEN_DIR = "state_gen"
 CONFIG_DIR = "config"
 CLEANED_SUFFIX = "_cleaned"
-PROVIDER_PLATFORM = f"{os_helper.OS}_amd64"
+PROVIDER_PLATFORM = f"{os_helper.OS}_{os_helper.ARCHITECTURE}"
 
 
 def get_path_terraform(config_main, config_target):

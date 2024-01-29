@@ -18,6 +18,13 @@ OS = platform.system().lower()
 
 IS_WINDOWS = OS == "windows"
 
+IS_DARWIN = OS == "darwin"
+
 EXEC_EXTENSION = ""
 if IS_WINDOWS:
     EXEC_EXTENSION = ".exe"
+
+ARCHITECTURE = "amd64"
+
+if platform.processor().lower() == "arm":
+    ARCHITECTURE = "arm64"
