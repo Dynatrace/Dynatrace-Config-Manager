@@ -447,6 +447,25 @@ def get_formatted_timestamp():
 # On MacOS, it is important to accept the executable before it's copied
 def run_blank(run_info):
 
+    create_symlink()
+
+    my_env = get_os_env_terraform()
+    cmd_list = [PROVIDER_EXE]
+    terraform_path_output = get_path_terraform_provider()
+    log_file_name = add_timestamp_to_log_filename(terraform_path_output, "terraform_provider_test_runnable")
+    log_label = "Terraform test if Provider is runnable"
+
+    return execute_terraform_cmd(
+        run_info,
+        my_env,
+        cmd_list,
+        terraform_path_output,
+        log_file_name,
+        log_label,
+        False,
+    )
+
+def create_symlink():
     provider_exe_loc = dirs.get_file_path(
         dirs.get_terraform_exec_dir(),
         PROVIDER_EXE,
@@ -469,22 +488,6 @@ def run_blank(run_info):
     
     if isLinkNeeded:
         os.symlink(provider_exe_loc, provider_src)
-
-    my_env = get_os_env_terraform()
-    cmd_list = [PROVIDER_EXE]
-    terraform_path_output = get_path_terraform_provider()
-    log_file_name = add_timestamp_to_log_filename(terraform_path_output, "terraform_provider_test_runnable")
-    log_label = "Terraform test if Provider is runnable"
-
-    return execute_terraform_cmd(
-        run_info,
-        my_env,
-        cmd_list,
-        terraform_path_output,
-        log_file_name,
-        log_label,
-        False,
-    )
     
 
 def create_target_current_state(run_info, tenant_key_main, tenant_key_target):

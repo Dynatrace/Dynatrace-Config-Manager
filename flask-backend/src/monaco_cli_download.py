@@ -102,9 +102,6 @@ def extract(
     log_label,
     add_to_finished=None,
 ):
-    result = {}
-    call_result = {}
-
     config = credentials.get_api_call_credentials(tenant_key)
     path = get_path_func(config)
 
@@ -134,6 +131,33 @@ def extract(
 
     if len(options_suffix) > 0:
         options.extend(options_suffix)
+
+    return exec_one_topology(
+        run_info,
+        command,
+        my_env,
+        log_label,
+        log_file_path,
+        options,
+        tenant_key,
+        path,
+        add_to_finished,
+    )
+
+
+def exec_one_topology(
+    run_info,
+    command,
+    my_env,
+    log_label,
+    log_file_path,
+    options=[],
+    tenant_key=None,
+    path=None,
+    add_to_finished=None,
+):
+    result = {}
+    call_result = {}
 
     try:
         monaco_exec_dir = dirs.get_monaco_exec_dir()
@@ -171,7 +195,7 @@ def extract(
 
     stdout = call_result.stdout.decode()
     stderr = call_result.stderr.decode()
-
+    
     if (
         "Finished download" in stderr
         and not "Failed to fetch all known entities types" in stderr
@@ -179,13 +203,20 @@ def extract(
         print(log_label, "downloaded successfully")
         result["monaco_finished"] = True
 
-        finished_file = {"tenant_key": tenant_key}
-        if add_to_finished is None:
+        if(tenant_key is None):
             pass
         else:
-            finished_file = add_to_finished(finished_file)
+            finished_file = None
+            finished_file = {"tenant_key": tenant_key}
 
-        monaco_cli.save_finished(path, finished_file, "download", log_label)
+            if add_to_finished is None:
+                pass
+            else:
+                finished_file = add_to_finished(finished_file)
+
+            monaco_cli.save_finished(path, finished_file, "download", log_label)
+    elif "Tool used to deploy dynatrace configurations via the cli" in stdout:
+        run_info["return_status"] = 200
     else:
         monaco_cli.handle_subprocess_error(
             run_info, result, command, options, stdout, stderr, ("Extract" + log_label)

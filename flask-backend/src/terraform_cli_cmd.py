@@ -223,7 +223,9 @@ def write_refresh_cmd(terraform_path, set_env_filename):
     )
 
 def run_terraform_validation_checks():
-    provider_checks = get_terraform_provider_details()
+    provider_checks = {}
+    if(os_helper.IS_DARWIN):
+        provider_checks = get_terraform_provider_details()
     terraform_checks = get_terraform_executable_details()
 
     return {**terraform_checks, **provider_checks}

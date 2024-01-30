@@ -18,18 +18,24 @@ import MigrateContext from '../context/components/MigrateContext';
 import MigrateContextLoad from '../context/components/MigrateContextLoad';
 import { WizRun } from './WizRun';
 import { useTerraformExecDetails } from '../extraction/useTerraformExecDetails';
+import { useOneTopologyExecDetails } from '../extraction/useOneTopologyExecDetails';
 
 export function WizRunPage({ showNextTab }) {
 
 
   const { isTerraformError, terraformErrorComponent } = useTerraformExecDetails()
+  const { isOneTopologyError, oneTopologyErrorComponent } = useOneTopologyExecDetails()
 
   return (
     <React.Fragment>
       <MigrateContext>
         <MigrateContextLoad>
           {isTerraformError ? terraformErrorComponent
-            : <WizRun showNextTab={showNextTab} />}
+            : null}
+          {isOneTopologyError ? oneTopologyErrorComponent
+            : null}
+          {!isTerraformError && !isOneTopologyError ? <WizRun showNextTab={showNextTab} />
+            : null}
         </MigrateContextLoad>
       </MigrateContext>
     </React.Fragment>
