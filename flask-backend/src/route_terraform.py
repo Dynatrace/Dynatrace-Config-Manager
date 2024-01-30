@@ -282,6 +282,6 @@ def terraform_open_history_log_in_vscode():
 @cross_origin(origin="*")
 def terraform_check_exec():
     def call_process():
-        return terraform_cli_cmd.get_terraform_executable_details()
+        return terraform_cli_cmd.run_terraform_validation_checks()
 
     return response_utils.call_and_get_response(call_process)

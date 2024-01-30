@@ -39,7 +39,7 @@ export function useTerraformExecDetails() {
 
         let terraformInfo = ""
         let isTerraformError = false
-        let terraformErrorComponent = null
+        let terraformErrorComponent = []
 
         if (terraformExecDetails) {
             // pass
@@ -54,7 +54,7 @@ export function useTerraformExecDetails() {
             // pass
         } else {
             isTerraformError = true
-            terraformErrorComponent = (
+            terraformErrorComponent.push(
                 <React.Fragment>
                     <Typography sx={{ mt: 6 }} variant="h5" color="error.main" align='center'>Terraform executable not found</Typography>
                     <Box align='center'>
@@ -65,6 +65,40 @@ export function useTerraformExecDetails() {
                     <Typography sx={{ mt: 6 }} variant="h5" color="error.main" align='center'>Please download the terraform executable and add it to your PATH environment variable.  <br /> (requires restarting the app with updated PATH)</Typography>
                     {"local_terraform_path" in terraformExecDetails ? <Typography sx={{ my: 6 }} variant="h5" color="error.main" align='center'>Alternative: Copy the terraform executable locally to this directory: <br /> {terraformExecDetails["local_terraform_path"]}</Typography>
                         : null}
+                </React.Fragment >
+            )
+        }
+
+        if (terraformExecDetails && "is_terraform_provider_runnable" in terraformExecDetails && terraformExecDetails['is_terraform_provider_runnable'] === true) {
+            // pass
+        } else {
+            isTerraformError = true
+            terraformErrorComponent.push(
+                <React.Fragment>
+                    <Typography sx={{ mt: 6 }} variant="h5" color="error.main" align='center'>Terraform Provider needs to be allowed.</Typography>
+                    <Typography sx={{ mt: 6 }} variant="h5" color="error.main">
+                    Open a Terminal and run this command: 
+                    </Typography>
+                    <Box
+                sx={{
+                    mt: 0.5,
+                    overflowX: 'auto',
+                }}
+            >
+                <Typography component="pre" display="block" style={{ wordWrap: "break-word" }}>
+                {terraformExecDetails["absolute_terraform_provider_exec_path_local"]}
+                </Typography>
+            </Box>
+
+                    
+                    <Typography variant="h5" color="error.main">
+                    Click OK
+                    <br/> Go to System Settings &gt; Privacy & Security &gt; Security where it should be listed.
+                    <br/> Click on Allow Anyway next to the provider
+                    <br/> Run the above command again
+                    <br/> Click on Open
+                    <br/> Refresh this page
+                    </Typography>
                 </React.Fragment >
             )
         }
