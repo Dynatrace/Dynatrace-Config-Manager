@@ -19,6 +19,7 @@ import entity_v2
 import flask_utils
 import handler_api
 import monaco_cli_download
+import monaco_cli_cmd
 import process_utils
 import response_utils
 import settings_2_0
@@ -123,3 +124,12 @@ def test_connection():
         return schema_dict
 
     return response_utils.call_and_get_response(call_process)
+
+@blueprint_route_extract_v2.route("/one_topology_check_exec", methods=["GET"])
+@cross_origin(origin="*")
+def terraform_check_exec():
+    def call_process():
+        return monaco_cli_cmd.run_one_topology_validation_checks()
+
+    return response_utils.call_and_get_response(call_process)
+

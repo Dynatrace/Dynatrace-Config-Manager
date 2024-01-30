@@ -24,6 +24,7 @@ import ExecutionOptions from '../options/ExecutionOptions';
 import { usePostProcessEntityFilter } from '../migrate/PostProcessHooks';
 import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 import { useTerraformExecDetails } from './useTerraformExecDetails';
+import { useOneTopologyExecDetails } from './useOneTopologyExecDetails';
 
 export default function ExtractionSection() {
     const [cacheDetailsConfigsSource, setCacheDetailsConfigsSource] = React.useState(true)
@@ -32,6 +33,7 @@ export default function ExtractionSection() {
     const [cacheDetailsEntitiesTarget, setCacheDetailsEntitiesTarget] = React.useState(true)
     const gridConfigList = useMigrationGridConfig()
     const { isTerraformError, terraformErrorComponent, terraformInfo } = useTerraformExecDetails()
+    const { isOneTopologyError, oneTopologyErrorComponent } = useOneTopologyExecDetails()
 
     const entityFilter = usePostProcessEntityFilter()
 
@@ -84,9 +86,14 @@ export default function ExtractionSection() {
         <React.Fragment>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
                 <Typography align='center' variant='h4' color={cacheTitleColor}>Cache Management</Typography>
-                <Grid container>
-                    {extractionGridComponentList}
-                </Grid>
+                {
+                    isOneTopologyError ?
+                        oneTopologyErrorComponent
+                        : <Grid container>
+                            {extractionGridComponentList}
+                        </Grid>
+                }
+
             </Paper>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
                 <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>

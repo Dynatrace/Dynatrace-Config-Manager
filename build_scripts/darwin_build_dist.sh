@@ -1,16 +1,10 @@
 cd ../flask-backend/
-pwd
-ls
 sh ./darwin_build_dist.sh
 
 cd ../react-frontend/
-pwd
-ls
 sh ./darwin_build_dist.sh
 
 cd ../one-topology/
-pwd
-ls
 sh ./darwin_build_dist.sh
 
 cd ..

@@ -27,6 +27,8 @@ export const EXTRACT_ENTITY_V2 = 'extract_entity_v2'
 export const GET_FINISHED_DOWNLOAD_ENTITIES = 'get_finished_download_entities'
 export const GET_FINISHED_DOWNLOAD_CONFIGS = 'get_finished_download_configs'
 
+export const ONE_TOPOLOGY_CHECK = 'one_topology_check_exec'
+
 export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 
 export const MIGRATE_SETTINGS_2_0 = 'migrate_settings_2_0'

@@ -62,6 +62,17 @@ def get_path_terraform_config(config_main, config_target):
     return dirs.prep_dir(get_path_terraform(config_main, config_target), CONFIG_DIR)
 
 
+def get_path_terraform_provider():
+    return dirs.prep_dir(
+        dirs.get_terraform_exec_dir(),
+        "dynatrace.com",
+        "com",
+        "dynatrace",
+        "1.8.3",
+        PROVIDER_PLATFORM,
+    )
+
+
 def create_terraform_repo(run_info, tenant_key_main, tenant_key_target):
     config_main = credentials.get_api_call_credentials(tenant_key_main)
     config_target = credentials.get_api_call_credentials(tenant_key_target)
@@ -121,17 +132,11 @@ def create_terraform_repo(run_info, tenant_key_main, tenant_key_target):
     """
 
     provider_src = dirs.get_file_path(
-        dirs.prep_dir(
-            dirs.get_terraform_exec_dir(),
-            "dynatrace.com",
-            "com",
-            "dynatrace",
-            "1.8.3",
-            PROVIDER_PLATFORM,
-        ),
+        get_path_terraform_provider(),
         PROVIDER_EXE,
         os_helper.EXEC_EXTENSION,
     )
+
     provider_dst = dirs.get_file_path(
         terraform_path, PROVIDER_EXE, os_helper.EXEC_EXTENSION
     )
@@ -317,6 +322,13 @@ def execute_terraform_cmd(
                 f"You are not using the right version of terraform.exe, you are using {m.group(1)}, but this tool is made for {PROVIDER_PLATFORM}",
             )
 
+        provider_test_succeded = r"This binary is a plugin."
+        m = re.search(provider_test_succeded, log_content)
+        if m == None:
+            pass
+        else:
+            run_info["return_status"] = 200
+
         if return_log_content:
             cleaned_file_name = log_file_name + CLEANED_SUFFIX + ".log"
             cleaned_log_file_path = dirs.forward_slash_join(
@@ -431,6 +443,52 @@ def get_formatted_timestamp():
     formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S")
     return formatted_timestamp
 
+
+# On MacOS, it is important to accept the executable before it's copied
+def run_blank(run_info):
+
+    create_symlink()
+
+    my_env = get_os_env_terraform()
+    cmd_list = [PROVIDER_EXE]
+    terraform_path_output = get_path_terraform_provider()
+    log_file_name = add_timestamp_to_log_filename(terraform_path_output, "terraform_provider_test_runnable")
+    log_label = "Terraform test if Provider is runnable"
+
+    return execute_terraform_cmd(
+        run_info,
+        my_env,
+        cmd_list,
+        terraform_path_output,
+        log_file_name,
+        log_label,
+        False,
+    )
+
+def create_symlink():
+    provider_exe_loc = dirs.get_file_path(
+        dirs.get_terraform_exec_dir(),
+        PROVIDER_EXE,
+        os_helper.EXEC_EXTENSION,
+    )    
+
+    provider_src = dirs.get_file_path(
+        get_path_terraform_provider(),
+        PROVIDER_EXE,
+        os_helper.EXEC_EXTENSION,
+    )
+
+    isLinkNeeded = True
+
+    if os.path.exists(provider_src):
+        if os.path.islink(provider_src):
+            isLinkNeeded = False
+        else:
+            os.remove(provider_src)
+    
+    if isLinkNeeded:
+        os.symlink(provider_exe_loc, provider_src)
+    
 
 def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=True)
