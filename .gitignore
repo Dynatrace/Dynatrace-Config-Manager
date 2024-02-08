@@ -7,6 +7,7 @@ flask-backend/monaco/monaco-windows-amd64.exe.entities-only
 flask-backend/terraform/terraform-provider-dynatrace_v1.8.3*
 flask-backend/terraform/terraform.exe
 flask-backend/terraform/dynatrace.com/com/dynatrace/1.8.3/*/*
+flask-backend/tf-cache-dir/dynatrace.com/com/dynatrace/1.8.3/*/*
 flask-backend/terraform/*lnk
 flask-backend/terraform/terraform
 *DS_Store
