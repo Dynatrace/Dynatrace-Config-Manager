@@ -64,7 +64,7 @@ def get_env_vars_base(
         "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": "true",
         "DYNATRACE_DEBUG": "true",
         "DYNATRACE_LOG_DEBUG_PREFIX": log_prefix,
-        "TF_PLUGIN_CACHE_DIR": dirs.get_terraform_cache_dir(),
+        # "TF_PLUGIN_CACHE_DIR": dirs.get_terraform_cache_dir(),  # NEED TO COMPLETE THIS CHANGE BEFORE ENABLING IT
         # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
     }
 
