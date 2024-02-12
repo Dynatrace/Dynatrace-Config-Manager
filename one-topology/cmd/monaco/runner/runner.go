@@ -18,7 +18,6 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/download"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/cmd/monaco/version"
-	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/featureflags"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 
 	"github.com/spf13/afero"
@@ -72,10 +71,7 @@ Examples:
 	// commands
 	rootCmd.AddCommand(download.GetDownloadCommand(fs, &download.DefaultCommand{}))
 	rootCmd.AddCommand(version.GetVersionCommand())
-
-	if featureflags.Entities().Enabled() {
-		rootCmd.AddCommand(match.GetMatchCommand(fs, &match.DefaultCommand{}))
-	}
+	rootCmd.AddCommand(match.GetMatchCommand(fs, &match.DefaultCommand{}))
 
 	return rootCmd
 }

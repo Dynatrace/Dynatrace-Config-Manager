@@ -71,6 +71,7 @@ type MatchParameters struct {
 	WorkingDir        string
 	OutputDir         string
 	PrevResultDir     string
+	ReplacementsDir   string
 	EntitiesMatchDir  string
 	SkipSpecificTypes bool
 	SpecificTypes     []string
@@ -94,6 +95,7 @@ type MatchFileDefinition struct {
 	EntitiesMatchPath string            `yaml:"entitiesMatchPath,omitempty"`
 	OutputPath        string            `yaml:"outputPath"`
 	PrevResultPath    string            `yaml:"prevResultPath,omitempty"`
+	ReplacementsPath  string            `yaml:"replacementsPath"`
 	SkipSpecificTypes bool              `yaml:"skipSpecificTypes,omitempty"`
 	SpecificTypes     []string          `yaml:"specificTypes,omitempty"`
 	SpecificActions   []string          `yaml:"specificActions,omitempty"`
@@ -227,6 +229,14 @@ func LoadMatchingParameters(fs afero.Fs, matchFileName string) (matchParameters 
 	} else {
 		matchParameters.PrevResultDir = prevResultDir
 		log.Info("Previous Result Directory: %s", matchParameters.PrevResultDir)
+	}
+
+	_, replacementsDir, err := cmdutils.GetFilePaths(matchFileDef.ReplacementsPath)
+	if err != nil {
+		errors = append(errors, err)
+	} else {
+		matchParameters.ReplacementsDir = replacementsDir
+		log.Info("Replacements Directory: %s", matchParameters.ReplacementsDir)
 	}
 
 	_, entitiesMatchDir, err := cmdutils.GetFilePaths(matchFileDef.EntitiesMatchPath)

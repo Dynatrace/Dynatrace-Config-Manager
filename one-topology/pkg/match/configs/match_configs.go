@@ -104,6 +104,11 @@ func processConfigBatch(configPerTypeTarget project.ConfigsPerType, matchParamet
 	}
 	waitGroup.Add(maxThreads)
 
+	replacements, err := readReplacements(fs, matchParameters)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
 	processType := func(configTypeInfo configTypeInfo) {
 
 		if skipConfigType(matchParameters, configTypeInfo.configTypeString) {
@@ -121,7 +126,7 @@ func processConfigBatch(configPerTypeTarget project.ConfigsPerType, matchParamet
 			return
 		}
 
-		configProcessingPtr, err := genConfigProcessing(fs, matchParameters, configPerTypeSource, configPerTypeTarget, configTypeInfo.configTypeString, entityMatches)
+		configProcessingPtr, err := genConfigProcessing(fs, matchParameters, configPerTypeSource, configPerTypeTarget, configTypeInfo.configTypeString, entityMatches, replacements)
 		if err != nil {
 			mutex.Lock()
 			errs = append(errs, err)

@@ -89,9 +89,16 @@ func unmarshalConfigs(configPerType []config.Config) (*RawConfigsList, error) {
 	return rawConfigsList, nil
 }
 
-func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, entityMatches entities.MatchOutputPerType) (*RawConfigsList, error) {
+func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type,
+	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*RawConfigsList, error) {
 
 	configIdLocation, isSettings := getConfigTypeInfo(configType)
+	var settingsType string
+	if isSettings {
+		settingsType = configType.(config.SettingsType).SchemaId
+	} else {
+		settingsType = configType.(config.ClassicApiType).Api
+	}
 
 	var err error
 	errs := []error{}
@@ -106,6 +113,20 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, enti
 
 			var entities []interface{}
 			var confInterfaceModified interface{}
+
+			if replacements != nil {
+				confInterfaceModified, err = runReplacements(&confMap, &replacements, &settingsType)
+				if err != nil {
+					log.Error("Error with extractReplaceReplacements: %v on: \n%v", err, confMap)
+					mutex.Lock()
+					errs = append(errs, err)
+					mutex.Unlock()
+					return
+				}
+				if confInterfaceModified != nil {
+					confMap = confInterfaceModified.(map[string]interface{})
+				}
+			}
 
 			if entityMatches != nil {
 				entities, confInterfaceModified, err = extractReplaceEntities(confMap, entityMatches)
@@ -130,7 +151,7 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, enti
 			if isSettings {
 
 				// TO-DO: Re-write this to use a 'path' and handle everything automatically from a slice of configs.
-				if configType.(config.SettingsType).SchemaId == "builtin:process.custom-process-monitoring-rule" {
+				if settingsType == "builtin:process.custom-process-monitoring-rule" {
 					uniqueConfKey += confMap[rules.ValueKey].(map[string]interface{})["condition"].(map[string]interface{})["item"].(string)
 					value, ok := confMap[rules.ValueKey].(map[string]interface{})["condition"].(map[string]interface{})["value"].(string)
 					if ok {
@@ -138,14 +159,14 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, enti
 						uniqueConfKey += value
 					}
 					uniqueConfOk = true
-				} else if configType.(config.SettingsType).SchemaId == "builtin:process-group.advanced-detection-rule" {
+				} else if settingsType == "builtin:process-group.advanced-detection-rule" {
 					uniqueConfKey += confMap[rules.ValueKey].(map[string]interface{})["processDetection"].(map[string]interface{})["property"].(string)
 					uniqueConfKey += "-"
 					uniqueConfKey += confMap[rules.ValueKey].(map[string]interface{})["processDetection"].(map[string]interface{})["containedString"].(string)
 					uniqueConfOk = true
-				} else if configType.(config.SettingsType).SchemaId == "builtin:rum.ip-mappings" {
+				} else if settingsType == "builtin:rum.ip-mappings" {
 					uniqueConfKey, uniqueConfOk = confMap[rules.ValueKey].(map[string]interface{})["ip"].(string)
-				} else if configType.(config.SettingsType).SchemaId == "builtin:anomaly-detection.metric-events" {
+				} else if settingsType == "builtin:anomaly-detection.metric-events" {
 					value, ok := confMap[rules.ValueKey].(map[string]interface{})["eventEntityDimensionKey"].(string)
 					if ok {
 						uniqueConfKey += value
@@ -156,7 +177,7 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, enti
 						uniqueConfKey += value
 						uniqueConfOk = true
 					}
-				} else if configType.(config.SettingsType).SchemaId == "builtin:monitoredentities.generic.relation" {
+				} else if settingsType == "builtin:monitoredentities.generic.relation" {
 
 					value, ok := confMap[rules.ValueKey].(map[string]interface{})["fromType"].(string)
 					if ok {
@@ -173,7 +194,7 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type, enti
 				}
 			} else {
 
-				if configType.(config.ClassicApiType).Api == "dashboard" {
+				if settingsType == "dashboard" {
 					classicNameValue = confMap[rules.ValueKey].(map[string]interface{})["dashboardMetadata"].(map[string]interface{})["name"]
 				} else {
 					name, ok := confMap[rules.ValueKey].(map[string]interface{})["name"]
@@ -232,7 +253,9 @@ func getConfigTypeInfo(configType config.Type) (string, bool) {
 	return configIdLocation, isSettings
 }
 
-func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters, configPerTypeSource project.ConfigsPerType, configPerTypeTarget project.ConfigsPerType, configsType string, entityMatches entities.MatchOutputPerType) (*match.MatchProcessing, error) {
+func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters,
+	configPerTypeSource project.ConfigsPerType, configPerTypeTarget project.ConfigsPerType, configsType string,
+	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*match.MatchProcessing, error) {
 
 	startTime := time.Now()
 	log.Debug("Enhancing %s", configsType)
@@ -248,7 +271,7 @@ func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters, con
 	if len(configObjectListSource) >= 1 {
 		sourceType = configObjectListSource[0].Type
 
-		rawConfigsSource, err = enhanceConfigs(rawConfigsSource, sourceType, entityMatches)
+		rawConfigsSource, err = enhanceConfigs(rawConfigsSource, sourceType, entityMatches, replacements)
 		if err != nil {
 			return nil, err
 		}
@@ -267,7 +290,7 @@ func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters, con
 
 		configTypeInfoTarget := configTypeInfo{configsType, configObjectListTarget[0].Type}
 
-		rawConfigsTarget, err = enhanceConfigs(rawConfigsTarget, targetType, nil)
+		rawConfigsTarget, err = enhanceConfigs(rawConfigsTarget, targetType, nil, nil)
 		if err != nil {
 			return nil, err
 		}

@@ -34,6 +34,14 @@ def get_path_match_entities(config_main, config_target):
     return dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "mat_ent_mon")
 
 
+def get_path_match_entities_results(config_main, config_target):
+    return dirs.prep_dir(get_path_match_entities(config_main, config_target), "results")
+
+
+def get_path_match_entities_results_only(config_main, config_target):
+    return get_path_match_entities_results(config_main, config_target)
+
+
 def get_path_match_entities_prev(config_main, config_target):
     return dirs.get_tenant_work_cache_sub_dir(
         config_main, config_target, "cache_prev_mat_ent"
@@ -46,23 +54,27 @@ def get_path_match_configs(config_main, config_target):
     )
 
 
+def get_path_match_entities_results_only_prev(config_main, config_target):
+    return dirs.forward_slash_join(
+        get_path_match_entities_prev(config_main, config_target), "results"
+    )
+
+
 def get_path_match_configs_prev(config_main, config_target):
     return dirs.get_tenant_work_cache_sub_dir(
         config_main, config_target, "cache_prev_mat_conf"
     )
 
 
-def get_path_match_entities_results(config_main, config_target):
-    return dirs.prep_dir(get_path_match_entities(config_main, config_target), "results")
+def get_path_match_replacements(config_main, config_target):
+    return dirs.get_tenant_work_cache_sub_dir(
+        config_main, config_target, "replacement"
+    )
 
 
-def get_path_match_entities_results_only(config_main, config_target):
-    return get_path_match_entities_results(config_main, config_target)
-
-
-def get_path_match_entities_results_only_prev(config_main, config_target):
-    return dirs.forward_slash_join(
-        get_path_match_entities_prev(config_main, config_target), "results"
+def get_path_match_replacements_dashboards(config_main, config_target):
+    return dirs.prep_dir(
+        get_path_match_replacements(config_main, config_target), "dashboard"
     )
 
 
@@ -367,6 +379,7 @@ def save_match_yaml(run_info, config_target, config_main, match_type):
             "project": monaco_cli.PROJECT_NAME,
             "environment": monaco_cli.PROJECT_NAME,
         },
+        "replacementsPath": get_path_match_replacements(config_main, config_target),
     }
 
     if match_type_options[match_type]["entities_match_path_func"] is None:
@@ -500,3 +513,16 @@ def try_monaco_match(run_info, match_type, tenant_key_main, tenant_key_target):
                 print("Attempt to run OneTopology failed")
 
     return run_legacy_match, result_tuple
+
+
+def get_one_topology_replacements_info(run_info):
+    config_main = credentials.get_api_call_credentials(run_info["tenant_key_main"])
+    config_target = credentials.get_api_call_credentials(run_info["tenant_key_target"])
+
+    replacements_info = {
+        "dashboards_path": get_path_match_replacements_dashboards(
+            config_main, config_target
+        )
+    }
+
+    return replacements_info

@@ -71,6 +71,10 @@ def get_terraform_exec_dir():
     return prep_dir(get_forward_slash_cwd(), "..", "terraform")
 
 
+def get_terraform_cache_dir():
+    return prep_dir(get_forward_slash_cwd(), "..", "tf-cache-dir")
+
+
 def get_data_dir():
     return prep_dir(get_forward_slash_cwd(), "..", "data")
 
