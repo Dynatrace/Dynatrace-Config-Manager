@@ -28,6 +28,7 @@ export const GET_FINISHED_DOWNLOAD_ENTITIES = 'get_finished_download_entities'
 export const GET_FINISHED_DOWNLOAD_CONFIGS = 'get_finished_download_configs'
 
 export const ONE_TOPOLOGY_CHECK = 'one_topology_check_exec'
+export const ONE_TOPOLOGY_REPLACEMENTS_CHECK = 'one_topology_replacements_check'
 
 export const MATCH_ENTITIES_V2 = 'match_entities_v2'
 

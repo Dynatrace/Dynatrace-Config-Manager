@@ -58,7 +58,43 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 		Stats:   map[string]int{},
 	}
 
+	typesToProcessFirst := []string{"application-web", "application-mobile", "synthetic-monitor"}
+
+	errs, matchPayload, stats, configsSourceCount, configsTargetCount = processConfigBatch(configPerTypeTarget, matchParameters,
+		fs, errs, configPerTypeSource, matchPayload,
+		configsSourceCount, configsTargetCount, stats,
+		typesToProcessFirst)
+
+	errs, matchPayload, stats, configsSourceCount, configsTargetCount = processConfigBatch(configPerTypeTarget, matchParameters,
+		fs, errs, configPerTypeSource, matchPayload,
+		configsSourceCount, configsTargetCount, stats,
+		[]string{})
+
+	if len(errs) >= 1 {
+		return []string{}, 0, 0, errutils.PrintAndFormatErrors(errs, "failed to match configs with required fields")
+	}
+
+	runeLabelMap := match.GetRuneLabelMap()
+	for action, total := range matchPayload.Stats {
+		log.Info("%s: %v", runeLabelMap[action], total)
+	}
+	writeMatchPayload(fs, matchParameters, matchPayload)
+
+	return stats, configsSourceCount, configsTargetCount, nil
+}
+
+func processConfigBatch(configPerTypeTarget project.ConfigsPerType, matchParameters match.MatchParameters,
+	fs afero.Fs, errs []error, configPerTypeSource project.ConfigsPerType, matchPayload MatchPayload,
+	configsSourceCount int, configsTargetCount int, stats []string,
+	typesToProcessFirst []string) ([]error, MatchPayload, []string, int, int) {
+
 	typeCount := len(configPerTypeTarget)
+	isFirstCall := len(typesToProcessFirst) > 0
+
+	if isFirstCall {
+		typeCount = len(typesToProcessFirst)
+	}
+
 	channel := make(chan configTypeInfo, typeCount)
 	mutex := sync.Mutex{}
 	waitGroup := sync.WaitGroup{}
@@ -67,6 +103,11 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 		maxThreads = typeCount
 	}
 	waitGroup.Add(maxThreads)
+
+	replacements, err := readReplacements(fs, matchParameters)
+	if err != nil {
+		errs = append(errs, err)
+	}
 
 	processType := func(configTypeInfo configTypeInfo) {
 
@@ -85,7 +126,7 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 			return
 		}
 
-		configProcessingPtr, err := genConfigProcessing(fs, matchParameters, configPerTypeSource, configPerTypeTarget, configTypeInfo.configTypeString, entityMatches)
+		configProcessingPtr, err := genConfigProcessing(fs, matchParameters, configPerTypeSource, configPerTypeTarget, configTypeInfo.configTypeString, entityMatches, replacements)
 		if err != nil {
 			mutex.Lock()
 			errs = append(errs, err)
@@ -109,23 +150,27 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 			return
 		}
 
-		err = writeMatches(fs, configProcessingPtr, matchParameters, configTypeInfo, configMatches, configIdxToWriteSource)
-		if err != nil {
-			mutex.Lock()
-			errs = append(errs, fmt.Errorf("failed to persist matches of type: %s, see error: %w", configTypeInfo.configTypeString, err))
-			mutex.Unlock()
-			return
-		}
+		if isFirstCall {
+			entities.AddMatches(configMatches.Matches)
+		} else {
+			err = writeMatches(fs, configProcessingPtr, matchParameters, configTypeInfo, configMatches, configIdxToWriteSource)
+			if err != nil {
+				mutex.Lock()
+				errs = append(errs, fmt.Errorf("failed to persist matches of type: %s, see error: %w", configTypeInfo.configTypeString, err))
+				mutex.Unlock()
+				return
+			}
 
-		mutex.Lock()
-		matchPayload.Modules = append(matchPayload.Modules, matchEntityMatches)
-		for action, value := range matchEntityMatches["stats"].(map[string]int) {
-			matchPayload.Stats[action] += value
+			mutex.Lock()
+			matchPayload.Modules = append(matchPayload.Modules, matchEntityMatches)
+			for action, value := range matchEntityMatches["stats"].(map[string]int) {
+				matchPayload.Stats[action] += value
+			}
+			configsSourceCount += configsSourceCountType
+			configsTargetCount += configsTargetCountType
+			stats = append(stats, fmt.Sprintf("%65s %10d %12d %10d %10d %10d", configTypeInfo.configTypeString, len(configMatches.Matches), len(configMatches.MultiMatched), len(configMatches.UnMatched), configsTargetCountType, configsSourceCountType))
+			mutex.Unlock()
 		}
-		configsSourceCount += configsSourceCountType
-		configsTargetCount += configsTargetCountType
-		stats = append(stats, fmt.Sprintf("%65s %10d %12d %10d %10d %10d", configTypeInfo.configTypeString, len(configMatches.Matches), len(configMatches.MultiMatched), len(configMatches.UnMatched), configsTargetCountType, configsSourceCountType))
-		mutex.Unlock()
 
 	}
 
@@ -148,15 +193,26 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 	typeDone := map[string]bool{}
 
 	for configsType, configObjectList := range configPerTypeTarget {
+		if isFirstCall && slices.Contains(typesToProcessFirst, configsType) {
+			// pass
+		} else {
+			continue
+		}
+
 		if len(configObjectList) >= 1 {
 			typeDone[configsType] = true
 			channel <- configTypeInfo{configsType, configObjectList[0].Type}
 		}
 	}
 	for configsType, configObjectList := range configPerTypeSource {
+		if isFirstCall {
+			break
+		}
+
 		if typeDone[configsType] {
 			continue
 		}
+
 		if len(configObjectList) >= 1 {
 			typeDone[configsType] = true
 			channel <- configTypeInfo{configsType, configObjectList[0].Type}
@@ -166,17 +222,7 @@ func MatchConfigs(fs afero.Fs, matchParameters match.MatchParameters, configPerT
 	close(channel)
 	waitGroup.Wait()
 
-	if len(errs) >= 1 {
-		return []string{}, 0, 0, errutils.PrintAndFormatErrors(errs, "failed to match configs with required fields")
-	}
-
-	runeLabelMap := match.GetRuneLabelMap()
-	for action, total := range matchPayload.Stats {
-		log.Info("%s: %v", runeLabelMap[action], total)
-	}
-	writeMatchPayload(fs, matchParameters, matchPayload)
-
-	return stats, configsSourceCount, configsTargetCount, nil
+	return errs, matchPayload, stats, configsSourceCount, configsTargetCount
 }
 
 func skipConfigType(matchParameters match.MatchParameters, configsType string) bool {

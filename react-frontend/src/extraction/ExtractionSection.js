@@ -25,6 +25,7 @@ import { usePostProcessEntityFilter } from '../migrate/PostProcessHooks';
 import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 import { useTerraformExecDetails } from './useTerraformExecDetails';
 import { useOneTopologyExecDetails } from './useOneTopologyExecDetails';
+import OneTopologyReplacements from './useOneTopologyReplacements';
 
 export default function ExtractionSection() {
     const [cacheDetailsConfigsSource, setCacheDetailsConfigsSource] = React.useState(true)
@@ -133,6 +134,7 @@ function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfig
                 </Grid>
                 <Grid item xs={1} />
             </Grid>
+            <OneTopologyReplacements/>
         </React.Fragment >
     )
 }

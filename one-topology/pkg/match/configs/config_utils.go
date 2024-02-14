@@ -19,6 +19,9 @@ package configs
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -26,6 +29,7 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
+	"github.com/spf13/afero"
 )
 
 var entityExtractionRegex = regexp.MustCompile(`(((?:[A-Z]+_)?(?:[A-Z]+_)?(?:[A-Z]+_)?[A-Z]+)-[0-9A-Z]{16})`)
@@ -130,6 +134,91 @@ func extractReplaceEntities(confInterface map[string]interface{}, entityMatches 
 
 }
 
+func runReplacements(confInterface *map[string]interface{}, replacements *map[string]map[string]string, settingsType *string) (interface{}, error) {
+	if *settingsType == "dashboard" || *settingsType == "dashboard-sharing" {
+		return replaceDashboardOwners(confInterface, replacements, settingsType)
+	}
+
+	return nil, nil
+}
+
+func replaceDashboardOwners(confInterface *map[string]interface{}, replacements *map[string]map[string]string, settingsType *string) (interface{}, error) {
+	dashboardReplacement, exists := (*replacements)["dashboard"]
+
+	if exists {
+		if *settingsType == "dashboard" {
+			return replaceDashboard(confInterface, dashboardReplacement)
+		}
+
+		if *settingsType == "dashboard-sharing" {
+			return replaceDashboardSharing(confInterface, dashboardReplacement)
+		}
+	}
+
+	return nil, nil
+
+}
+
+func replaceDashboard(confInterface *map[string]interface{}, dashboardReplacement map[string]string) (interface{}, error) {
+	owner := (*confInterface)[rules.ValueKey].(map[string]interface{})["dashboardMetadata"].(map[string]interface{})["owner"].(string)
+
+	newOwner, exists := dashboardReplacement[owner]
+
+	if exists {
+		(*confInterface)[rules.ValueKey].(map[string]interface{})["dashboardMetadata"].(map[string]interface{})["owner"] = newOwner
+
+		return *confInterface, nil
+	}
+
+	return nil, nil
+
+}
+
+func replaceDashboardSharing(confInterface *map[string]interface{}, dashboardReplacement map[string]string) (interface{}, error) {
+	permissionList, exists := (*confInterface)[rules.ValueKey].(map[string]interface{})["permissions"].([]interface{})
+
+	if exists {
+		// pass
+	} else {
+		return nil, nil
+	}
+
+	wasModified := false
+
+	for idx, permissionInterface := range permissionList {
+		permissionType, exists := permissionInterface.(map[string]interface{})["type"].(string)
+
+		if exists && permissionType == "USER" {
+			// pass
+		} else {
+			continue
+		}
+
+		permissionId, exists := permissionInterface.(map[string]interface{})["id"].(string)
+
+		if exists {
+			// pass
+		} else {
+			continue
+		}
+
+		newId, exists := dashboardReplacement[permissionId]
+
+		if exists {
+			(*confInterface)[rules.ValueKey].(map[string]interface{})["permissions"].([]interface{})[idx].(map[string]interface{})["id"] = newId
+			wasModified = true
+		}
+
+	}
+
+	if wasModified {
+		return *confInterface, nil
+	}
+
+	return nil, nil
+
+}
+
 func replaceConfigIds(configProcessingPtr *match.MatchProcessing, sourceI int, targetI int, configTypeInfo configTypeInfo) (interface{}, error) {
 	configIdLocation, _ := getConfigTypeInfo(configTypeInfo.configType)
 
@@ -175,4 +264,80 @@ func checkAndReplace(valueKey *map[string]interface{}, key, configId, configIdTa
 		log.Error("FOUND ID IN THE VALUE TO CHANGE!!!: ", value, "\n", configIdTarget)
 		(*valueKey)[key] = configIdTarget
 	}
+}
+
+func readReplacements(fs afero.Fs, matchParameters match.MatchParameters) (map[string]map[string]string, error) {
+
+	replacements := map[string]map[string]string{}
+
+	if matchParameters.ReplacementsDir == "" {
+		return nil, nil
+	}
+
+	sanitizedReplacementsDir := filepath.Clean(matchParameters.ReplacementsDir)
+
+	_, err := afero.Exists(fs, sanitizedReplacementsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = afero.Walk(fs, sanitizedReplacementsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Error(fmt.Sprint(err))
+			return nil
+		}
+
+		if info.IsDir() {
+			replacementType := filepath.Base(path)
+
+			replacementTypeMap := make(map[string]string)
+
+			files, err := afero.ReadDir(fs, path)
+			if err != nil {
+				log.Error(fmt.Sprint(err))
+				return nil
+			}
+
+			for _, file := range files {
+				if strings.HasSuffix(file.Name(), ".csv") {
+
+					csvPath := filepath.Join(path, file.Name())
+					content, err := afero.ReadFile(fs, csvPath)
+					if err != nil {
+						log.Error(fmt.Sprint(err))
+						continue
+					}
+
+					lines := strings.Split(string(content), "\n")
+
+					for _, line := range lines {
+						columns := strings.Split(strings.TrimSpace(line), ",")
+
+						if len(columns) >= 2 {
+							key := strings.TrimSpace(columns[0])
+							value := strings.TrimSpace(columns[1])
+
+							if key != "" && value != "" {
+								replacementTypeMap[key] = value
+							}
+
+						}
+					}
+				}
+			}
+
+			if len(replacementTypeMap) > 0 {
+				replacements[replacementType] = replacementTypeMap
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return replacements, nil
+
 }

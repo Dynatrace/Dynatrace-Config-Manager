@@ -127,7 +127,7 @@ def test_connection():
 
 @blueprint_route_extract_v2.route("/one_topology_check_exec", methods=["GET"])
 @cross_origin(origin="*")
-def terraform_check_exec():
+def one_topology_check_exec():
     def call_process():
         return monaco_cli_cmd.run_one_topology_validation_checks()
 

@@ -73,31 +73,70 @@ func LoadMatches(fs afero.Fs, matchParameters match.MatchParameters) (MatchOutpu
 
 			return nil, err
 		}
-		previousMatchOutputType, exists := matchOutputPerType[entityType]
-
-		if exists {
-			for entityIdSource, entityIdTarget := range matchOutputType.Matches {
-				previousIdTarget, exists := previousMatchOutputType.Matches[entityIdSource]
-				if exists {
-					if previousIdTarget == entityIdTarget {
-						// pass
-					} else {
-						log.Error("[LoadMatches] Duplicate Matching for %s, matches with %s and %s", entityIdSource, entityIdTarget, previousIdTarget)
-					}
-				} else {
-					previousMatchOutputType.Matches[entityIdSource] = entityIdTarget
-				}
-			}
-
-			matchOutputPerType[entityType] = previousMatchOutputType
-
-		} else {
-			matchOutputType.Type = entityType
-			matchOutputPerType[entityType] = matchOutputType
-		}
+		addMatches(entityType, matchOutputType)
 
 	}
 
 	return matchOutputPerType, nil
+
+}
+
+func addMatches(entityType string, matchOutputType MatchOutputType) {
+	previousMatchOutputType, exists := matchOutputPerType[entityType]
+
+	if exists {
+		for entityIdSource, entityIdTarget := range matchOutputType.Matches {
+			previousIdTarget, exists := previousMatchOutputType.Matches[entityIdSource]
+			if exists {
+				if previousIdTarget == entityIdTarget {
+					// pass
+				} else {
+					log.Warn("[LoadMatches] Duplicate Matching for %s, matches with %s and %s", entityIdSource, entityIdTarget, previousIdTarget)
+				}
+			} else {
+				previousMatchOutputType.Matches[entityIdSource] = entityIdTarget
+			}
+		}
+
+		matchOutputPerType[entityType] = previousMatchOutputType
+
+	} else {
+		matchOutputType.Type = entityType
+		matchOutputPerType[entityType] = matchOutputType
+	}
+}
+
+func AddMatches(configBasedMatches map[string]string) {
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	matchesPerType := map[string]map[string]string{}
+
+	if len(configBasedMatches) > 0 {
+		for entityIdSource, entityIdTarget := range configBasedMatches {
+			entityType := entityIdSource[0:(len(entityIdSource) - 17)]
+
+			_, exists := matchesPerType[entityType]
+			if exists {
+				// pass
+			} else {
+				matchesPerType[entityType] = map[string]string{}
+			}
+
+			matchesPerType[entityType][entityIdSource] = entityIdTarget
+		}
+	}
+
+	for entityType, matches := range matchesPerType {
+
+		matchOutputType := MatchOutputType{
+			Type:    entityType,
+			Matches: matches,
+		}
+
+		addMatches(entityType, matchOutputType)
+
+	}
 
 }
