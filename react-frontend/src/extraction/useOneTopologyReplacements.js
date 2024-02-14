@@ -50,6 +50,7 @@ export default function OneTopologyReplacements() {
                             <Typography sx={{ ml: 2 }}>Place as many csv mapping files in the specified directories</Typography>
                             <Typography sx={{ ml: 3 }}>csv files should not contain headers</Typography>
                             <Typography sx={{ mt: 2, ml: 2 }}><b>Dashboard Owners: </b> {oneTopologyReplacementsCheck["dashboards_path"]}</Typography>
+                            <Typography sx={{ ml: 3 }}>First column: ID. Second column: e-mail.</Typography>
                         </React.Fragment>
                     )
                     : null}
