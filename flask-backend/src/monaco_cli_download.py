@@ -63,7 +63,6 @@ def extract_entities(run_info, tenant_key):
 
         return finished
 
-    # For test connection on entities, use --specific-types
     get_path_func = get_path_entities
     get_path_logs_func = get_path_monaco_logs
     delete_cache_func = delete_old_cache_entities
