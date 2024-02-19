@@ -98,7 +98,6 @@ func runAndPrintMatchEntities(fs afero.Fs, matchParameters match.MatchParameters
 	log.Info("Finished matching %d entity types, %s source entities and %s target entities in %v (pre-hierarchy)",
 		len(configsSource), p.Sprintf("%d", entitiesSourceCount), p.Sprintf("%d", entitiesTargetCount), time.Since(startTime))
 
-	// get ALL entities types
 	stats, err = matchEntities.MatchEntitiesHierarchy(fs, matchParameters, configsSource, configsTarget, stats)
 	if err != nil {
 		return err

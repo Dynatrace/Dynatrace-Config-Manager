@@ -105,6 +105,7 @@ def get_run_info(
     time_from_minutes=None,
     time_to_minutes=None,
     action_id=None,
+    test_connection=False,
 ):
     run_info = {}
 
@@ -136,6 +137,7 @@ def get_run_info(
     run_info["time_from_minutes"] = time_from_minutes
     run_info["time_to_minutes"] = time_to_minutes
     run_info["action_id"] = action_id
+    run_info["test_connection"] = test_connection
 
     return run_info
 

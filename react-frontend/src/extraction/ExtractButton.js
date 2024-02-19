@@ -25,12 +25,14 @@ import ConfirmAction from '../action/ConfirmAction';
 import { genTenantLabel } from '../credentials/TenantSelector';
 import { DONE, ERROR, LOADING, useProgress } from '../progress/ProgressHook';
 import { useHandleExtract } from './ExtractionHooks';
+import TFAnsiText from '../result/TFAnsiText';
 
 export default function ExtractButton({ api, label,
     descLabel = "This action will OVERWRITE your last extraction, if any.",
     tenantKeyType = TENANT_KEY_TYPE_MAIN, extraSearchParams = {},
     setSubProgress = () => { } }) {
 
+    const [errorLog, setErrorLog] = React.useState("")
     const { tenantKey } = useTenantKey(tenantKeyType)
     const { tenant: tenantTarget } = useTenant(tenantKey)
     const { progress, setProgress, progressComponent } = useProgress(setSubProgress)
@@ -41,7 +43,7 @@ export default function ExtractButton({ api, label,
 
     const { open, handleClickOpen, handleClose } = useConfirmAction()
 
-    const handleExtract = useHandleExtract(tenantKey, extraSearchParams, setProgress, api)
+    const handleExtract = useHandleExtract(tenantKey, extraSearchParams, setProgress, api, setErrorLog)
 
     const button = React.useMemo(() => {
 
@@ -75,6 +77,7 @@ export default function ExtractButton({ api, label,
     return (
         <Box sx={{ my: 1 }}>
             {button}
+            {errorLog ? <TFAnsiText logList={errorLog.split("\n")} defaultFilter='failed' /> : null}
             <ConfirmAction open={open} handleClose={handleClose} label={label}
                 descLabel={descLabel} tenantLabel={tenantLabel} handlePost={handleExtract} />
         </Box>

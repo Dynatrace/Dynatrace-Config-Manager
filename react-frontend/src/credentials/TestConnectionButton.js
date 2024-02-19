@@ -21,10 +21,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import CheckIcon from '@mui/icons-material/Check';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useTenant } from '../context/TenantListContext';
+import TFAnsiText from '../result/TFAnsiText';
+import { getStdError } from '../result/errorFunctions';
 
 
 export default function TestConnectionButton({ tenantKey }) {
 
+    const [errorLog, setErrorLog] = React.useState("")
     const { progress, setProgress, progressComponent } = useProgress()
     const { tenant: { connectionTested }, setConnectionTested } = useTenant(tenantKey)
 
@@ -35,6 +38,7 @@ export default function TestConnectionButton({ tenantKey }) {
         const handleExtract = () => {
             const searchParams = { 'tenant_key': tenantKey }
 
+            setErrorLog("")
             setConnectionTested(undefined)
             setProgress(LOADING)
             const thenFunction = promise =>
@@ -50,6 +54,11 @@ export default function TestConnectionButton({ tenantKey }) {
             const catchFunction = (error) => {
                 setProgress(ERROR)
                 setConnectionTested(false)
+
+                const stderr = getStdError(error);
+                if (stderr) {
+                    setErrorLog(stderr)
+                }
             }
 
             backendPost(api, null, searchParams, thenFunction, catchFunction, false)
@@ -105,6 +114,7 @@ export default function TestConnectionButton({ tenantKey }) {
     return (
         <Box sx={{ mt: 1 }}>
             {button}
+            {errorLog ? <TFAnsiText logList={errorLog.split("\n")} defaultFilter='failed' /> : null}
         </Box>
     );
 }

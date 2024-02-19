@@ -59,12 +59,14 @@ func GetWithRetry(client *http.Client, url string, settings RetrySetting) (resp 
 		return resp, nil
 	}
 
-	for i := 0; i < settings.MaxRetries; i++ {
-		log.Warn("Retrying failed GET request %s with error (HTTP %d)", url, resp.StatusCode)
-		time.Sleep(settings.WaitTime)
-		resp, err = Get(client, url)
-		if err == nil && resp.IsSuccess() {
-			return resp, err
+	if resp.StatusCode != 401 {
+		for i := 0; i < settings.MaxRetries; i++ {
+			log.Warn("Retrying failed GET request %s with error (HTTP %d)", url, resp.StatusCode)
+			time.Sleep(settings.WaitTime)
+			resp, err = Get(client, url)
+			if err == nil && resp.IsSuccess() {
+				return resp, err
+			}
 		}
 	}
 

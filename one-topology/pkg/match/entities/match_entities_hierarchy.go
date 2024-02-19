@@ -15,12 +15,14 @@
 package entities
 
 import (
+	"encoding/json"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
+	v2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
@@ -44,7 +46,7 @@ func MatchEntitiesHierarchy(fs afero.Fs, matchParameters match.MatchParameters, 
 
 	startTime := time.Now()
 
-	entitiesTypes, err := getEntitiesTypesTarget(matchParameters)
+	entitiesTypes, err := getEntitiesTypesTarget(matchParameters, entityPerTypeTarget)
 	if err != nil || entitiesTypes == nil {
 		return stats, err
 	}
@@ -194,7 +196,32 @@ func genChildIdxToParentIdx(entityProcessingEnvPtrChild *match.MatchProcessingEn
 	return childIdxToParentIdx
 }
 
-func getEntitiesTypesTarget(matchParameters match.MatchParameters) ([]client.EntitiesType, error) {
+func getEntitiesTypesTarget(matchParameters match.MatchParameters, entitiesPerType project.ConfigsPerType) ([]client.EntitiesType, error) {
+	entitiesPerTypeTarget, exists := entitiesPerType[client.TypesAsEntitiesType]
+
+	if exists {
+		return getEntitiesTypesTargetCached(entitiesPerTypeTarget)
+	}
+
+	return getEntitiesTypesTargetFetch(matchParameters)
+
+}
+
+func getEntitiesTypesTargetCached(typesAsJsonStrings []v2.Config) ([]client.EntitiesType, error) {
+	entitiesTypes := []client.EntitiesType{}
+
+	if len(typesAsJsonStrings) > 0 {
+		err := json.Unmarshal([]byte(typesAsJsonStrings[0].Template.Content()), &entitiesTypes)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return entitiesTypes, nil
+}
+
+func getEntitiesTypesTargetFetch(matchParameters match.MatchParameters) ([]client.EntitiesType, error) {
 	environmentKey := ""
 	for envKey := range matchParameters.Target.Manifest.Environments {
 		environmentKey = envKey
@@ -211,7 +238,7 @@ func getEntitiesTypesTarget(matchParameters match.MatchParameters) ([]client.Ent
 	}
 
 	limitingDtClient := client.LimitClientParallelRequests(dtClient, 1)
-	entitiesTypes, err := limitingDtClient.ListEntitiesTypes()
+	entitiesTypes, _, err := limitingDtClient.ListEntitiesTypes()
 	if err != nil {
 		return nil, err
 	}

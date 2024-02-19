@@ -37,6 +37,14 @@ def get_path_configs(config):
     return dirs.get_tenant_data_cache_sub_dir(config, "conf_mon")
 
 
+def get_path_test_connection(config):
+    return dirs.get_tenant_data_cache_sub_dir(config, "test_connection")
+
+
+def get_path_test_connection_logs(config):
+    return dirs.get_tenant_data_cache_sub_dir(config, "test_connection_logs")
+
+
 def extract_entities(run_info, tenant_key):
     options_prefix = ["download", "entities"]
     options_suffix = []
@@ -46,17 +54,20 @@ def extract_entities(run_info, tenant_key):
     if run_info["time_to_minutes"] != None:
         options_suffix.append("--time-to-minutes")
         options_suffix.append(run_info["time_to_minutes"])
-    get_path_func = get_path_entities
-    delete_cache_func = delete_old_cache_entities
-    log_label = "entities"
 
-    def add_from_to_finished(finished):
+    def add_to_finished(finished):
         if run_info["time_from_minutes"] != None:
             finished["time_from_minutes"] = run_info["time_from_minutes"]
         if run_info["time_to_minutes"] != None:
             finished["time_to_minutes"] = run_info["time_to_minutes"]
 
         return finished
+
+    # For test connection on entities, use --specific-types
+    get_path_func = get_path_entities
+    get_path_logs_func = get_path_monaco_logs
+    delete_cache_func = delete_old_cache_entities
+    log_label = "entities"
 
     result = extract(
         run_info,
@@ -66,7 +77,37 @@ def extract_entities(run_info, tenant_key):
         get_path_func,
         delete_cache_func,
         log_label,
-        add_from_to_finished,
+        add_to_finished=add_to_finished,
+        get_path_logs_func=get_path_logs_func,
+    )
+
+    return result
+
+
+def test_connection(run_info, tenant_key):
+    options_prefix = ["download", "entities"]
+    options_suffix = []
+
+    def add_to_finished(finished):
+        return finished
+
+    options_suffix.append("--specific-types")
+    options_suffix.append("ENVIRONMENT")
+    get_path_func = get_path_test_connection
+    get_path_logs_func = get_path_test_connection_logs
+    delete_cache_func = delete_old_cache_test_connection
+    log_label = "test_connection"
+
+    result = extract(
+        run_info,
+        tenant_key,
+        options_prefix,
+        options_suffix,
+        get_path_func,
+        delete_cache_func,
+        log_label,
+        add_to_finished=add_to_finished,
+        get_path_logs_func=get_path_logs_func,
     )
 
     return result
@@ -101,6 +142,7 @@ def extract(
     delete_cache_func,
     log_label,
     add_to_finished=None,
+    get_path_logs_func=get_path_monaco_logs,
 ):
     config = credentials.get_api_call_credentials(tenant_key)
     path = get_path_func(config)
@@ -108,7 +150,7 @@ def extract(
     delete_cache_func(config, path)
 
     log_file_path = terraform_cli.add_timestamp_to_log_filename(
-        get_path_monaco_logs(config), "extraction_cli_download_" + log_label + ".log"
+        get_path_logs_func(config), "extraction_cli_download_" + log_label + ".log"
     )
 
     tenant_data = tenant.load_tenant(tenant_key)
@@ -195,15 +237,16 @@ def exec_one_topology(
 
     stdout = call_result.stdout.decode()
     stderr = call_result.stderr.decode()
-    
+
     if (
         "Finished download" in stderr
         and not "Failed to fetch all known entities types" in stderr
+        and not "Failed to fetch all known schemas" in stderr
     ):
         print(log_label, "downloaded successfully")
         result["monaco_finished"] = True
 
-        if(tenant_key is None):
+        if tenant_key is None:
             pass
         else:
             finished_file = None
@@ -225,6 +268,10 @@ def exec_one_topology(
     return result
 
 
+def delete_old_cache_test_connection(config, path):
+    delete_old_cache(config, path)
+
+
 def delete_old_cache_entities(config, path):
     non_monaco_dir = "entities_list"
 
@@ -237,7 +284,7 @@ def delete_old_cache_configs(config, path):
     delete_old_cache(config, path, non_monaco_dir)
 
 
-def delete_old_cache(config, path, non_monaco_dir):
+def delete_old_cache(config, path, non_monaco_dir=None):
     _, _, can_delete = monaco_cli.is_finished(path)
 
     if can_delete:
@@ -247,7 +294,7 @@ def delete_old_cache(config, path, non_monaco_dir):
         except FileNotFoundError as e:
             dirs.print_path_too_long_message_cond(path)
             raise e
-    else:
+    elif non_monaco_dir is not None:
         non_monaco_cache_path = dirs.get_tenant_data_cache_sub_dir(
             config, non_monaco_dir
         )

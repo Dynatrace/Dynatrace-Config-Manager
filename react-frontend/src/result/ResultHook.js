@@ -137,7 +137,7 @@ export const useMigrationResultHook = () => {
                             </Grid>
                             <IconButton onClick={handleLaunchSearch} color="primary">
                                 <SearchIcon />
-                                <Typography>Search for module or key_id (entityId: coming soon)</Typography>
+                                <Typography>Search for module or ressource name</Typography>
                             </IconButton>
                         </Grid>
                         <Grid item xs={6}>

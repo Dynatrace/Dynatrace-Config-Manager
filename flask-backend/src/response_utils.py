@@ -45,6 +45,9 @@ def call_and_get_response(call_process, run_info=None):
 
             if ('warnings' in run_info):
                 result['warnings'] = run_info['warnings']
+                
+            if ('stderr' in run_info):
+                result['stderr'] = run_info['stderr']
 
     except (UIForwartException, OverflowError) as err:
         result = {"error": str(err)}

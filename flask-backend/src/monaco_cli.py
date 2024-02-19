@@ -61,8 +61,10 @@ def handle_subprocess_error(
     run_info["return_status"] = 400
     if stdout != "":
         result["stdout"] = stdout
+        run_info["stdout"] = stdout
     if stderr != "":
         result["stderr"] = stderr
+        run_info["stderr"] = stderr
     print("ERROR Running OneTopology ", log_label, ": ", result)
 
 

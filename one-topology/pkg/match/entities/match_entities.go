@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
@@ -31,6 +32,10 @@ func MatchEntities(fs afero.Fs, matchParameters match.MatchParameters, entityPer
 	for entitiesType := range entityPerTypeTarget {
 
 		log.Debug("Processing Type: %s", entitiesType)
+
+		if entitiesType == client.TypesAsEntitiesType {
+			continue
+		}
 
 		entityProcessingPtr, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entitiesType)
 		if err != nil {
