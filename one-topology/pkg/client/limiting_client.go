@@ -72,9 +72,9 @@ func (l limitingClient) ListSettingsFlat(schemaId string, opts ListSettingsOptio
 
 	return
 }
-func (l limitingClient) ListEntitiesTypes() (e []EntitiesType, err error) {
+func (l limitingClient) ListEntitiesTypes() (e []EntitiesType, list *EntitiesList, err error) {
 	l.limiter.ExecuteBlocking(func() {
-		e, err = l.client.ListEntitiesTypes()
+		e, list, err = l.client.ListEntitiesTypes()
 	})
 
 	return

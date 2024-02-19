@@ -17,6 +17,7 @@ import * as React from 'react';
 import { EXTRACT_CONFIGS, EXTRACT_ENTITY_V2, backendGet, backendPost } from "../backend/backend";
 import { timeFrom7WeeksMinutes, timeToNow } from './ExtractEntities';
 import { DONE, ERROR, LOADING, useProgress } from '../progress/ProgressHook';
+import { getStdError } from '../result/errorFunctions';
 
 export function useHandleExtractConfigs(tenantKey) {
     const { progress, setProgress, progressComponent } = useProgress()
@@ -34,11 +35,12 @@ export function useHandleExtractEntities(tenantKey, timeFrom = timeFrom7WeeksMin
     return { progress, progressComponent, handleExtractEntities }
 }
 
-export function useHandleExtract(tenantKey, extraSearchParams, setProgress, api) {
+export function useHandleExtract(tenantKey, extraSearchParams, setProgress, api, setErrorLog=()=>{}) {
     return React.useCallback(() => {
         const searchParams = { 'tenant_key': tenantKey, 'use_cache': false, ...extraSearchParams };
 
         setProgress(LOADING);
+        setErrorLog("")
         const thenFunction = promise => promise
             .then(response => {
                 setProgress(DONE);
@@ -47,10 +49,14 @@ export function useHandleExtract(tenantKey, extraSearchParams, setProgress, api)
 
         const catchFunction = (error) => {
             setProgress(ERROR)
+            const stderr = getStdError(error);
+            if (stderr) {
+                setErrorLog(stderr)
+            }
         }
 
         backendPost(api, null, searchParams, thenFunction, catchFunction, false);
-    }, [tenantKey, api, setProgress, extraSearchParams]);
+    }, [tenantKey, api, setProgress, extraSearchParams, setErrorLog]);
 }
 
 export function useFinishedInfo(tenantKey, api, setFinishedData) {

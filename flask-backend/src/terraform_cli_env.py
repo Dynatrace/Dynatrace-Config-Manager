@@ -14,6 +14,7 @@
 
 import dirs
 import monaco_cli_match
+import os_helper
 import terraform_cli
 import terraform_state
 import windows_cmd_file_util
@@ -58,15 +59,18 @@ def get_env_vars_base(
         "DT_CACHE_FOLDER": dirs.prep_dir(terraform_path, ".cache"),
         "DYNATRACE_PROVIDER_SOURCE": "dynatrace.com/com/dynatrace",
         "DYNATRACE_PROVIDER_VERSION": terraform_cli.DYNATRACE_PROVIDER_VERSION,
-        "DYNATRACE_HEREDOC": "false",
-        "DYNATRACE_NO_REFRESH_ON_IMPORT": "true",
+        "DYNATRACE_HEREDOC": TERRAFORM_FALSE,
+        "DYNATRACE_NO_REFRESH_ON_IMPORT": TERRAFORM_TRUE,
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
-        "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": "true",
-        "DYNATRACE_DEBUG": "true",
+        "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": TERRAFORM_TRUE,
+        "DYNATRACE_DEBUG": TERRAFORM_TRUE,
         "DYNATRACE_LOG_DEBUG_PREFIX": log_prefix,
         # "TF_PLUGIN_CACHE_DIR": dirs.get_terraform_cache_dir(),  # NEED TO COMPLETE THIS CHANGE BEFORE ENABLING IT
         # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
     }
+
+    if os_helper.IS_WINDOWS:
+        env_vars["DYNATRACE_SHORTER_NAMES"] = TERRAFORM_TRUE
 
     return env_vars
 

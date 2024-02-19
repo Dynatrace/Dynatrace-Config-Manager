@@ -102,6 +102,8 @@ const reducedListSettingsFields = "objectId,externalId,schemaVersion,schemaId,sc
 const defaultPageSize = "500"
 const defaultPageSizeEntities = "4000"
 
+const TypesAsEntitiesType = "TypesAsEntityList"
+
 const DefaultEntityWeeksTimeframeFrom = 7
 const DefaultEntityMinutesTimeframeFrom = DefaultEntityWeeksTimeframeFrom * 7 * 24 * 60
 
@@ -134,7 +136,7 @@ type ListSettingsFilter func(DownloadSettingsObject) bool
 type EntitiesClient interface {
 
 	// ListEntitiesTypes returns all entities types
-	ListEntitiesTypes() ([]EntitiesType, error)
+	ListEntitiesTypes() ([]EntitiesType, *EntitiesList, error)
 
 	// ListEntities returns all entities objects for a given type.
 	ListEntities(EntitiesType, int, int) (EntitiesList, error)
@@ -538,11 +540,15 @@ type EntitiesType struct {
 	Properties        []map[string]interface{} `json:"properties"`
 }
 
+type EntitiesTypeListAsEntities struct {
+	Entities []json.RawMessage `json:"types"`
+}
+
 func (e EntitiesType) String() string {
 	return e.EntitiesTypeId
 }
 
-func (d *DynatraceClient) ListEntitiesTypes() ([]EntitiesType, error) {
+func (d *DynatraceClient) ListEntitiesTypes() ([]EntitiesType, *EntitiesList, error) {
 
 	params := url.Values{
 		"pageSize": []string{defaultPageSize},
@@ -550,8 +556,16 @@ func (d *DynatraceClient) ListEntitiesTypes() ([]EntitiesType, error) {
 
 	result := make([]EntitiesType, 0)
 
+	typesAsEntityList := EntitiesList{
+		From:     "",
+		To:       "",
+		Entities: make([]string, 0),
+	}
+
 	addToResult := func(body []byte) (int, int, error) {
 		var parsed EntitiesTypeListResponse
+
+		var parsedRaw EntitiesTypeListAsEntities
 
 		if err1 := json.Unmarshal(body, &parsed); err1 != nil {
 			return 0, len(result), fmt.Errorf("failed to unmarshal response: %w", err1)
@@ -559,16 +573,28 @@ func (d *DynatraceClient) ListEntitiesTypes() ([]EntitiesType, error) {
 
 		result = append(result, parsed.Types...)
 
+		if err2 := json.Unmarshal(body, &parsedRaw); err2 != nil {
+			return 0, len(result), fmt.Errorf("failed to unmarshal response: %w", err2)
+		}
+
+		entitiesContentList := make([]string, len(parsedRaw.Entities))
+
+		for idx, str := range parsedRaw.Entities {
+			entitiesContentList[idx] = string(str)
+		}
+
+		typesAsEntityList.Entities = append(typesAsEntityList.Entities, entitiesContentList...)
+
 		return len(parsed.Types), len(result), nil
 	}
 
 	_, err := d.listPaginated(pathEntitiesTypes, params, "EntityTypeList", addToResult)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return result, nil
+	return result, &typesAsEntityList, nil
 }
 
 type EntityListResponseRaw struct {

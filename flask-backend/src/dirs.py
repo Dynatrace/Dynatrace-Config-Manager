@@ -31,7 +31,7 @@ def get_file_path(dir_path, filename, file_extension=".json", absolute=True):
 
     if is_path_too_long(path):
         filename = get_filename_hash(filename)
-        print("ERROR: PATH TOO LONG: ", path, "USING HASH: ", filename)
+        # print("ERROR: PATH TOO LONG: ", path, "USING HASH: ", filename)
         path = forward_slash_join(
             dir_path, filename + file_extension, absolute=absolute
         )

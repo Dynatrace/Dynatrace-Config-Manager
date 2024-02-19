@@ -268,8 +268,8 @@ func (l *DummyClient) DeleteSettings(_ string) error {
 	return nil
 }
 
-func (c *DummyClient) ListEntitiesTypes() ([]EntitiesType, error) {
-	return make([]EntitiesType, 0), nil
+func (c *DummyClient) ListEntitiesTypes() ([]EntitiesType, *EntitiesList, error) {
+	return make([]EntitiesType, 0), nil, nil
 }
 
 func (c *DummyClient) ListEntities(_ EntitiesType, _ int, _ int) (EntitiesList, error) {

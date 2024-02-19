@@ -22,9 +22,9 @@ const DEFAULT_MAX_LINES = 35;
 const DEFAULT_MAX_LINES_SINGLE_PAGE = 100;
 const MIN_LINES = 5;
 
-export default function TFAnsiText({ logList }) {
+export default function TFAnsiText({ logList, defaultFilter="" }) {
 
-    const { text: searchText, debouncedTextField, changeTextInput: changeSearchTextInput } = useDebouncedTextField("")
+    const { text: searchText, debouncedTextField, changeTextInput: changeSearchTextInput } = useDebouncedTextField(defaultFilter)
     const [maxLines, setMaxLines] = React.useState(DEFAULT_MAX_LINES)
     const [page, setPage] = React.useState(1)
     const [highlightLine, setHighlightLine] = React.useState(0)

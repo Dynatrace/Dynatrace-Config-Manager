@@ -67,7 +67,7 @@ func (d *Downloader) Download(specificEntitiesTypes []string, timeFromMinutes in
 	log.Debug("Fetching specific entities types to download")
 
 	// get ALL entities types
-	entitiesTypes, err := d.client.ListEntitiesTypes()
+	entitiesTypes, typesAsEntitiesListPtr, err := d.client.ListEntitiesTypes()
 	if err != nil {
 		log.Error("Failed to fetch all known entities types. Skipping entities download. Reason: %s", err)
 		return nil
@@ -79,7 +79,7 @@ func (d *Downloader) Download(specificEntitiesTypes []string, timeFromMinutes in
 		return nil
 	}
 
-	return d.download(filteredEntitiesTypes, timeFromMinutes, timeToMinutes, projectName)
+	return d.download(filteredEntitiesTypes, typesAsEntitiesListPtr, timeFromMinutes, timeToMinutes, projectName)
 }
 
 func filterSpecificEntitiesTypes(specificEntitiesTypes []string, entitiesTypes []client.EntitiesType) []client.EntitiesType {
@@ -109,16 +109,17 @@ func (d *Downloader) DownloadAll(timeFromMinutes int, timeToMinutes int, project
 	log.Debug("Fetching all entities types to download")
 
 	// get ALL entities types
-	entitiesTypes, err := d.client.ListEntitiesTypes()
+	entitiesTypes, typesAsEntitiesListPtr, err := d.client.ListEntitiesTypes()
 	if err != nil {
 		log.Error("Failed to fetch all known entities types. Skipping entities download. Reason: %s", err)
 		return nil
 	}
 
-	return d.download(entitiesTypes, timeFromMinutes, timeToMinutes, projectName)
+	return d.download(entitiesTypes, typesAsEntitiesListPtr, timeFromMinutes, timeToMinutes, projectName)
 }
 
-func (d *Downloader) download(entitiesTypes []client.EntitiesType, timeFromMinutes int, timeToMinutes int, projectName string) v2.ConfigsPerType {
+func (d *Downloader) download(entitiesTypes []client.EntitiesType, typesAsEntitiesListPtr *client.EntitiesList, timeFromMinutes int, timeToMinutes int, projectName string) v2.ConfigsPerType {
+
 	results := make(v2.ConfigsPerType, len(entitiesTypes))
 	downloadMutex := sync.Mutex{}
 	wg := sync.WaitGroup{}
@@ -155,6 +156,9 @@ func (d *Downloader) download(entitiesTypes []client.EntitiesType, timeFromMinut
 	}
 
 	wg.Wait()
+
+	configs := d.convertObject(*typesAsEntitiesListPtr, client.TypesAsEntitiesType, projectName)
+	results[client.TypesAsEntitiesType] = configs
 
 	return results
 }
