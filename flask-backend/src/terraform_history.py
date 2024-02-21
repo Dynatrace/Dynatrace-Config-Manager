@@ -142,7 +142,7 @@ def extract_operation_info(config_main, config_target, history_type, history_lab
             if nb_logs > 0:
                 used_type = history_label
                 if is_post_process:
-                    used_type = "Post-Process"
+                    used_type = "OneTopology & TerraComposer"
 
                 operations.append(
                     {
@@ -161,18 +161,22 @@ def process_dir_files(sub_dir_path):
     nb_logs = 0
     is_post_process = False
     has_apply = False
+    has_apply_all = False
 
     for file in os.listdir(sub_dir_path):
         file_path = os.path.join(sub_dir_path, file)
+        print(file_path)
         if os.path.isfile(file_path):
             if file_path.endswith("import.log"):
                 is_post_process = True
             if "apply" in file_path:
                 has_apply = True
+            if "apply_all" in file_path:
+                has_apply_all = True
             nb_logs += 1
 
     if is_post_process:
-        has_apply = False
+        has_apply = has_apply_all
 
     return nb_logs, is_post_process, has_apply
 
