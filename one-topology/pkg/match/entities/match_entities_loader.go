@@ -104,6 +104,25 @@ func addMatches(entityType string, matchOutputType MatchOutputType) {
 		matchOutputType.Type = entityType
 		matchOutputPerType[entityType] = matchOutputType
 	}
+
+	if entityType == "SYNTHETIC_LOCATION" {
+		previousMatchOutputType = matchOutputPerType[entityType]
+
+		for entityIdSource, entityIdTargeList := range matchOutputType.MultiMatched {
+			if len(entityIdTargeList) == 0 {
+				continue
+			}
+
+			_, exists := previousMatchOutputType.Matches[entityIdSource]
+			if exists {
+				// pass
+			} else {
+				previousMatchOutputType.Matches[entityIdSource] = entityIdTargeList[0]
+			}
+		}
+
+		matchOutputPerType[entityType] = previousMatchOutputType
+	}
 }
 
 func AddMatches(configBasedMatches map[string]string) {
