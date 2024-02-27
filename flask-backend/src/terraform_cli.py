@@ -316,11 +316,13 @@ def execute_terraform_cmd(
         if m == None:
             pass
         else:
+            log_message = f"ERROR: You are not using the right version of terraform.exe, you are using {m.group(1)}, but this tool is made for {PROVIDER_PLATFORM}"
             run_info["return_status"] = 400
             process_utils.add_aggregate_error(
                 run_info,
-                f"You are not using the right version of terraform.exe, you are using {m.group(1)}, but this tool is made for {PROVIDER_PLATFORM}",
+                log_message,
             )
+            print(log_message)
 
         provider_test_succeded = r"This binary is a plugin."
         m = re.search(provider_test_succeded, log_content)
