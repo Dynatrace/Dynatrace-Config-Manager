@@ -106,7 +106,7 @@ function reducer(state, action) {
 function initState() {
     let tenant = getDefaultTenant()
     tenant.label = ""
-    return { "tenantKey": { TENANT_KEY_TYPE_MAIN: "0", TENANT_KEY_TYPE_TARGET: "0" }, "tenants": { 0: tenant } }
+    return { "tenantKey": { [TENANT_KEY_TYPE_MAIN]: "0", [TENANT_KEY_TYPE_TARGET]: "1" }, "tenants": { 0: tenant , 1: tenant} }
 }
 
 export function useTenantListContextReducer() {
