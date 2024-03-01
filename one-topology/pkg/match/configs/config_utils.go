@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
@@ -308,6 +309,8 @@ func readReplacements(fs afero.Fs, matchParameters match.MatchParameters) (map[s
 						continue
 					}
 
+					content = removeBOM(content)
+
 					lines := strings.Split(string(content), "\n")
 
 					for _, line := range lines {
@@ -340,4 +343,12 @@ func readReplacements(fs afero.Fs, matchParameters match.MatchParameters) (map[s
 
 	return replacements, nil
 
+}
+
+func removeBOM(content []byte) []byte {
+	if utf8.Valid(content) && len(content) >= 3 &&
+		content[0] == 0xEF && content[1] == 0xBB && content[2] == 0xBF {
+		content = content[3:]
+	}
+	return content
 }
