@@ -11,3 +11,4 @@ flask-backend/tf-cache-dir/dynatrace.com/com/dynatrace/1.8.3/*/*
 flask-backend/terraform/*lnk
 flask-backend/terraform/terraform
 *DS_Store
+build_scripts/node_modules/.yarn-integrity
