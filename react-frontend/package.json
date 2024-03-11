@@ -15,6 +15,7 @@
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "^13.5.0",
     "ansi-to-react": "^6.1.6",
+    "caniuse-lite": "^1.0.30001597",
     "dayjs": "^1.11.5",
     "follow-redirects": "^1.15.4",
     "lodash": "^4.17.21",
