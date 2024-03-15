@@ -32,17 +32,19 @@ const ENTITIES = "entities"
 const OLD_VERSION = "pre-v0.19"
 const V0_19 = "v0.19"
 const V0_19_2 = "v0.19.2"
-const LATEST_CACHE_VERSION = "v1.2"
+const V1_2 = "v1.2"
+const V1_4_6 = "v1.4.6"
+const LATEST_CACHE_VERSION = V1_4_6
 
 const BREAKING_CACHE_VERSIONS = {
     [ANY]: [OLD_VERSION],
-    [CONFIGS]: [OLD_VERSION],
+    [CONFIGS]: [V0_19, OLD_VERSION],
     [ENTITIES]: [OLD_VERSION],
 }
 const OUTDATED_CACHE_VERSIONS = {
     [ANY]: [],
     [CONFIGS]: [V0_19_2],
-    [ENTITIES]: [V0_19]
+    [ENTITIES]: [V0_19, V0_19_2, V1_2]
 }
 const OUTDATED_CACHE_MESSAGE = {
     [CONFIGS]: "Re-extract cache for better config coverage",
@@ -50,8 +52,8 @@ const OUTDATED_CACHE_MESSAGE = {
 }
 const LATEST_CACHE_VERSIONS = {
     [ANY]: [LATEST_CACHE_VERSION],
-    [CONFIGS]: [LATEST_CACHE_VERSION],
-    [ENTITIES]: [V0_19_2,LATEST_CACHE_VERSION],
+    [CONFIGS]: [V1_2, LATEST_CACHE_VERSION],
+    [ENTITIES]: [LATEST_CACHE_VERSION],
 }
 
 const twelveHours = (12 * 60 * 60 * 1000)

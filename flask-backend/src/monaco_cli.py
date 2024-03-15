@@ -24,7 +24,9 @@ import terraform_cli
 
 TOKEN_NAME = "MONACO_TENANT_TOKEN"
 PROJECT_NAME = "p"
-MONACO_EXEC = f"one-topology-{os_helper.OS}-{os_helper.ARCHITECTURE}{os_helper.EXEC_EXTENSION}"
+MONACO_EXEC = (
+    f"one-topology-{os_helper.OS}-{os_helper.ARCHITECTURE}{os_helper.EXEC_EXTENSION}"
+)
 
 
 def get_path_finished_file(type_path):
@@ -48,8 +50,16 @@ def gen_monaco_env(config, tenant_data, log_path=None):
 
 CACHE_VERSION_V_0_19 = "v0.19"
 CACHE_VERSION_V_0_19_2 = "v0.19.2"
-CACHE_VERSION_LATEST = "v1.2"
-VALID_CACHE_VERSION = [CACHE_VERSION_V_0_19, CACHE_VERSION_V_0_19_2, CACHE_VERSION_LATEST]
+CACHE_VERSION_V_1_2 = "v1.2"
+CACHE_VERSION_V_1_4_6 = "v1.4.6"
+CACHE_VERSION_LATEST = CACHE_VERSION_V_1_4_6
+VALID_CACHE_VERSION = [
+    CACHE_VERSION_V_0_19,
+    CACHE_VERSION_V_0_19_2,
+    CACHE_VERSION_V_1_2,
+    CACHE_VERSION_V_1_4_6,
+    CACHE_VERSION_LATEST,
+]
 
 
 def handle_subprocess_error(
