@@ -26,12 +26,19 @@ import { TENANT_KEY_TYPE_MAIN } from '../context/TenantListContext';
 import { useTerraformExecDetails } from './useTerraformExecDetails';
 import { useOneTopologyExecDetails } from './useOneTopologyExecDetails';
 import OneTopologyReplacements from './useOneTopologyReplacements';
+import { STABLE_LIST } from '../progress/ProgressHook';
 
 export default function ExtractionSection() {
     const [cacheDetailsConfigsSource, setCacheDetailsConfigsSource] = React.useState(true)
     const [cacheDetailsConfigsTarget, setCacheDetailsConfigsTarget] = React.useState(true)
     const [cacheDetailsEntitiesSource, setCacheDetailsEntitiesSource] = React.useState(true)
     const [cacheDetailsEntitiesTarget, setCacheDetailsEntitiesTarget] = React.useState(true)
+
+    const [subProgressConfigsSource, setSubProgressConfigsSource] = React.useState("")
+    const [subProgressConfigsTarget, setSubProgressConfigsTarget] = React.useState("")
+    const [subProgressEntitiesSource, setSubProgressEntitiesSource] = React.useState("")
+    const [subProgressEntitiesTarget, setSubProgressEntitiesTarget] = React.useState("")
+
     const gridConfigList = useMigrationGridConfig()
     const { isTerraformError, terraformErrorComponent, terraformInfo } = useTerraformExecDetails()
     const { isOneTopologyError, oneTopologyErrorComponent } = useOneTopologyExecDetails()
@@ -46,16 +53,24 @@ export default function ExtractionSection() {
 
             let setCacheDetailsConfigs = setCacheDetailsConfigsTarget
             let setCacheDetailsEntities = setCacheDetailsEntitiesTarget
+            let setSubProgressConfigs = setSubProgressConfigsTarget
+            let setSubProgressEntities = setSubProgressEntitiesTarget
+            let subProgressConfigs = subProgressConfigsTarget
+            let subProgressEntities = subProgressEntitiesTarget
             if (keyType === TENANT_KEY_TYPE_MAIN) {
                 setCacheDetailsConfigs = setCacheDetailsConfigsSource
                 setCacheDetailsEntities = setCacheDetailsEntitiesSource
+                setSubProgressConfigs = setSubProgressConfigsSource
+                setSubProgressEntities = setSubProgressEntitiesSource
+                subProgressConfigs = subProgressConfigsSource
+                subProgressEntities = subProgressEntitiesSource
             }
 
             gridComponentList.push(
                 <React.Fragment key={keyType}>
                     <Grid item xs={5} id={keyType}>
-                        <ExtractConfigs tenantKeyType={keyType} setCacheDetails={setCacheDetailsConfigs} />
-                        <ExtractEntities tenantKeyType={keyType} setCacheDetails={setCacheDetailsEntities} />
+                        <ExtractConfigs tenantKeyType={keyType} setCacheDetails={setCacheDetailsConfigs} setSubProgress={setSubProgressConfigs} subProgress={subProgressConfigs} />
+                        <ExtractEntities tenantKeyType={keyType} setCacheDetails={setCacheDetailsEntities} setSubProgress={setSubProgressEntities} subProgress={subProgressEntities} />
                         <ExtractionCliRequestsInfo tenantKeyType={keyType} />
                     </Grid>
                     <Grid item xs={1} />
@@ -63,7 +78,7 @@ export default function ExtractionSection() {
             )
         }
         return gridComponentList
-    }, [gridConfigList])
+    }, [gridConfigList, subProgressConfigsTarget, subProgressConfigsSource, subProgressEntitiesTarget, subProgressEntitiesSource])
 
     const [cacheTitleColor, prepareTitleColor] = React.useMemo(() => {
         let cacheTitleColor = null
@@ -83,6 +98,23 @@ export default function ExtractionSection() {
         return false
     }, [cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget])
 
+    const stableExtractions = React.useMemo(() => {
+        const subProgressList = [
+            subProgressConfigsTarget,
+            subProgressConfigsSource,
+            subProgressEntitiesTarget,
+            subProgressEntitiesSource
+        ]
+
+        for (const subProgress of subProgressList) {
+            if (!STABLE_LIST.includes(subProgress)) {
+                return false
+            }
+        }
+
+        return true
+    }, [subProgressConfigsTarget, subProgressConfigsSource, subProgressEntitiesTarget, subProgressEntitiesSource])
+
     return (
         <React.Fragment>
             <Paper sx={{ mt: 5, p: 1 }} elevation={3} >
@@ -100,14 +132,14 @@ export default function ExtractionSection() {
                 <Typography align='center' variant='h4' color={prepareTitleColor}>OneTopology & TerraComposer</Typography>
                 {
                     isTerraformError ? terraformErrorComponent
-                        : genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter)
+                        : genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter, stableExtractions)
                 }
             </Paper>
         </React.Fragment >
     );
 }
 
-function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter) {
+function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget, entityFilter, stableExtractions) {
 
     if (isCacheIncomplete) {
         return (
@@ -122,11 +154,18 @@ function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfig
 
                     {genWarningOldCache(cacheDetailsConfigsSource, cacheDetailsConfigsTarget, cacheDetailsEntitiesSource, cacheDetailsEntitiesTarget)}
 
-                    <MigrateButtonControlled handleChange={() => { }}
-                        entityFilter={entityFilter}
-                        label={"Execute OneTopology & TerraComposer"}
-                        confirm={true} descLabel={""} />
-                    <Typography sx={{ ml: 1 }}>{terraformInfo}</Typography>
+                    {
+                        stableExtractions ? (
+                            <React.Fragment>
+                                <MigrateButtonControlled handleChange={() => { }}
+                                    entityFilter={entityFilter}
+                                    label={"Execute OneTopology & TerraComposer"}
+                                    confirm={true} descLabel={""} />
+                                <Typography sx={{ ml: 1 }}>{terraformInfo}</Typography>
+                            </React.Fragment>)
+                            : <Typography>Complete all extractions without errors before proceeding.</Typography>
+                    }
+
                 </Grid>
                 <Grid item xs={1} />
                 <Grid item xs={5}>
@@ -134,7 +173,7 @@ function genPostProcessGrid(terraformInfo, isCacheIncomplete, cacheDetailsConfig
                 </Grid>
                 <Grid item xs={1} />
             </Grid>
-            <OneTopologyReplacements/>
+            <OneTopologyReplacements />
         </React.Fragment >
     )
 }

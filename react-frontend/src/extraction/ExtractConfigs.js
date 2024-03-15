@@ -19,8 +19,7 @@ import ExtractButton from './ExtractButton';
 import { Grid } from '@mui/material';
 import ExtractionInfo from './ExtractionInfo';
 
-export default function ExtractConfigs({ tenantKeyType, setCacheDetails }) {
-    const [subProgress, setSubProgress] = React.useState("")
+export default function ExtractConfigs({ tenantKeyType, setCacheDetails, subProgress, setSubProgress }) {
 
     return (
         <React.Fragment>

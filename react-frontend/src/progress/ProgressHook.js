@@ -20,6 +20,7 @@ export const NOT_STARTED = "NOT STARTED"
 export const LOADING = "LOADING"
 export const ERROR = "ERROR"
 export const DONE = "DONE"
+export const STABLE_LIST = [DONE, NOT_STARTED];
 
 export const useProgress = (setSubProgress = () => { }) => {
 

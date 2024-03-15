@@ -23,10 +23,9 @@ import ExtractionInfo from './ExtractionInfo';
 export const timeFrom7WeeksMinutes = 7 * 7 * 24 * 60
 export const timeToNow = 0
 
-export default function ExtractEntities({ tenantKeyType, setCacheDetails }) {
+export default function ExtractEntities({ tenantKeyType, setCacheDetails, subProgress, setSubProgress }) {
     const [timeFromMinute, setTimeFromMinute] = React.useState(timeFrom7WeeksMinutes)
     const [timeToMinute, setTimeToMinute] = React.useState(timeToNow)
-    const [subProgress, setSubProgress] = React.useState("")
 
     const handleTimeFromMinute = (event) => {
         setTimeFromMinute(event.target.value)
