@@ -45,6 +45,12 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 					SelfMatchDisabled: false,
 				},
 				{
+					Name:              "Web Service Name",
+					Path:              []string{"properties", "webServiceName"},
+					WeightValue:       1,
+					SelfMatchDisabled: false,
+				},
+				{
 					Name:              "Web Service Namespace",
 					Path:              []string{"properties", "webServiceNamespace"},
 					WeightValue:       1,
