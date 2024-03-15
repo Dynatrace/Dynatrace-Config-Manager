@@ -174,6 +174,7 @@ def get_env_vars_extras_export(
         "DYNATRACE_NAME_REPLACE_DASH": TERRAFORM_TRUE,
         "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
         "DYNATRACE_ULTRA_PARALLEL": enable_ultra_parallel,
+        "DYNATRACE_DISABLE_ORDERING_SUPPORT": TERRAFORM_TRUE,
         "DYNATRACE_PREV_STATE_ON": TERRAFORM_TRUE,
         "DYNATRACE_PREV_STATE_PATH_THIS": terraform_state.get_keyed_state_file_path(
             config_main, config_target, tenant_key_current
