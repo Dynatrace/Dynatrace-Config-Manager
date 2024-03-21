@@ -64,6 +64,7 @@ def get_env_vars_base(
         "DYNATRACE_CUSTOM_PROVIDER_LOCATION": dirs.get_terraform_exec_dir(),
         "DYNATRACE_IGNORE_CHANGES_REQUIRES_ATTENTION": TERRAFORM_TRUE,
         "DYNATRACE_DEBUG": TERRAFORM_TRUE,
+        "DYNATRACE_DISABLE_ORDERING_SUPPORT": TERRAFORM_TRUE,
         "DYNATRACE_LOG_DEBUG_PREFIX": log_prefix,
         # "TF_PLUGIN_CACHE_DIR": dirs.get_terraform_cache_dir(),  # NEED TO COMPLETE THIS CHANGE BEFORE ENABLING IT
         # "TF_LOG": "TRACE" # DO NOT COMMIT!!!
@@ -174,7 +175,6 @@ def get_env_vars_extras_export(
         "DYNATRACE_NAME_REPLACE_DASH": TERRAFORM_TRUE,
         "DYNATRACE_ENABLE_EXPORT_DASHBOARD": enable_dashboards,
         "DYNATRACE_ULTRA_PARALLEL": enable_ultra_parallel,
-        "DYNATRACE_DISABLE_ORDERING_SUPPORT": TERRAFORM_TRUE,
         "DYNATRACE_PREV_STATE_ON": TERRAFORM_TRUE,
         "DYNATRACE_PREV_STATE_PATH_THIS": terraform_state.get_keyed_state_file_path(
             config_main, config_target, tenant_key_current
