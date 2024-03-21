@@ -22,10 +22,11 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/spf13/afero"
 )
 
-func genMultiMatchedMap(remainingResultsPtr *match.CompareResultList, entityProcessingPtr *match.MatchProcessing, prevMatches MatchOutputType) (map[string][]string, map[string]string) {
+func genMultiMatchedMap(remainingResultsPtr *processing.CompareResultList, entityProcessingPtr *processing.MatchProcessing, prevMatches MatchOutputType) (map[string][]string, map[string]string) {
 
 	printMultiMatchedSample(remainingResultsPtr, entityProcessingPtr)
 
@@ -40,7 +41,7 @@ func genMultiMatchedMap(remainingResultsPtr *match.CompareResultList, entityProc
 	currentId := remainingResultsPtr.CompareResults[0].LeftId
 
 	addMatchingMultiMatched := func(matchCount int) {
-		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[currentId].(map[string]interface{})["entityId"].(string)
+		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[currentId].EntityId
 		var bestFirstSeen float64 = 0
 
 		_, foundPrev := prevMatches.Matches[entityIdSource]
@@ -53,11 +54,11 @@ func genMultiMatchedMap(remainingResultsPtr *match.CompareResultList, entityProc
 			compareResult := remainingResultsPtr.CompareResults[(j + firstIdx)]
 			targetId := compareResult.RightId
 
-			entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetId].(map[string]interface{})["entityId"].(string)
-			firstSeen := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetId].(map[string]interface{})["firstSeenTms"].(float64)
+			entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetId].EntityId
+			firstSeen := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetId].FirstSeenTms
 
-			if firstSeen > float64(bestFirstSeen) {
-				bestFirstSeen = firstSeen
+			if firstSeen != nil && *firstSeen > float64(bestFirstSeen) {
+				bestFirstSeen = *firstSeen
 				matchedByFirstSeen[entityIdSource] = entityIdTarget
 			}
 
@@ -108,7 +109,7 @@ func genMultiMatchedMap(remainingResultsPtr *match.CompareResultList, entityProc
 
 }
 
-func printMultiMatchedSample(remainingResultsPtr *match.CompareResultList, entityProcessingPtr *match.MatchProcessing) {
+func printMultiMatchedSample(remainingResultsPtr *processing.CompareResultList, entityProcessingPtr *processing.MatchProcessing) {
 	multiMatchedCount := len(remainingResultsPtr.CompareResults)
 
 	if multiMatchedCount <= 0 {
@@ -167,7 +168,7 @@ func (me *MatchOutputType) calcMultiMatched() int {
 
 	return multiMatched
 }
-func genOutputPayload(entityProcessingPtr *match.MatchProcessing, remainingResultsPtr *match.CompareResultList, matchedEntities *map[int]int, prevMatches MatchOutputType) MatchOutputType {
+func genOutputPayload(entityProcessingPtr *processing.MatchProcessing, remainingResultsPtr *processing.CompareResultList, matchedEntities *map[int]int, prevMatches MatchOutputType) MatchOutputType {
 
 	multiMatchedMap, matchedByFirstSeen := genMultiMatchedMap(remainingResultsPtr, entityProcessingPtr, prevMatches)
 	entityProcessingPtr.PrepareRemainingMatch(false, true, remainingResultsPtr)
@@ -213,8 +214,8 @@ func genOutputPayload(entityProcessingPtr *match.MatchProcessing, remainingResul
 
 	// First, current perfect matches
 	for sourceI, targetI := range *matchedEntities {
-		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceI].(map[string]interface{})["entityId"].(string)
-		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})["entityId"].(string)
+		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceI].EntityId
+		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetI].EntityId
 
 		if isAlreadyMatched(entityIdSource, entityIdTarget) {
 			continue
@@ -252,12 +253,12 @@ func genOutputPayload(entityProcessingPtr *match.MatchProcessing, remainingResul
 		}
 	}
 
-	isInLeftMap := func(postProcess match.PostProcess, entityIdx int) bool {
+	isInLeftMap := func(postProcess processing.PostProcess, entityIdx int) bool {
 		return postProcess.LeftMap[entityIdx]
 	}
 
 	for _, sourceI := range *entityProcessingPtr.Source.CurrentRemainingMatch {
-		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceI].(map[string]interface{})["entityId"].(string)
+		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceI].EntityId
 
 		_, foundPrev := prevMatches.Matches[entityIdSource]
 		if foundPrev {
@@ -273,12 +274,12 @@ func genOutputPayload(entityProcessingPtr *match.MatchProcessing, remainingResul
 		matchOutput.UnMatched = append(matchOutput.UnMatched, entityIdSource)
 	}
 
-	isInRightMap := func(postProcess match.PostProcess, entityIdx int) bool {
+	isInRightMap := func(postProcess processing.PostProcess, entityIdx int) bool {
 		return postProcess.RightMap[entityIdx]
 	}
 
 	for _, targetI := range *entityProcessingPtr.Target.CurrentRemainingMatch {
-		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})["entityId"].(string)
+		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetI].EntityId
 
 		handlePostProcess(remainingResultsPtr, &matchOutput.PostProcessTarget, targetI, entityIdTarget, isInRightMap)
 	}
@@ -286,7 +287,7 @@ func genOutputPayload(entityProcessingPtr *match.MatchProcessing, remainingResul
 	return matchOutput
 }
 
-func handlePostProcess(remainingResultsPtr *match.CompareResultList, postProcessOutput *map[string]*PostProcessOutput, entityIdx int, entityId string, isInMap func(match.PostProcess, int) bool) bool {
+func handlePostProcess(remainingResultsPtr *processing.CompareResultList, postProcessOutput *map[string]*PostProcessOutput, entityIdx int, entityId string, isInMap func(processing.PostProcess, int) bool) bool {
 	postProcessIdxList := []int{}
 	postProcessId := ""
 	for postProcessIdx, postProcess := range remainingResultsPtr.PostProcessList {

@@ -21,8 +21,9 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 			WeightValue: 100,
 			Rules: []IndexRule{
 				{
-					Name:              "Detected Name",
-					Path:              []string{"properties", "detectedName"},
+					Name: "Detected Name",
+					Path: []string{"properties", "detectedName"},
+					//GetItem:           func(list RawEntityList, index int) { return list.Values.Properties.DetectedName },
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},

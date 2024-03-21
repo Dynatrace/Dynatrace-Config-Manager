@@ -24,6 +24,7 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
 	v2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
@@ -88,14 +89,19 @@ func MatchEntitiesHierarchy(fs afero.Fs, matchParameters match.MatchParameters, 
 
 				log.Info("Processing Hierarchy: Type: %s, Child: %s, Parent: %s", sourceHierarchy.Name, entityTypeChild, entityTypeParent)
 
-				entityProcessingPtrChild, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeChild)
+				entityProcessingPtrChild, err := processing.GenEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeChild, true)
 				if err != nil {
 					return stats, err
 				}
 
-				entityProcessingPtrParent, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeParent)
-				if err != nil {
-					return stats, err
+				var entityProcessingPtrParent *processing.MatchProcessing
+				if entityTypeChild == entityTypeParent {
+					entityProcessingPtrParent = entityProcessingPtrChild
+				} else {
+					entityProcessingPtrParent, err = processing.GenEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeParent, true)
+					if err != nil {
+						return stats, err
+					}
 				}
 
 				childIdxToParentIdxSource := genChildIdxToParentIdx(&entityProcessingPtrChild.Source, &entityProcessingPtrParent.Source, sourceHierarchy)
@@ -118,7 +124,7 @@ func MatchEntitiesHierarchy(fs afero.Fs, matchParameters match.MatchParameters, 
 	return stats, nil
 }
 
-func genChildIdxToParentIdx(entityProcessingEnvPtrChild *match.MatchProcessingEnv, entityProcessingEnvPtrParent *match.MatchProcessingEnv, sourceHierarchy rules.HierarchySource) ChildIdxToParentIdx {
+func genChildIdxToParentIdx(entityProcessingEnvPtrChild *processing.MatchProcessingEnv, entityProcessingEnvPtrParent *processing.MatchProcessingEnv, sourceHierarchy rules.HierarchySource) ChildIdxToParentIdx {
 	matchListChild := *entityProcessingEnvPtrChild.RawMatchList.GetValues()
 	childIdxToParentId := make([]ChildIdxParentId, 0, len(matchListChild))
 
@@ -174,8 +180,7 @@ func genChildIdxToParentIdx(entityProcessingEnvPtrChild *match.MatchProcessingEn
 	for idxChildParent < len(childIdxToParentId) && idxParent < len(matchListParent) {
 
 		entityIdChildParent := childIdxToParentId[idxChildParent].parentId
-		entityIdParent := matchListParent[idxParent].(map[string]interface{})["entityId"].(string)
-
+		entityIdParent := matchListParent[idxParent].EntityId
 		diff := strings.Compare(entityIdChildParent, entityIdParent)
 
 		if diff < 0 {

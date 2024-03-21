@@ -16,10 +16,11 @@ package entities
 
 import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
-func runRulesHierarchy(entityProcessingPtrChild *match.MatchProcessing, entityProcessingPtrParent *match.MatchProcessing, matchParameters match.MatchParameters,
+func runRulesHierarchy(entityProcessingPtrChild *processing.MatchProcessing, entityProcessingPtrParent *processing.MatchProcessing, matchParameters match.MatchParameters,
 	entityMatchesChild MatchOutputType, entityMatchesParent MatchOutputType,
 	childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx,
 	sourceHierarchy rules.HierarchySource) (MatchOutputType, MatchOutputType) {
@@ -35,11 +36,11 @@ func runRulesHierarchy(entityProcessingPtrChild *match.MatchProcessing, entityPr
 
 }
 
-func updateMatches(matchedEntities *map[int]int, entityProcessingPtr *match.MatchProcessing, entityMatches *MatchOutputType) {
+func updateMatches(matchedEntities *map[int]int, entityProcessingPtr *processing.MatchProcessing, entityMatches *MatchOutputType) {
 	for sourceIdx, targetIdx := range *matchedEntities {
 
-		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceIdx].(map[string]interface{})["entityId"].(string)
-		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetIdx].(map[string]interface{})["entityId"].(string)
+		entityIdSource := (*entityProcessingPtr.Source.RawMatchList.GetValues())[sourceIdx].EntityId
+		entityIdTarget := (*entityProcessingPtr.Target.RawMatchList.GetValues())[targetIdx].EntityId
 
 		entityMatches.Matches[entityIdSource] = entityIdTarget
 

@@ -27,8 +27,9 @@ type IndexRuleType struct {
 }
 
 type IndexRule struct {
-	Name              string
-	Path              []string
+	Name string
+	Path []string
+	//GetFunc           func(entitiesValues.RawMatchList, int) string
 	ListItemKey       ListItemKey
 	WeightValue       int
 	SelfMatchDisabled bool

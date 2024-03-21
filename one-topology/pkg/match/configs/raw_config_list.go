@@ -26,6 +26,8 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/download/classic"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities"
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
@@ -49,7 +51,7 @@ func (a ByRawConfigId) Less(i, j int) bool {
 
 func (r *RawConfigsList) Sort() {
 
-	sort.Sort(ByRawConfigId(*r.GetValues()))
+	sort.Sort(ByRawConfigId(*r.GetValuesConfig()))
 
 }
 
@@ -59,7 +61,13 @@ func (r *RawConfigsList) Len() int {
 
 }
 
-func (r *RawConfigsList) GetValues() *[]interface{} {
+func (r *RawConfigsList) GetValues() *[]entitiesValues.Value {
+
+	return nil
+
+}
+
+func (r *RawConfigsList) GetValuesConfig() *[]interface{} {
 
 	return r.Values
 
@@ -255,7 +263,7 @@ func getConfigTypeInfo(configType config.Type) (string, bool) {
 
 func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters,
 	configPerTypeSource project.ConfigsPerType, configPerTypeTarget project.ConfigsPerType, configsType string,
-	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*match.MatchProcessing, error) {
+	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*processing.MatchProcessing, error) {
 
 	startTime := time.Now()
 	log.Debug("Enhancing %s", configsType)
@@ -299,5 +307,5 @@ func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters,
 
 	log.Debug("Enhanced %s in %v", configsType, time.Since(startTime))
 
-	return match.NewMatchProcessing(rawConfigsSource, sourceType, rawConfigsTarget, targetType), nil
+	return processing.NewMatchProcessing(rawConfigsSource, sourceType, rawConfigsTarget, targetType), nil
 }

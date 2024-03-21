@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package match
+package processing
 
 import (
 	"sort"
 
 	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 )
 
 type MatchProcessing struct {
@@ -27,14 +29,38 @@ type MatchProcessing struct {
 }
 
 type RawMatchList interface {
+	GetValues() *[]entitiesValues.Value
+	GetValuesConfig() *[]interface{}
 	Sort()
 	Len() int
-	GetValues() *[]interface{}
 }
 type ByRawItemId interface {
 	Len() int
 	Swap(i, j int)
 	Less(i, j int) bool
+}
+
+func GenEntityProcessing(entityPerTypeSource project.ConfigsPerType, entityPerTypeTarget project.ConfigsPerType, entitiesType string, isHierarchy bool) (*MatchProcessing, error) {
+
+	rawEntitiesSource, err := entitiesValues.UnmarshalEntities(entityPerTypeSource[entitiesType], isHierarchy)
+	if err != nil {
+		return nil, err
+	}
+	sourceType := config.EntityType{}
+	if len(entityPerTypeSource[entitiesType]) > 0 {
+		sourceType = entityPerTypeSource[entitiesType][0].Type.(config.EntityType)
+	}
+
+	rawEntitiesTarget, err := entitiesValues.UnmarshalEntities(entityPerTypeTarget[entitiesType], isHierarchy)
+	if err != nil {
+		return nil, err
+	}
+	targetType := config.EntityType{}
+	if len(entityPerTypeTarget[entitiesType]) > 0 {
+		targetType = entityPerTypeTarget[entitiesType][0].Type.(config.EntityType)
+	}
+
+	return NewMatchProcessing(rawEntitiesSource, sourceType, rawEntitiesTarget, targetType), nil
 }
 
 func NewMatchProcessing(rawMatchListSource RawMatchList, SourceType config.Type, rawMatchListTarget RawMatchList, TargetType config.Type) *MatchProcessing {
@@ -60,7 +86,7 @@ func NewMatchProcessing(rawMatchListSource RawMatchList, SourceType config.Type,
 
 func genRemainingMatchList(rawMatchList RawMatchList) []int {
 	remainingMatchList := make([]int, rawMatchList.Len())
-	for i := range *rawMatchList.GetValues() {
+	for i := 0; i < rawMatchList.Len(); i++ {
 		remainingMatchList[i] = i
 	}
 

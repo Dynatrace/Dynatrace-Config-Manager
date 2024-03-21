@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
-	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
@@ -111,8 +111,8 @@ func (a byTargetIdxUnindexed) Len() int           { return len(a) }
 func (a byTargetIdxUnindexed) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byTargetIdxUnindexed) Less(i, j int) bool { return a[i].targetIdx < a[j].targetIdx }
 
-func runHierarchyRule(hierarchyRule rules.HierarchyRule, hierarchyRuleType rules.HierarchyRuleType, entityProcessingPtrChild *match.MatchProcessing, entityProcessingPtrParent *match.MatchProcessing, entityMatchesChild MatchOutputType, entityMatchesParent MatchOutputType, resultListPtr *match.CompareResultList, childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx, matchedEntitiesParent map[int]int) {
-	var entityProcessingPtrUsed *match.MatchProcessing = nil
+func runHierarchyRule(hierarchyRule rules.HierarchyRule, hierarchyRuleType rules.HierarchyRuleType, entityProcessingPtrChild *processing.MatchProcessing, entityProcessingPtrParent *processing.MatchProcessing, entityMatchesChild MatchOutputType, entityMatchesParent MatchOutputType, resultListPtr *processing.CompareResultList, childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx, matchedEntitiesParent map[int]int) {
+	var entityProcessingPtrUsed *processing.MatchProcessing = nil
 	var entityMatchesUsed *MatchOutputType = nil
 	if hierarchyRuleType.IsParent {
 		entityProcessingPtrUsed = entityProcessingPtrParent
@@ -177,7 +177,7 @@ func multiMatchToUnindexedMatches(entityMatchesUsed *MatchOutputType) []Unindexe
 	return matchesCurrent
 }
 
-func keepRemainingOnlySource(matches []UnindexedMatches, entityProcessingPtrParent *match.MatchProcessing) []UnindexedMatches {
+func keepRemainingOnlySource(matches []UnindexedMatches, entityProcessingPtrParent *processing.MatchProcessing) []UnindexedMatches {
 	sort.Sort(bySourceIdxUnindexed(matches))
 	remainingSource := entityProcessingPtrParent.Source.CurrentRemainingMatch
 
@@ -209,7 +209,7 @@ func keepRemainingOnlySource(matches []UnindexedMatches, entityProcessingPtrPare
 	return matchesCurrent
 }
 
-func keepRemainingOnlyTarget(matches []UnindexedMatches, entityProcessingPtrParent *match.MatchProcessing) []UnindexedMatches {
+func keepRemainingOnlyTarget(matches []UnindexedMatches, entityProcessingPtrParent *processing.MatchProcessing) []UnindexedMatches {
 	sort.Sort(byTargetIdxUnindexed(matches))
 	remainingTarget := entityProcessingPtrParent.Target.CurrentRemainingMatch
 
@@ -240,7 +240,7 @@ func keepRemainingOnlyTarget(matches []UnindexedMatches, entityProcessingPtrPare
 	return matchesCurrent
 }
 
-func assignTargetIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed *match.MatchProcessing) []UnindexedMatches {
+func assignTargetIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed *processing.MatchProcessing) []UnindexedMatches {
 	sort.Sort(byTargetIdUnindexed(matchesCurrent))
 	rawEntityValuesTarget := *entityProcessingPtrUsed.Target.RawMatchList.GetValues()
 
@@ -249,7 +249,7 @@ func assignTargetIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed 
 
 	for idxMatches < len(matchesCurrent) && idxTarget < len(rawEntityValuesTarget) {
 		entityIdMatch := matchesCurrent[idxMatches].targetId
-		entityIdTarget := rawEntityValuesTarget[idxTarget].(map[string]interface{})["entityId"].(string)
+		entityIdTarget := rawEntityValuesTarget[idxTarget].EntityId
 
 		diff := strings.Compare(entityIdMatch, entityIdTarget)
 
@@ -270,7 +270,7 @@ func assignTargetIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed 
 	return matchesCurrent
 }
 
-func assignSourceIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed *match.MatchProcessing) []UnindexedMatches {
+func assignSourceIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed *processing.MatchProcessing) []UnindexedMatches {
 	sort.Sort(bySourceIdUnindexed(matchesCurrent))
 	rawEntityValuesSource := *entityProcessingPtrUsed.Source.RawMatchList.GetValues()
 
@@ -279,7 +279,7 @@ func assignSourceIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed 
 
 	for idxMatches < len(matchesCurrent) && idxSource < len(rawEntityValuesSource) {
 		entityIdMatch := matchesCurrent[idxMatches].sourceId
-		entityIdSource := rawEntityValuesSource[idxSource].(map[string]interface{})["entityId"].(string)
+		entityIdSource := rawEntityValuesSource[idxSource].EntityId
 
 		diff := strings.Compare(entityIdMatch, entityIdSource)
 
@@ -299,7 +299,7 @@ func assignSourceIds(matchesCurrent []UnindexedMatches, entityProcessingPtrUsed 
 	return matchesCurrent
 }
 
-func keepHierarchyMatches(matchedEntities map[int]int, uniqueMatch []match.CompareResult) map[int]int {
+func keepHierarchyMatches(matchedEntities map[int]int, uniqueMatch []processing.CompareResult) map[int]int {
 	for _, result := range uniqueMatch {
 		_, found := matchedEntities[result.LeftId]
 
@@ -313,20 +313,20 @@ func keepHierarchyMatches(matchedEntities map[int]int, uniqueMatch []match.Compa
 	return matchedEntities
 }
 
-func (i *HierarchyRuleMapGenerator) RunHierarchyRuleAll(entityProcessingPtrChild *match.MatchProcessing, entityProcessingPtrParent *match.MatchProcessing,
+func (i *HierarchyRuleMapGenerator) RunHierarchyRuleAll(entityProcessingPtrChild *processing.MatchProcessing, entityProcessingPtrParent *processing.MatchProcessing,
 	entityMatchesChild MatchOutputType, entityMatchesParent MatchOutputType,
 	childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx,
-	sourceHierarchy rules.HierarchySource) (*match.CompareResultList, *map[int]int, *map[int]int) {
+	sourceHierarchy rules.HierarchySource) (*processing.CompareResultList, *map[int]int, *map[int]int) {
 
 	matchedEntities := map[int]int{}
-	remainingResultsPtr := &match.CompareResultList{}
+	remainingResultsPtr := &processing.CompareResultList{}
 
 	ruleTypes := i.genSortedActiveList()
 
 	multiMatchedBeforeChild, multiMatchedBeforeParent := printHierarchyStatsBefore(entityMatchesChild, sourceHierarchy, entityProcessingPtrChild, entityMatchesParent, entityProcessingPtrParent)
 
 	for _, hierarchyRuleType := range ruleTypes {
-		resultListPtr := match.NewCompareResultList(&hierarchyRuleType)
+		resultListPtr := processing.NewCompareResultList(&hierarchyRuleType)
 		entityProcessingPtrParent.PrepareRemainingMatch(true, hierarchyRuleType.IsSeed, remainingResultsPtr)
 
 		maxMatchValue := 0
@@ -355,7 +355,7 @@ func (i *HierarchyRuleMapGenerator) RunHierarchyRuleAll(entityProcessingPtrChild
 	return remainingResultsPtr, &matchedEntities, &matchEntitiesChild
 }
 
-func printHierarchyStatsAfter(sourceHierarchy rules.HierarchySource, entityProcessingPtrChild *match.MatchProcessing, matchEntitiesChild map[int]int, multiMatchedBeforeChild int, matchedEntities map[int]int, entityProcessingPtrParent *match.MatchProcessing, entityMatchesParent MatchOutputType, multiMatchedBeforeParent int) {
+func printHierarchyStatsAfter(sourceHierarchy rules.HierarchySource, entityProcessingPtrChild *processing.MatchProcessing, matchEntitiesChild map[int]int, multiMatchedBeforeChild int, matchedEntities map[int]int, entityProcessingPtrParent *processing.MatchProcessing, entityMatchesParent MatchOutputType, multiMatchedBeforeParent int) {
 	log.Info("Child: Hierarchy : %s, Type: %s -> Source count %d and Target count %d -> Matched: %d / %d", sourceHierarchy.Name, entityProcessingPtrChild.GetType(),
 		entityProcessingPtrChild.Source.RawMatchList.Len(), entityProcessingPtrChild.Target.RawMatchList.Len(), len(matchEntitiesChild), multiMatchedBeforeChild)
 
@@ -365,7 +365,7 @@ func printHierarchyStatsAfter(sourceHierarchy rules.HierarchySource, entityProce
 		entityProcessingPtrParent.Source.RawMatchList.Len(), entityProcessingPtrParent.Target.RawMatchList.Len(), matchedFromMultiMatchedParent, multiMatchedBeforeParent)
 }
 
-func printHierarchyStatsBefore(entityMatchesChild MatchOutputType, sourceHierarchy rules.HierarchySource, entityProcessingPtrChild *match.MatchProcessing, entityMatchesParent MatchOutputType, entityProcessingPtrParent *match.MatchProcessing) (int, int) {
+func printHierarchyStatsBefore(entityMatchesChild MatchOutputType, sourceHierarchy rules.HierarchySource, entityProcessingPtrChild *processing.MatchProcessing, entityMatchesParent MatchOutputType, entityProcessingPtrParent *processing.MatchProcessing) (int, int) {
 	multiMatchedBeforeChild := entityMatchesChild.calcMultiMatched()
 	log.Info("Child: Hierarchy : %s, Type: %s -> Source count %d and Target count %d, Multi Matched: %d", sourceHierarchy.Name, entityProcessingPtrChild.GetType(),
 		entityProcessingPtrChild.Source.RawMatchList.Len(), entityProcessingPtrChild.Target.RawMatchList.Len(), multiMatchedBeforeChild)
@@ -376,10 +376,10 @@ func printHierarchyStatsBefore(entityMatchesChild MatchOutputType, sourceHierarc
 	return multiMatchedBeforeChild, multiMatchedBeforeParent
 }
 
-func calculateMatchedFromMultiMatched(matchedEntities map[int]int, entityProcessingPtrParent *match.MatchProcessing, entityMatchesParent MatchOutputType) int {
+func calculateMatchedFromMultiMatched(matchedEntities map[int]int, entityProcessingPtrParent *processing.MatchProcessing, entityMatchesParent MatchOutputType) int {
 	matchedFromMultiMatchedParent := 0
 	for sourceIdxParent := range matchedEntities {
-		entityIdSourceParent := (*entityProcessingPtrParent.Source.RawMatchList.GetValues())[sourceIdxParent].(map[string]interface{})["entityId"].(string)
+		entityIdSourceParent := (*entityProcessingPtrParent.Source.RawMatchList.GetValues())[sourceIdxParent].EntityId
 
 		_, found := entityMatchesParent.Matches[entityIdSourceParent]
 
@@ -392,7 +392,7 @@ func calculateMatchedFromMultiMatched(matchedEntities map[int]int, entityProcess
 	return matchedFromMultiMatchedParent
 }
 
-func resolveChildPostProcessFromParents(entityMatchesChild MatchOutputType, entityProcessingPtrChild *match.MatchProcessing,
+func resolveChildPostProcessFromParents(entityMatchesChild MatchOutputType, entityProcessingPtrChild *processing.MatchProcessing,
 	childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx,
 	matchedEntitiesParent map[int]int, matchedEntitiesChild map[int]int) map[int]int {
 
@@ -446,10 +446,10 @@ func resolveChildPostProcessFromParents(entityMatchesChild MatchOutputType, enti
 
 				matchedEntitiesChild[sourceIdx] = targetIdx
 
-				entityIdSource := rawEntityValuesChildSource[sourceIdx].(map[string]interface{})["entityId"].(string)
+				entityIdSource := rawEntityValuesChildSource[sourceIdx].EntityId
 				entityIdKeepSource[entityIdSource] = false
 
-				entityIdTarget := rawEntityValuesChildTarget[targetIdx].(map[string]interface{})["entityId"].(string)
+				entityIdTarget := rawEntityValuesChildTarget[targetIdx].EntityId
 				entityIdKeepTarget[entityIdTarget] = false
 
 			}
@@ -478,7 +478,7 @@ func genReducedList(entityIdKeep map[string]bool) []string {
 	return reducedList
 }
 
-func resolveChildMultiMatchesFromParents(entityMatchesChild MatchOutputType, entityProcessingPtrChild *match.MatchProcessing,
+func resolveChildMultiMatchesFromParents(entityMatchesChild MatchOutputType, entityProcessingPtrChild *processing.MatchProcessing,
 	childIdxToParentIdxSource *ChildIdxToParentIdx, childIdxToParentIdxTarget *ChildIdxToParentIdx,
 	matchedEntities map[int]int) map[int]int {
 
@@ -568,7 +568,7 @@ func getChildsByParent(unindexedIdx []UnindexedMatches, getParentIdxForUnindexed
 	return idxByParentIdx
 }
 
-func postProcessToUnindexedSource(postProcess *PostProcessOutput, entityProcessingPtrChild *match.MatchProcessing) ([]UnindexedMatches, map[string]bool) {
+func postProcessToUnindexedSource(postProcess *PostProcessOutput, entityProcessingPtrChild *processing.MatchProcessing) ([]UnindexedMatches, map[string]bool) {
 	unindexedIdx := []UnindexedMatches{}
 	entityIdKeep := map[string]bool{}
 
@@ -583,7 +583,7 @@ func postProcessToUnindexedSource(postProcess *PostProcessOutput, entityProcessi
 
 	return unindexedIdx, entityIdKeep
 }
-func postProcessToUnindexedTarget(postProcess *PostProcessOutput, entityProcessingPtrChild *match.MatchProcessing) ([]UnindexedMatches, map[string]bool) {
+func postProcessToUnindexedTarget(postProcess *PostProcessOutput, entityProcessingPtrChild *processing.MatchProcessing) ([]UnindexedMatches, map[string]bool) {
 	unindexedIdx := []UnindexedMatches{}
 	entityIdKeep := map[string]bool{}
 

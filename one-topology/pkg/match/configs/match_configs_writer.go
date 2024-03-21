@@ -31,11 +31,12 @@ import (
 	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/configs/tar"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	"github.com/spf13/afero"
 )
 
-func genMultiMatchedMap(matchParameters match.MatchParameters, remainingResultsPtr *match.CompareResultList, configProcessingPtr *match.MatchProcessing, configsTypeInfo configTypeInfo, configIdxToWriteSource *[]bool, prevMatches MatchOutputType) (map[string][]string, MatchStatus, Module, error) {
+func genMultiMatchedMap(matchParameters match.MatchParameters, remainingResultsPtr *processing.CompareResultList, configProcessingPtr *processing.MatchProcessing, configsTypeInfo configTypeInfo, configIdxToWriteSource *[]bool, prevMatches MatchOutputType) (map[string][]string, MatchStatus, Module, error) {
 
 	printMultiMatchedSample(remainingResultsPtr, configProcessingPtr)
 
@@ -48,12 +49,12 @@ func genMultiMatchedMap(matchParameters match.MatchParameters, remainingResultsP
 	multiMatched := map[string][]string{}
 	matchStatus := MatchStatus{
 		Source: MatchStatusEnv{
-			actionStatus: make([]rune, len(*configProcessingPtr.Source.RawMatchList.GetValues())),
-			errorStatus:  make([]rune, len(*configProcessingPtr.Source.RawMatchList.GetValues())),
+			actionStatus: make([]rune, len(*configProcessingPtr.Source.RawMatchList.GetValuesConfig())),
+			errorStatus:  make([]rune, len(*configProcessingPtr.Source.RawMatchList.GetValuesConfig())),
 		},
 		Target: MatchStatusEnv{
-			actionStatus: make([]rune, len(*configProcessingPtr.Target.RawMatchList.GetValues())),
-			errorStatus:  make([]rune, len(*configProcessingPtr.Target.RawMatchList.GetValues())),
+			actionStatus: make([]rune, len(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())),
+			errorStatus:  make([]rune, len(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())),
 		},
 	}
 
@@ -65,7 +66,7 @@ func genMultiMatchedMap(matchParameters match.MatchParameters, remainingResultsP
 	currentSourceId := remainingResultsPtr.CompareResults[0].LeftId
 
 	addMatchingMultiMatched := func(matchCount int) error {
-		configIdSource := (*configProcessingPtr.Source.RawMatchList.GetValues())[currentSourceId].(map[string]interface{})[rules.ConfigIdKey].(string)
+		configIdSource := (*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[currentSourceId].(map[string]interface{})[rules.ConfigIdKey].(string)
 
 		_, foundPrev := prevMatches.Matches[configIdSource]
 		if foundPrev {
@@ -98,7 +99,7 @@ func genMultiMatchedMap(matchParameters match.MatchParameters, remainingResultsP
 				return err
 			}
 
-			multiMatchedMatches[j] = (*configProcessingPtr.Target.RawMatchList.GetValues())[targetId].(map[string]interface{})[rules.ConfigIdKey].(string)
+			multiMatchedMatches[j] = (*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetId].(map[string]interface{})[rules.ConfigIdKey].(string)
 		}
 		matchStatus.Source.actionStatus[currentSourceId] = match.ACTION_UPDATE_RUNE
 		matchStatus.Source.errorStatus[currentSourceId] = match.STATUS_MULTI_MATCH_RUNE
@@ -143,7 +144,7 @@ func skipConfigAction(matchParameters match.MatchParameters, action rune) bool {
 
 }
 
-func addConfigResult(matchParameters match.MatchParameters, configProcessingPtr *match.MatchProcessing, matchEntityMatches *Module, configIdxToWriteSource *[]bool, result ConfigResultParam) error {
+func addConfigResult(matchParameters match.MatchParameters, configProcessingPtr *processing.MatchProcessing, matchEntityMatches *Module, configIdxToWriteSource *[]bool, result ConfigResultParam) error {
 	action := result.action
 	status := result.status
 	sourceId := result.sourceI
@@ -158,7 +159,7 @@ func addConfigResult(matchParameters match.MatchParameters, configProcessingPtr 
 	dataTargetJsonRaw := []byte{}
 
 	if targetId >= 0 {
-		refMap = (*configProcessingPtr.Target.RawMatchList.GetValues())[targetId].(map[string]interface{})
+		refMap = (*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetId].(map[string]interface{})
 		dataTargetJsonRaw, err = json.Marshal(refMap[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey])
 		if err != nil {
 			return err
@@ -168,7 +169,7 @@ func addConfigResult(matchParameters match.MatchParameters, configProcessingPtr 
 	dataSourceJsonRaw := []byte{}
 
 	if sourceId >= 0 {
-		refMap = (*configProcessingPtr.Source.RawMatchList.GetValues())[sourceId].(map[string]interface{})
+		refMap = (*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceId].(map[string]interface{})
 		dataSourceJsonRaw, err = json.Marshal(refMap[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey])
 		if err != nil {
 			return err
@@ -214,7 +215,7 @@ func addConfigResult(matchParameters match.MatchParameters, configProcessingPtr 
 	return nil
 }
 
-func printMultiMatchedSample(remainingResultsPtr *match.CompareResultList, configProcessingPtr *match.MatchProcessing) {
+func printMultiMatchedSample(remainingResultsPtr *processing.CompareResultList, configProcessingPtr *processing.MatchProcessing) {
 	multiMatchedCount := len(remainingResultsPtr.CompareResults)
 
 	if multiMatchedCount <= 0 {
@@ -231,8 +232,8 @@ func printMultiMatchedSample(remainingResultsPtr *match.CompareResultList, confi
 	for i := 0; i < maxPrint; i++ {
 		result := remainingResultsPtr.CompareResults[i]
 		log.Debug("Left: %v, Source: %v, Target: %v", result,
-			(*configProcessingPtr.Source.RawMatchList.GetValues())[result.LeftId],
-			(*configProcessingPtr.Target.RawMatchList.GetValues())[result.RightId])
+			(*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[result.LeftId],
+			(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[result.RightId])
 	}
 
 }
@@ -289,9 +290,9 @@ type ConfigResultParam struct {
 
 const allConfigEntity = "all_configs"
 
-func genOutputPayload(matchParameters match.MatchParameters, configProcessingPtr *match.MatchProcessing, remainingResultsPtr *match.CompareResultList, matchedConfigs *map[int]int, configsTypeInfo configTypeInfo, prevMatches MatchOutputType) (MatchOutputType, Module, []bool, error) {
+func genOutputPayload(matchParameters match.MatchParameters, configProcessingPtr *processing.MatchProcessing, remainingResultsPtr *processing.CompareResultList, matchedConfigs *map[int]int, configsTypeInfo configTypeInfo, prevMatches MatchOutputType) (MatchOutputType, Module, []bool, error) {
 
-	configIdxToWriteSource := make([]bool, len(*configProcessingPtr.Source.RawMatchList.GetValues()))
+	configIdxToWriteSource := make([]bool, len(*configProcessingPtr.Source.RawMatchList.GetValuesConfig()))
 
 	multiMatchedMap, matchStatus, matchEntityMatches, err := genMultiMatchedMap(matchParameters, remainingResultsPtr, configProcessingPtr, configsTypeInfo, &configIdxToWriteSource, prevMatches)
 	if err != nil {
@@ -341,8 +342,8 @@ func genOutputPayload(matchParameters match.MatchParameters, configProcessingPtr
 		matchStatus.Source.actionStatus[sourceI] = actionStatus
 		matchStatus.Target.actionStatus[targetI] = actionStatus
 
-		matchOutput.Matches[(*configProcessingPtr.Source.RawMatchList.GetValues())[sourceI].(map[string]interface{})[rules.ConfigIdKey].(string)] =
-			(*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.ConfigIdKey].(string)
+		matchOutput.Matches[(*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceI].(map[string]interface{})[rules.ConfigIdKey].(string)] =
+			(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.ConfigIdKey].(string)
 	}
 
 	for configSourceIdPrev, configTargetIdPrev := range prevMatches.Matches {
@@ -363,7 +364,7 @@ func genOutputPayload(matchParameters match.MatchParameters, configProcessingPtr
 	}
 
 	for _, sourceI := range *configProcessingPtr.Source.CurrentRemainingMatch {
-		configIdSource := (*configProcessingPtr.Source.RawMatchList.GetValues())[sourceI].(map[string]interface{})[rules.ConfigIdKey].(string)
+		configIdSource := (*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceI].(map[string]interface{})[rules.ConfigIdKey].(string)
 
 		_, foundPrev := prevMatches.Matches[configIdSource]
 		if foundPrev {
@@ -388,7 +389,7 @@ func genOutputPayload(matchParameters match.MatchParameters, configProcessingPtr
 		if err != nil {
 			return MatchOutputType{}, Module{}, nil, err
 		}
-		matchOutput.Exceed[idx] = (*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.ConfigIdKey].(string)
+		matchOutput.Exceed[idx] = (*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.ConfigIdKey].(string)
 
 	}
 
@@ -415,7 +416,7 @@ func (a sortableKeyedSlice) Less(i, j int) bool {
 	return strings.Compare(a[i].key, a[j].key) <= -1
 }
 
-func areConfigsIdentical(configProcessingPtr *match.MatchProcessing, sourceI int, targetI int, configTypeInfo configTypeInfo) (bool, error) {
+func areConfigsIdentical(configProcessingPtr *processing.MatchProcessing, sourceI int, targetI int, configTypeInfo configTypeInfo) (bool, error) {
 
 	sourceReplaced, err := replaceConfigIds(configProcessingPtr, sourceI, targetI, configTypeInfo)
 	if err != nil {
@@ -424,7 +425,7 @@ func areConfigsIdentical(configProcessingPtr *match.MatchProcessing, sourceI int
 
 	areConfigsIdentical := reflect.DeepEqual(
 		sourceReplaced.(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
-		(*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
+		(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
 	)
 
 	if areConfigsIdentical {
@@ -442,7 +443,7 @@ func areConfigsIdentical(configProcessingPtr *match.MatchProcessing, sourceI int
 			continue
 		}
 
-		sliceTargetInterface, ok := (*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey].(map[string]interface{})[key]
+		sliceTargetInterface, ok := (*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey].(map[string]interface{})[key]
 		if !(ok) {
 			break
 		}
@@ -460,11 +461,11 @@ func areConfigsIdentical(configProcessingPtr *match.MatchProcessing, sourceI int
 		orderedSliceTarget, _ := reOrderSlice(sliceTargetInterface, false)
 
 		sourceReplaced.(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey].(map[string]interface{})[key] = orderedSliceSource
-		(*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey].(map[string]interface{})[key] = orderedSliceTarget
+		(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey].(map[string]interface{})[key] = orderedSliceTarget
 
 		areConfigsIdentical = reflect.DeepEqual(
 			sourceReplaced.(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
-			(*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
+			(*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[rules.ValueKey],
 		)
 
 		if areConfigsIdentical {
@@ -616,14 +617,14 @@ func readMatchesPrev(fs afero.Fs, matchParameters match.MatchParameters, configT
 
 }
 
-func writeMatches(fs afero.Fs, configProcessingPtr *match.MatchProcessing, matchParameters match.MatchParameters, configTypeInfo configTypeInfo, configMatches MatchOutputType, configIdxToWriteSource []bool) error {
+func writeMatches(fs afero.Fs, configProcessingPtr *processing.MatchProcessing, matchParameters match.MatchParameters, configTypeInfo configTypeInfo, configMatches MatchOutputType, configIdxToWriteSource []bool) error {
 	sanitizedType := config.Sanitize(configTypeInfo.configTypeString)
 	err := writeJsonMatchFile(fs, matchParameters.OutputDir, "dict", sanitizedType, configMatches)
 	if err != nil {
 		return err
 	}
 
-	err = writeTarFile(fs, matchParameters.OutputDir, false, configTypeInfo, configProcessingPtr.Source.RawMatchList.GetValues(), configIdxToWriteSource)
+	err = writeTarFile(fs, matchParameters.OutputDir, false, configTypeInfo, configProcessingPtr.Source.RawMatchList.GetValuesConfig(), configIdxToWriteSource)
 	if err != nil {
 		return err
 	}

@@ -17,6 +17,7 @@ package match
 import (
 	"sort"
 
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
@@ -173,7 +174,7 @@ func flattenSortIndex(index *IndexMap) []IndexEntry {
 	return flatIndex
 }
 
-func genSortedItemsIndex(indexRule rules.IndexRule, items *MatchProcessingEnv) []IndexEntry {
+func genSortedItemsIndex(indexRule rules.IndexRule, items *processing.MatchProcessingEnv) []IndexEntry {
 
 	index := IndexMap{}
 

@@ -29,6 +29,7 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	"github.com/spf13/afero"
 )
@@ -220,16 +221,16 @@ func replaceDashboardSharing(confInterface *map[string]interface{}, dashboardRep
 
 }
 
-func replaceConfigIds(configProcessingPtr *match.MatchProcessing, sourceI int, targetI int, configTypeInfo configTypeInfo) (interface{}, error) {
+func replaceConfigIds(configProcessingPtr *processing.MatchProcessing, sourceI int, targetI int, configTypeInfo configTypeInfo) (interface{}, error) {
 	configIdLocation, _ := getConfigTypeInfo(configTypeInfo.configType)
 
-	configId := (*configProcessingPtr.Source.RawMatchList.GetValues())[sourceI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[configIdLocation].(string)
+	configId := (*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[configIdLocation].(string)
 	if configId == "" {
 		log.Error("CONFIG ID MISSING!!!")
 	}
-	configIdTarget := (*configProcessingPtr.Target.RawMatchList.GetValues())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[configIdLocation].(string)
+	configIdTarget := (*configProcessingPtr.Target.RawMatchList.GetValuesConfig())[targetI].(map[string]interface{})[rules.DownloadedKey].(map[string]interface{})[configIdLocation].(string)
 
-	bytes, err := json.Marshal((*configProcessingPtr.Source.RawMatchList.GetValues())[sourceI])
+	bytes, err := json.Marshal((*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceI])
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +245,7 @@ func replaceConfigIds(configProcessingPtr *match.MatchProcessing, sourceI int, t
 
 	}
 
-	return (*configProcessingPtr.Source.RawMatchList.GetValues())[sourceI], nil
+	return (*configProcessingPtr.Source.RawMatchList.GetValuesConfig())[sourceI], nil
 }
 
 func replaceConfigs(confPtr *interface{}, configTypeInfo *configTypeInfo) *string {
