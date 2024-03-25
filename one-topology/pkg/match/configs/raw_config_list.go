@@ -26,6 +26,8 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/download/classic"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities"
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
@@ -49,17 +51,23 @@ func (a ByRawConfigId) Less(i, j int) bool {
 
 func (r *RawConfigsList) Sort() {
 
-	sort.Sort(ByRawConfigId(*r.GetValues()))
+	sort.Sort(ByRawConfigId(*r.GetValuesConfig()))
 
 }
 
 func (r *RawConfigsList) Len() int {
 
-	return len(*r.GetValues())
+	return len(*r.GetValuesConfig())
 
 }
 
-func (r *RawConfigsList) GetValues() *[]interface{} {
+func (r *RawConfigsList) GetValues() *[]entitiesValues.Value {
+
+	panic("GetValues can only be called for entities")
+
+}
+
+func (r *RawConfigsList) GetValuesConfig() *[]interface{} {
 
 	return r.Values
 
@@ -74,13 +82,17 @@ func unmarshalConfigs(configPerType []config.Config) (*RawConfigsList, error) {
 		return rawConfigsList, nil
 	}
 
-	content := configPerType[0].Template.Content()
+	templateBytes, err := configPerType[0].LoadTemplateBytes()
+	if err != nil {
+		log.Error("Could not Load Template properly: %v on: \n%v", err)
+		return nil, err
+	}
 
-	if content == "" {
+	if len(templateBytes) == 0 {
 		return rawConfigsList, nil
 	}
 
-	err := json.Unmarshal([]byte(content), rawConfigsList.Values)
+	err = json.Unmarshal(templateBytes, rawConfigsList.Values)
 	if err != nil {
 		log.Error("Could not Unmarshal properly: %v on: \n%v", err, rawConfigsList.Values)
 		return nil, err
@@ -255,7 +267,7 @@ func getConfigTypeInfo(configType config.Type) (string, bool) {
 
 func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters,
 	configPerTypeSource project.ConfigsPerType, configPerTypeTarget project.ConfigsPerType, configsType string,
-	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*match.MatchProcessing, error) {
+	entityMatches entities.MatchOutputPerType, replacements map[string]map[string]string) (*processing.MatchProcessing, error) {
 
 	startTime := time.Now()
 	log.Debug("Enhancing %s", configsType)
@@ -299,5 +311,5 @@ func genConfigProcessing(fs afero.Fs, matchParameters match.MatchParameters,
 
 	log.Debug("Enhanced %s in %v", configsType, time.Since(startTime))
 
-	return match.NewMatchProcessing(rawConfigsSource, sourceType, rawConfigsTarget, targetType), nil
+	return processing.NewMatchProcessing(rawConfigsSource, sourceType, rawConfigsTarget, targetType), nil
 }

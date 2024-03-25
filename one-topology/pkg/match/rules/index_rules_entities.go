@@ -14,6 +14,10 @@
 
 package rules
 
+import (
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+)
+
 var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 	RuleTypes: []IndexRuleType{
 		{
@@ -21,38 +25,74 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 			WeightValue: 100,
 			Rules: []IndexRule{
 				{
-					Name:              "Detected Name",
-					Path:              []string{"properties", "detectedName"},
+					Name: "Detected Name",
+					Path: []string{"properties", "detectedName"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return &value.Properties.DetectedName
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "One Agent Custom Host Name",
-					Path:              []string{"properties", "oneAgentCustomHostName"},
+					Name: "One Agent Custom Host Name",
+					Path: []string{"properties", "oneAgentCustomHostName"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return value.Properties.OneAgentCustomHostName
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "Geolocation Code",
-					Path:              []string{"properties", "geolocationCode"},
+					Name: "Geolocation Code",
+					Path: []string{"properties", "geolocationCode"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return value.Properties.GeolocationCode
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "Geolocation Type",
-					Path:              []string{"properties", "geolocationType"},
+					Name: "Geolocation Type",
+					Path: []string{"properties", "geolocationType"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return value.Properties.GeolocationType
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "Web Service Name",
-					Path:              []string{"properties", "webServiceName"},
+					Name: "Web Service Name",
+					Path: []string{"properties", "webServiceName"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return value.Properties.WebServiceName
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "Web Service Namespace",
-					Path:              []string{"properties", "webServiceNamespace"},
+					Name: "Web Service Namespace",
+					Path: []string{"properties", "webServiceNamespace"},
+					Getter: func(value entitiesValues.Value) *string {
+						if value.Properties != nil {
+							return value.Properties.WebServiceNamespace
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
@@ -65,12 +105,14 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 				{
 					Name:              "Entity Id",
 					Path:              []string{"entityId"},
+					Getter:            func(value entitiesValues.Value) *string { return &value.EntityId },
 					WeightValue:       1,
 					SelfMatchDisabled: true,
 				},
 				{
 					Name:              "Display Name",
 					Path:              []string{"displayName"},
+					Getter:            func(value entitiesValues.Value) *string { return value.DisplayName },
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
@@ -84,14 +126,26 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 			WeightValue: 50,
 			Rules: []IndexRule{
 				{
-					Name:              "Ip Addresses List",
-					Path:              []string{"properties", "ipAddress"},
+					Name: "Ip Addresses List",
+					Path: []string{"properties", "ipAddress"},
+					GetterList: func(value entitiesValues.Value) *[]string {
+						if value.Properties != nil {
+							return value.Properties.IpAddress
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
 				{
-					Name:              "Internal Ip Addresses List",
-					Path:              []string{"properties", "internalIpAddresses"},
+					Name: "Internal Ip Addresses List",
+					Path: []string{"properties", "internalIpAddresses"},
+					GetterList: func(value entitiesValues.Value) *[]string {
+						if value.Properties != nil {
+							return value.Properties.InternalIpAddresses
+						}
+						return nil
+					},
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
@@ -104,11 +158,13 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 				{
 					Name: "Executable Path",
 					Path: []string{"properties", "metadata"},
-					ListItemKey: ListItemKey{
-						KeyKey:   "key",
-						KeyValue: "EXE_PATH",
-						ValueKey: "value",
+					GetterMetadata: func(value entitiesValues.Value) *[]entitiesValues.Metadata {
+						if value.Properties != nil {
+							return value.Properties.Metadata
+						}
+						return nil
 					},
+					ListItemKey:       "EXE_PATH",
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},
@@ -121,11 +177,13 @@ var INDEX_CONFIG_LIST_ENTITIES = IndexRuleTypeList{
 				{
 					Name: "K8s Pod UID",
 					Path: []string{"properties", "metadata"},
-					ListItemKey: ListItemKey{
-						KeyKey:   "key",
-						KeyValue: "KUBERNETES_POD_UID",
-						ValueKey: "value",
+					GetterMetadata: func(value entitiesValues.Value) *[]entitiesValues.Metadata {
+						if value.Properties != nil {
+							return value.Properties.Metadata
+						}
+						return nil
 					},
+					ListItemKey:       "KUBERNETES_POD_UID",
 					WeightValue:       1,
 					SelfMatchDisabled: false,
 				},

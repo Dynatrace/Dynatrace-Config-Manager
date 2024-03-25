@@ -14,6 +14,10 @@
 
 package rules
 
+import (
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+)
+
 type HierarchySourceList struct {
 	Sources []HierarchySource
 }
@@ -22,6 +26,7 @@ type HierarchySource struct {
 	Name     string
 	Priority int
 	Path     []string
+	Getter   func(entitiesValues.Value) *[]entitiesValues.Relation
 }
 
 type ByPriorityHierarchySource []HierarchySource

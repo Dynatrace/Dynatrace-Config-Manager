@@ -14,6 +14,10 @@
 
 package rules
 
+import (
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+)
+
 type IndexRuleTypeList struct {
 	RuleTypes []IndexRuleType
 }
@@ -29,16 +33,13 @@ type IndexRuleType struct {
 type IndexRule struct {
 	Name              string
 	Path              []string
-	ListItemKey       ListItemKey
+	Getter            func(entitiesValues.Value) *string
+	GetterList        func(entitiesValues.Value) *[]string
+	GetterMetadata    func(entitiesValues.Value) *[]entitiesValues.Metadata
+	ListItemKey       string
 	WeightValue       int
 	SelfMatchDisabled bool
 	SpecificType      []string
-}
-
-type ListItemKey struct {
-	KeyKey   string
-	KeyValue string
-	ValueKey string
 }
 
 func (me *IndexRuleTypeList) GetPaths() [][]string {

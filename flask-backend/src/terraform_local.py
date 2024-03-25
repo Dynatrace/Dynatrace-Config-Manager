@@ -55,7 +55,6 @@ def write_UI_payloads_plan_all(tenant_key_main, tenant_key_target, log_dict):
     config_target = credentials.get_api_call_credentials(tenant_key_target)
 
     path = get_path_overall_diff(config_main, config_target)
-    terraform_cli.delete_old_dir(path, label="overall")
 
     write_per_resource_output(log_dict, path)
 
@@ -66,6 +65,13 @@ def write_UI_payloads_plan_all(tenant_key_main, tenant_key_target, log_dict):
     write_ui_payload(path, ui_payload)
 
     return ui_payload
+
+def delete_overall_dir(tenant_key_main, tenant_key_target):
+    config_main = credentials.get_api_call_credentials(tenant_key_main)
+    config_target = credentials.get_api_call_credentials(tenant_key_target)
+    
+    path = get_path_overall_diff(config_main, config_target)
+    terraform_cli.delete_old_dir(path, label="overall")
 
 
 def write_UI_payloads_apply(tenant_key_main, tenant_key_target, log_dict):

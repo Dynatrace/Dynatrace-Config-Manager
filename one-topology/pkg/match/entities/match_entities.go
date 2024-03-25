@@ -16,10 +16,12 @@ package entities
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
 )
@@ -31,13 +33,14 @@ func MatchEntities(fs afero.Fs, matchParameters match.MatchParameters, entityPer
 
 	for entitiesType := range entityPerTypeTarget {
 
+		runtime.GC()
 		log.Debug("Processing Type: %s", entitiesType)
 
 		if entitiesType == client.TypesAsEntitiesType {
 			continue
 		}
 
-		entityProcessingPtr, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entitiesType)
+		entityProcessingPtr, err := processing.GenEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entitiesType, false)
 		if err != nil {
 			return map[string]string{}, 0, 0, err
 		}
@@ -61,7 +64,7 @@ func MatchEntities(fs afero.Fs, matchParameters match.MatchParameters, entityPer
 	return stats, entitiesSourceCount, entitiesTargetCount, nil
 }
 
-func setStats(stats map[string]string, entitiesType string, output MatchOutputType, entityProcessingPtr *match.MatchProcessing) map[string]string {
+func setStats(stats map[string]string, entitiesType string, output MatchOutputType, entityProcessingPtr *processing.MatchProcessing) map[string]string {
 	stats[entitiesType] = fmt.Sprintf("%65s %10d %12d %10d %10d %10d", entitiesType, len(output.Matches), output.calcMultiMatched(), len(output.UnMatched), entityProcessingPtr.Target.RawMatchList.Len(), entityProcessingPtr.Source.RawMatchList.Len())
 	return stats
 }

@@ -15,9 +15,11 @@
 package match
 
 import (
+	"runtime"
 	"sort"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
@@ -76,7 +78,7 @@ func (i *IndexRuleMapGenerator) genSortedActiveList() []rules.IndexRuleType {
 	return activeList
 }
 
-func runIndexRule(indexRule rules.IndexRule, indexRuleType rules.IndexRuleType, entityProcessingPtr *MatchProcessing, resultListPtr *CompareResultList) bool {
+func runIndexRule(indexRule rules.IndexRule, indexRuleType rules.IndexRuleType, entityProcessingPtr *processing.MatchProcessing, resultListPtr *processing.CompareResultList) bool {
 
 	countsTowardsMax := false
 
@@ -94,7 +96,7 @@ func runIndexRule(indexRule rules.IndexRule, indexRuleType rules.IndexRuleType, 
 	return countsTowardsMax
 }
 
-func keepMatches(matchedEntities map[int]int, uniqueMatch []CompareResult) map[int]int {
+func keepMatches(matchedEntities map[int]int, uniqueMatch []processing.CompareResult) map[int]int {
 	for _, result := range uniqueMatch {
 		_, found := matchedEntities[result.LeftId]
 
@@ -108,19 +110,19 @@ func keepMatches(matchedEntities map[int]int, uniqueMatch []CompareResult) map[i
 	return matchedEntities
 }
 
-func (i *IndexRuleMapGenerator) RunIndexRuleAll(matchProcessingPtr *MatchProcessing) (*CompareResultList, *map[int]int) {
+func (i *IndexRuleMapGenerator) RunIndexRuleAll(matchProcessingPtr *processing.MatchProcessing) (*processing.CompareResultList, *map[int]int) {
 	matchedEntities := map[int]int{}
-	remainingResultsPtr := &CompareResultList{}
+	remainingResultsPtr := &processing.CompareResultList{}
 
 	ruleTypes := i.genSortedActiveList()
 
 	log.Info("Type: %s -> source count %d and target count %d", matchProcessingPtr.GetType(),
 		matchProcessingPtr.Source.RawMatchList.Len(), matchProcessingPtr.Target.RawMatchList.Len())
 
-	allPostProcessLists := []PostProcess{}
+	allPostProcessLists := []processing.PostProcess{}
 
 	for _, indexRuleType := range ruleTypes {
-		resultListPtr := NewCompareResultList(&indexRuleType)
+		resultListPtr := processing.NewCompareResultList(&indexRuleType)
 		matchProcessingPtr.PrepareRemainingMatch(true, indexRuleType.IsSeed, remainingResultsPtr)
 
 		maxMatchValue := 0
@@ -141,13 +143,14 @@ func (i *IndexRuleMapGenerator) RunIndexRuleAll(matchProcessingPtr *MatchProcess
 		matchedEntities = keepMatches(matchedEntities, uniqueMatchEntities)
 
 		allPostProcessLists = append(allPostProcessLists, resultListPtr.PostProcessList...)
+		runtime.GC()
 	}
 
 	remainingResultsPtr.PostProcessList = allPostProcessLists
 
 	log.Info("Type: %s -> source count %d and target count %d -> Matched: %d",
-		matchProcessingPtr.GetType(), len(*matchProcessingPtr.Source.RawMatchList.GetValues()),
-		len(*matchProcessingPtr.Target.RawMatchList.GetValues()), len(matchedEntities))
+		matchProcessingPtr.GetType(), matchProcessingPtr.Source.RawMatchList.Len(),
+		matchProcessingPtr.Target.RawMatchList.Len(), len(matchedEntities))
 
 	return remainingResultsPtr, &matchedEntities
 }

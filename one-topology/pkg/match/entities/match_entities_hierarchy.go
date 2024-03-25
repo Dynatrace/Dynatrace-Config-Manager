@@ -24,6 +24,7 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
 	v2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 	project "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/project/v2"
 	"github.com/spf13/afero"
@@ -88,14 +89,19 @@ func MatchEntitiesHierarchy(fs afero.Fs, matchParameters match.MatchParameters, 
 
 				log.Info("Processing Hierarchy: Type: %s, Child: %s, Parent: %s", sourceHierarchy.Name, entityTypeChild, entityTypeParent)
 
-				entityProcessingPtrChild, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeChild)
+				entityProcessingPtrChild, err := processing.GenEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeChild, true)
 				if err != nil {
 					return stats, err
 				}
 
-				entityProcessingPtrParent, err := genEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeParent)
-				if err != nil {
-					return stats, err
+				var entityProcessingPtrParent *processing.MatchProcessing
+				if entityTypeChild == entityTypeParent {
+					entityProcessingPtrParent = entityProcessingPtrChild
+				} else {
+					entityProcessingPtrParent, err = processing.GenEntityProcessing(entityPerTypeSource, entityPerTypeTarget, entityTypeParent, true)
+					if err != nil {
+						return stats, err
+					}
 				}
 
 				childIdxToParentIdxSource := genChildIdxToParentIdx(&entityProcessingPtrChild.Source, &entityProcessingPtrParent.Source, sourceHierarchy)
@@ -118,43 +124,24 @@ func MatchEntitiesHierarchy(fs afero.Fs, matchParameters match.MatchParameters, 
 	return stats, nil
 }
 
-func genChildIdxToParentIdx(entityProcessingEnvPtrChild *match.MatchProcessingEnv, entityProcessingEnvPtrParent *match.MatchProcessingEnv, sourceHierarchy rules.HierarchySource) ChildIdxToParentIdx {
+func genChildIdxToParentIdx(entityProcessingEnvPtrChild *processing.MatchProcessingEnv, entityProcessingEnvPtrParent *processing.MatchProcessingEnv, sourceHierarchy rules.HierarchySource) ChildIdxToParentIdx {
 	matchListChild := *entityProcessingEnvPtrChild.RawMatchList.GetValues()
 	childIdxToParentId := make([]ChildIdxParentId, 0, len(matchListChild))
 
 	for idxChild, child := range matchListChild {
-		parentIdList := match.GetValueFromPath(child, sourceHierarchy.Path)
+		parentRelationList := sourceHierarchy.Getter(child)
 
-		if parentIdList == nil {
+		if parentRelationList == nil {
 			continue
 		}
 
-		stringValue, isString := parentIdList.(string)
-
-		parentId := ""
-
-		if isString {
-			parentId = stringValue
-		} else {
-			sliceValue := parentIdList.([]interface{})
-
-			for _, uniqueValue := range sliceValue {
-				mapValue, isMap := uniqueValue.(map[string]interface{})
-				if isMap {
-					parentIdInterface, foundId := mapValue["id"]
-					if foundId {
-						parentId = parentIdInterface.(string)
-						continue
-					}
-				}
+		for _, parentRelation := range *parentRelationList {
+			if parentRelation.Id != "" {
+				childIdxToParentId = append(childIdxToParentId, ChildIdxParentId{
+					childIdx: idxChild,
+					parentId: parentRelation.Id,
+				})
 			}
-		}
-
-		if parentId != "" {
-			childIdxToParentId = append(childIdxToParentId, ChildIdxParentId{
-				childIdx: idxChild,
-				parentId: parentId,
-			})
 		}
 
 	}
@@ -174,8 +161,7 @@ func genChildIdxToParentIdx(entityProcessingEnvPtrChild *match.MatchProcessingEn
 	for idxChildParent < len(childIdxToParentId) && idxParent < len(matchListParent) {
 
 		entityIdChildParent := childIdxToParentId[idxChildParent].parentId
-		entityIdParent := matchListParent[idxParent].(map[string]interface{})["entityId"].(string)
-
+		entityIdParent := matchListParent[idxParent].EntityId
 		diff := strings.Compare(entityIdChildParent, entityIdParent)
 
 		if diff < 0 {
@@ -211,7 +197,14 @@ func getEntitiesTypesTargetCached(typesAsJsonStrings []v2.Config) ([]client.Enti
 	entitiesTypes := []client.EntitiesType{}
 
 	if len(typesAsJsonStrings) > 0 {
-		err := json.Unmarshal([]byte(typesAsJsonStrings[0].Template.Content()), &entitiesTypes)
+
+		templateBytes, err := typesAsJsonStrings[0].LoadTemplateBytes()
+		if err != nil {
+			log.Error("Could not Load Template properly: %v", err)
+			return nil, err
+		}
+
+		err = json.Unmarshal(templateBytes, &entitiesTypes)
 
 		if err != nil {
 			return nil, err

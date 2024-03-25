@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package match
+package processing
 
 import (
 	"sort"
@@ -64,7 +64,7 @@ func (i *CompareResultList) AddResult(entityIdSource int, entityIdTarget int, We
 	i.CompareResults = append(i.CompareResults, CompareResult{entityIdSource, entityIdTarget, WeightValue})
 }
 
-func (i *CompareResultList) addPostProcess(ruleType rules.RuleType, rule rules.Rule, leftList []int, rightList []int, indexValue string) {
+func (i *CompareResultList) AddPostProcess(ruleType rules.RuleType, rule rules.Rule, leftList []int, rightList []int, indexValue string) {
 
 	postProcess := PostProcess{
 		RuleType:   ruleType,

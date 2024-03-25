@@ -17,10 +17,11 @@ package match
 import (
 	"strings"
 
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
-func compareIndexes(resultListPtr *CompareResultList, indexSource []IndexEntry, indexTarget []IndexEntry, indexRule rules.IndexRule, indexRuleType rules.IndexRuleType) bool {
+func compareIndexes(resultListPtr *processing.CompareResultList, indexSource []IndexEntry, indexTarget []IndexEntry, indexRule rules.IndexRule, indexRuleType rules.IndexRuleType) bool {
 
 	needsPostProcessing := false
 	srcI := 0
@@ -42,7 +43,7 @@ func compareIndexes(resultListPtr *CompareResultList, indexSource []IndexEntry, 
 		totalMatches := len(indexSource[srcI].matchedIds) * len(indexTarget[tgtI].matchedIds)
 		if totalMatches > 1000 {
 			needsPostProcessing = true
-			(*resultListPtr).addPostProcess(&indexRuleType, &indexRule, indexSource[srcI].matchedIds, indexTarget[tgtI].matchedIds, indexSource[srcI].indexValue)
+			(*resultListPtr).AddPostProcess(&indexRuleType, &indexRule, indexSource[srcI].matchedIds, indexTarget[tgtI].matchedIds, indexSource[srcI].indexValue)
 			srcI++
 			continue
 		}

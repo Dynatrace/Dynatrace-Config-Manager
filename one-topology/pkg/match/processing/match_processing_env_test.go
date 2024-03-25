@@ -14,7 +14,7 @@
 
 //go:build unit
 
-package match
+package processing
 
 import (
 	"reflect"

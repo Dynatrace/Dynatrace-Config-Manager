@@ -17,10 +17,11 @@ package entities
 import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
 
-func runRules(entityProcessingPtr *match.MatchProcessing, matchParameters match.MatchParameters, prevMatches MatchOutputType) MatchOutputType {
+func runRules(entityProcessingPtr *processing.MatchProcessing, matchParameters match.MatchParameters, prevMatches MatchOutputType) MatchOutputType {
 
 	ruleMapGenerator := match.NewIndexRuleMapGenerator(matchParameters.SelfMatch, rules.INDEX_CONFIG_LIST_ENTITIES)
 

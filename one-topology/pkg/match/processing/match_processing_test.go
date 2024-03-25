@@ -14,12 +14,13 @@
 
 //go:build unit
 
-package match
+package processing
 
 import (
-	"gotest.tools/assert"
 	"reflect"
 	"testing"
+
+	"gotest.tools/assert"
 
 	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 )
