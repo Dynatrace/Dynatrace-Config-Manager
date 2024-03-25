@@ -15,14 +15,84 @@
 package values
 
 import (
-	"encoding/json"
 	"runtime"
-	"time"
+	"sort"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	config "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/mailru/easyjson"
 )
+
+type RawEntityList struct {
+	Values *[]Value `json:"valueList"`
+}
+
+func (r *RawEntityList) Sort() {
+
+	sort.Sort(ByRawEntityId(*r.Values))
+
+}
+
+func (r *RawEntityList) Len() int {
+
+	return len(*r.GetValues())
+
+}
+
+func (r *RawEntityList) GetValues() *[]Value {
+
+	return r.Values
+
+}
+
+func (r *RawEntityList) GetValuesConfig() *[]interface{} {
+
+	panic("GetValues can only be called for configs")
+
+}
+
+type Value struct {
+	EntityId         string             `json:"entityId,intern"`
+	FirstSeenTms     *float64           `json:"firstSeenTms"`
+	DisplayName      *string            `json:"displayName,intern"`
+	Properties       *properties        `json:"properties"`
+	FromRelationship *fromRelationships `json:"fromRelationships"`
+}
+
+type properties struct {
+	DetectedName           string      `json:"detectedName,intern"`
+	OneAgentCustomHostName *string     `json:"oneAgentCustomHostName,intern"`
+	GeolocationCode        *string     `json:"geolocationCode,intern"`
+	GeolocationType        *string     `json:"geolocationType,intern"`
+	WebServiceName         *string     `json:"webServiceName,intern"`
+	WebServiceNamespace    *string     `json:"webServiceNamespace,intern"`
+	IpAddress              *[]string   `json:"ipAddress,intern"`
+	InternalIpAddresses    *[]string   `json:"internalIpAddresses,intern"`
+	Metadata               *[]Metadata `json:"metadata"`
+}
+
+type Metadata struct {
+	Key   string `json:"key,intern"`
+	Value string `json:"value,intern"`
+}
+
+type fromRelationships struct {
+	RunsOnHost                   *[]Relation `json:"runsOnHost"`
+	IsProcessOf                  *[]Relation `json:"isProcessOf"`
+	RunsOn                       *[]Relation `json:"runsOn"`
+	IsInstanceOf                 *[]Relation `json:"isInstanceOf"`
+	IsCgiOfHost                  *[]Relation `json:"isCgiOfHost"`
+	IsDiskOf                     *[]Relation `json:"isDiskOf"`
+	IsStepOf                     *[]Relation `json:"isStepOf"`
+	IsApplicationOfSyntheticTest *[]Relation `json:"isApplicationOfSyntheticTest"`
+	IsGroupOf                    *[]Relation `json:"isGroupOf"`
+	IsApplicationMethodOfGroup   *[]Relation `json:"isApplicationMethodOfGroup"`
+	IsChildOf                    *[]Relation `json:"isChildOf"`
+}
+
+type Relation struct {
+	Id string `json:"id,intern"`
+}
 
 // ByRawEntityId implements sort.Interface for []RawEntity] based on
 // the EntityId string field.
@@ -41,27 +111,30 @@ func UnmarshalEntities(entityPerType []config.Config, isHierarchy bool) (*RawEnt
 	var err error = nil
 
 	if len(entityPerType) > 0 {
-		startTime := time.Now()
 
-		PrintMemUsage("Before")
-		err = json.Unmarshal([]byte(entityPerType[0].Template.Content()), rawEntityList.Values)
-		log.Info("Unmarshal original in: %v", time.Since(startTime))
-		startTime = time.Now()
+		prefix := []byte("{\"valueList\": ")
+		suffix := []byte("}")
+		templateBytes, err := entityPerType[0].LoadPaddedTemplateBytes(prefix, suffix)
+		if err != nil {
+			log.Error("Could not Load Template properly: %v", err)
+			return nil, err
+		}
 
-		PrintMemUsage("After Original")
-		err2 := easyjson.Unmarshal([]byte("{\"valueList\": "+entityPerType[0].Template.Content()+"}"), rawEntityList)
-		log.Info("Unmarshal new in: %v", time.Since(startTime))
-		log.Info("AAAAA: ", err2, (*rawEntityList.Values)[0])
-		PrintMemUsage("After New")
+		err = easyjson.Unmarshal(templateBytes, rawEntityList)
+		if err != nil {
+			log.Error("Could not Unmarshal properly: %v", err)
+			return nil, err
+		}
+
+		runtime.GC()
 	}
 
 	return rawEntityList, err
 }
 
 func PrintMemUsage(label string) {
-	var m runtime.MemStats
 	runtime.GC()
-	time.Sleep(1)
+	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	log.Info("%s - Alloc = %v MiB, TotalAlloc = %v MiB, Sys = %v MiB, tNumGC = %v\n", label, m.Alloc/1024/1024, m.TotalAlloc/1024/1024, m.Sys/1024/1024, m.NumGC)
+	log.Info("%s - Alloc = %v MiB, TotalAlloc = %v MiB, Sys = %v MiB, tNumGC = %v", label, m.Alloc/1024/1024, m.TotalAlloc/1024/1024, m.Sys/1024/1024, m.NumGC)
 }

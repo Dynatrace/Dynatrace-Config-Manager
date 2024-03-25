@@ -17,6 +17,8 @@ package match
 import (
 	"sort"
 
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
+	v2 "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/processing"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/rules"
 )
@@ -102,60 +104,6 @@ func GetValueFromPath(item interface{}, path []string) interface{} {
 	}
 }
 
-func GetValueFromList(listItemKey rules.ListItemKey, value interface{}) interface{} {
-
-	if value == nil {
-		return nil
-	}
-
-	sliceValue, isSlice := value.([]interface{})
-
-	if isSlice {
-		// pass
-	} else {
-		return nil
-	}
-
-	values := []string{}
-
-	for _, item := range sliceValue {
-		itemMap, isMap := item.(map[string]interface{})
-
-		if isMap {
-			// pass
-		} else {
-			return nil
-		}
-
-		keyValue, keyFound := itemMap[listItemKey.KeyKey]
-
-		if keyFound {
-			// pass
-		} else {
-			return nil
-		}
-
-		if keyValue.(string) == listItemKey.KeyValue {
-			valueValue, valueFound := itemMap[listItemKey.ValueKey]
-
-			if valueFound {
-				values = append(values, valueValue.(string))
-			} else {
-				return nil
-			}
-
-		}
-
-	}
-
-	if len(values) == 0 {
-		return nil
-	}
-
-	return values
-
-}
-
 func flattenSortIndex(index *IndexMap) []IndexEntry {
 
 	flatIndex := make([]IndexEntry, len(*index))
@@ -180,12 +128,14 @@ func genSortedItemsIndex(indexRule rules.IndexRule, items *processing.MatchProce
 
 	for _, itemIdx := range *(items.CurrentRemainingMatch) {
 
-		value := GetValueFromPath((*items.RawMatchList.GetValues())[itemIdx], indexRule.Path)
-		if (indexRule.ListItemKey != rules.ListItemKey{} && indexRule.ListItemKey.KeyKey != "") {
-			value = GetValueFromList(indexRule.ListItemKey, value)
-		}
-		if value != nil {
-			addValueToIndex(&index, value, itemIdx)
+		if items.ConfigType.ID() == v2.EntityTypeId {
+			processEntityRule(indexRule, items, itemIdx, index)
+
+		} else {
+			value := GetValueFromPath((*items.RawMatchList.GetValuesConfig())[itemIdx], indexRule.Path)
+			if value != nil {
+				addValueToIndex(&index, value, itemIdx)
+			}
 		}
 
 	}
@@ -193,4 +143,32 @@ func genSortedItemsIndex(indexRule rules.IndexRule, items *processing.MatchProce
 	flatSortedIndex := flattenSortIndex(&index)
 
 	return flatSortedIndex
+}
+
+func processEntityRule(indexRule rules.IndexRule, items *processing.MatchProcessingEnv, itemIdx int, index IndexMap) {
+	if indexRule.Getter != nil {
+		item := indexRule.Getter((*items.RawMatchList.GetValues())[itemIdx])
+		if item != nil {
+			addUniqueValueToIndex(&index, *item, itemIdx)
+		}
+	} else if indexRule.GetterList != nil {
+		itemList := indexRule.GetterList((*items.RawMatchList.GetValues())[itemIdx])
+		if itemList != nil {
+			for _, item := range *itemList {
+				addUniqueValueToIndex(&index, item, itemIdx)
+			}
+		}
+	} else if indexRule.GetterMetadata != nil {
+		metadataList := indexRule.GetterMetadata((*items.RawMatchList.GetValues())[itemIdx])
+		if metadataList != nil {
+			for _, metadata := range *metadataList {
+				if metadata.Key == indexRule.ListItemKey {
+					addUniqueValueToIndex(&index, metadata.Value, itemIdx)
+				}
+			}
+		}
+	} else {
+		log.Error("IndexRule is missing Getter: %s", indexRule.Name)
+		panic("indexrules must have defined getters")
+	}
 }

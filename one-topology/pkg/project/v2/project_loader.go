@@ -236,11 +236,12 @@ func loadConfigsOfProject(fs afero.Fs, context ProjectLoaderContext, projectDefi
 		}
 
 		loaded, errs := config.LoadConfigs(fs, &config.LoaderContext{
-			ProjectId:       projectDefinition.Name,
-			Path:            path,
-			Environments:    environments,
-			KnownApis:       context.KnownApis,
-			ParametersSerDe: context.ParametersSerde,
+			ProjectId:         projectDefinition.Name,
+			Path:              path,
+			Environments:      environments,
+			KnownApis:         context.KnownApis,
+			ParametersSerDe:   context.ParametersSerde,
+			ProjectWorkingDir: context.WorkingDir,
 		})
 
 		if errs != nil {

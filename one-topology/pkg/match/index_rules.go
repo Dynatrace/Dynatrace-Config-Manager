@@ -15,6 +15,7 @@
 package match
 
 import (
+	"runtime"
 	"sort"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
@@ -142,6 +143,7 @@ func (i *IndexRuleMapGenerator) RunIndexRuleAll(matchProcessingPtr *processing.M
 		matchedEntities = keepMatches(matchedEntities, uniqueMatchEntities)
 
 		allPostProcessLists = append(allPostProcessLists, resultListPtr.PostProcessList...)
+		runtime.GC()
 	}
 
 	remainingResultsPtr.PostProcessList = allPostProcessLists

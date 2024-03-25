@@ -16,8 +16,9 @@ package template
 
 import (
 	"fmt"
-	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"path/filepath"
+
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 
 	"github.com/spf13/afero"
 )

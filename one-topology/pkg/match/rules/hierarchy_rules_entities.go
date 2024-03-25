@@ -14,7 +14,11 @@
 
 package rules
 
-import "sort"
+import (
+	"sort"
+
+	entitiesValues "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/match/entities/values"
+)
 
 var MATCHES_TYPE = "Matches"
 var MULTI_MATCHED_TYPE = "MultiMatched"
@@ -33,56 +37,122 @@ var HIERARCHY_SOURCE_LIST_ENTITIES = HierarchySourceList{
 			Name:     "Runs on Host",
 			Priority: 100,
 			Path:     []string{"fromRelationships", "runsOnHost"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.RunsOnHost
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is Process Of",
 			Priority: 90,
 			Path:     []string{"fromRelationships", "isProcessOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsProcessOf
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Runs on",
 			Priority: 80,
 			Path:     []string{"fromRelationships", "runsOn"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.RunsOn
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is instance of",
 			Priority: 70,
 			Path:     []string{"fromRelationships", "isInstanceOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsInstanceOf
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is container group instance of host",
 			Priority: 60,
 			Path:     []string{"fromRelationships", "isCgiOfHost"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsCgiOfHost
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is disk of",
 			Priority: 60,
 			Path:     []string{"fromRelationships", "isDiskOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsDiskOf
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Step of",
 			Priority: 60,
 			Path:     []string{"fromRelationships", "isStepOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsStepOf
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Application of synthetic test",
 			Priority: 60,
 			Path:     []string{"fromRelationships", "isApplicationOfSyntheticTest"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsApplicationOfSyntheticTest
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is Group Of",
 			Priority: 50,
 			Path:     []string{"fromRelationships", "isGroupOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsGroupOf
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is Application Method Group Of",
 			Priority: 40,
 			Path:     []string{"fromRelationships", "isApplicationMethodOfGroup"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsApplicationMethodOfGroup
+				}
+				return nil
+			},
 		},
 		{
 			Name:     "Is Child Of",
 			Priority: 30,
 			Path:     []string{"fromRelationships", "isChildOf"},
+			Getter: func(value entitiesValues.Value) *[]entitiesValues.Relation {
+				if value.FromRelationship != nil {
+					return value.FromRelationship.IsChildOf
+				}
+				return nil
+			},
 		},
 	},
 }

@@ -129,38 +129,19 @@ func genChildIdxToParentIdx(entityProcessingEnvPtrChild *processing.MatchProcess
 	childIdxToParentId := make([]ChildIdxParentId, 0, len(matchListChild))
 
 	for idxChild, child := range matchListChild {
-		parentIdList := match.GetValueFromPath(child, sourceHierarchy.Path)
+		parentRelationList := sourceHierarchy.Getter(child)
 
-		if parentIdList == nil {
+		if parentRelationList == nil {
 			continue
 		}
 
-		stringValue, isString := parentIdList.(string)
-
-		parentId := ""
-
-		if isString {
-			parentId = stringValue
-		} else {
-			sliceValue := parentIdList.([]interface{})
-
-			for _, uniqueValue := range sliceValue {
-				mapValue, isMap := uniqueValue.(map[string]interface{})
-				if isMap {
-					parentIdInterface, foundId := mapValue["id"]
-					if foundId {
-						parentId = parentIdInterface.(string)
-						continue
-					}
-				}
+		for _, parentRelation := range *parentRelationList {
+			if parentRelation.Id != "" {
+				childIdxToParentId = append(childIdxToParentId, ChildIdxParentId{
+					childIdx: idxChild,
+					parentId: parentRelation.Id,
+				})
 			}
-		}
-
-		if parentId != "" {
-			childIdxToParentId = append(childIdxToParentId, ChildIdxParentId{
-				childIdx: idxChild,
-				parentId: parentId,
-			})
 		}
 
 	}
@@ -216,7 +197,14 @@ func getEntitiesTypesTargetCached(typesAsJsonStrings []v2.Config) ([]client.Enti
 	entitiesTypes := []client.EntitiesType{}
 
 	if len(typesAsJsonStrings) > 0 {
-		err := json.Unmarshal([]byte(typesAsJsonStrings[0].Template.Content()), &entitiesTypes)
+
+		templateBytes, err := typesAsJsonStrings[0].LoadTemplateBytes()
+		if err != nil {
+			log.Error("Could not Load Template properly: %v", err)
+			return nil, err
+		}
+
+		err = json.Unmarshal(templateBytes, &entitiesTypes)
 
 		if err != nil {
 			return nil, err

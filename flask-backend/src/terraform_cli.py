@@ -234,7 +234,9 @@ def get_os_env_terraform():
         if os_helper.IS_WINDOWS:
             path_separator = ";"
 
-        new_path = f"{tf_exec_details['local_terraform_path']}{path_separator}{my_env['PATH']}"
+        new_path = (
+            f"{tf_exec_details['local_terraform_path']}{path_separator}{my_env['PATH']}"
+        )
 
         my_env["PATH"] = new_path
 
@@ -454,7 +456,9 @@ def run_blank(run_info):
     my_env = get_os_env_terraform()
     cmd_list = [PROVIDER_EXE]
     terraform_path_output = get_path_terraform_provider()
-    log_file_name = add_timestamp_to_log_filename(terraform_path_output, "terraform_provider_test_runnable")
+    log_file_name = add_timestamp_to_log_filename(
+        terraform_path_output, "terraform_provider_test_runnable"
+    )
     log_label = "Terraform test if Provider is runnable"
 
     return execute_terraform_cmd(
@@ -467,12 +471,13 @@ def run_blank(run_info):
         False,
     )
 
+
 def create_symlink():
     provider_exe_loc = dirs.get_file_path(
         dirs.get_terraform_exec_dir(),
         PROVIDER_EXE,
         os_helper.EXEC_EXTENSION,
-    )    
+    )
 
     provider_src = dirs.get_file_path(
         get_path_terraform_provider(),
@@ -487,10 +492,10 @@ def create_symlink():
             isLinkNeeded = False
         else:
             os.remove(provider_src)
-    
+
     if isLinkNeeded:
         os.symlink(provider_exe_loc, provider_src)
-    
+
 
 def create_target_current_state(run_info, tenant_key_main, tenant_key_target):
     cmd_list = terraform_cli_cmd.gen_export_cmd_list(run_info, import_state=True)
@@ -655,6 +660,9 @@ def apply_multi_target(run_info, tenant_key_main, tenant_key_target, terraform_p
 
 
 def plan_all(run_info, tenant_key_main, tenant_key_target, env_var_type=ENV_VAR_BASE):
+
+    terraform_local.delete_overall_dir(tenant_key_main, tenant_key_target)
+
     log_dict = run_plan_all(
         run_info, tenant_key_main, tenant_key_target, env_var_type=env_var_type
     )

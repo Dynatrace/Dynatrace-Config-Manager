@@ -16,6 +16,7 @@ package entities
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/client"
@@ -32,6 +33,7 @@ func MatchEntities(fs afero.Fs, matchParameters match.MatchParameters, entityPer
 
 	for entitiesType := range entityPerTypeTarget {
 
+		runtime.GC()
 		log.Debug("Processing Type: %s", entitiesType)
 
 		if entitiesType == client.TypesAsEntitiesType {

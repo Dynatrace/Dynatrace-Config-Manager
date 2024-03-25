@@ -30,7 +30,6 @@ import (
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/environment"
 	refParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/reference"
 	valueParam "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter/value"
-	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/template"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/manifest"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
@@ -43,11 +42,12 @@ var allowedScopeParameterTypes = []string{
 }
 
 type LoaderContext struct {
-	ProjectId       string
-	Path            string
-	Environments    []manifest.EnvironmentDefinition
-	KnownApis       map[string]struct{}
-	ParametersSerDe map[string]parameter.ParameterSerDe
+	ProjectId         string
+	Path              string
+	Environments      []manifest.EnvironmentDefinition
+	KnownApis         map[string]struct{}
+	ParametersSerDe   map[string]parameter.ParameterSerDe
+	ProjectWorkingDir string
 }
 
 // LoadConfigs will search a given path for configuration yamls and parses them.
@@ -351,13 +351,7 @@ func getConfigFromDefinition(
 		}
 	}
 
-	template, err := template.LoadTemplate(fs, filepath.Join(context.Folder, definition.Template))
-
 	var errors []error
-
-	if err != nil {
-		errors = append(errors, newDetailedDefinitionParserError(configId, context, environment, fmt.Sprintf("error while loading template: `%s`", err)))
-	}
 
 	parameters, parameterErrors := parseParametersAndReferences(context, environment, configId,
 		definition.Parameters)
@@ -413,7 +407,8 @@ func getConfigFromDefinition(
 	}
 
 	return Config{
-		Template: template,
+		Template:     nil,
+		TemplatePath: filepath.Join(context.ProjectWorkingDir, context.Folder, definition.Template),
 		Coordinate: coordinate.Coordinate{
 			Project:  context.ProjectId,
 			Type:     context.Type,

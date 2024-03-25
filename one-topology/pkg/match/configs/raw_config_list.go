@@ -57,13 +57,13 @@ func (r *RawConfigsList) Sort() {
 
 func (r *RawConfigsList) Len() int {
 
-	return len(*r.GetValues())
+	return len(*r.GetValuesConfig())
 
 }
 
 func (r *RawConfigsList) GetValues() *[]entitiesValues.Value {
 
-	return nil
+	panic("GetValues can only be called for entities")
 
 }
 
@@ -82,13 +82,17 @@ func unmarshalConfigs(configPerType []config.Config) (*RawConfigsList, error) {
 		return rawConfigsList, nil
 	}
 
-	content := configPerType[0].Template.Content()
+	templateBytes, err := configPerType[0].LoadTemplateBytes()
+	if err != nil {
+		log.Error("Could not Load Template properly: %v on: \n%v", err)
+		return nil, err
+	}
 
-	if content == "" {
+	if len(templateBytes) == 0 {
 		return rawConfigsList, nil
 	}
 
-	err := json.Unmarshal([]byte(content), rawConfigsList.Values)
+	err = json.Unmarshal(templateBytes, rawConfigsList.Values)
 	if err != nil {
 		log.Error("Could not Unmarshal properly: %v on: \n%v", err, rawConfigsList.Values)
 		return nil, err

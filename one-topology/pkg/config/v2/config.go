@@ -15,7 +15,13 @@
 package v2
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/json"
+	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/internal/log"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/coordinate"
 	configErrors "github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/errors"
 	"github.com/Dynatrace/Dynatrace-Config-Manager/one-topology/pkg/config/v2/parameter"
@@ -92,7 +98,8 @@ func (EntityType) ID() TypeId {
 // Config struct defining a configuration which can be deployed.
 type Config struct {
 	// template used to render the request send to the dynatrace api
-	Template template.Template
+	Template     template.Template
+	TemplatePath string
 	// coordinates which specify the location of this configuration
 	Coordinate coordinate.Coordinate
 	// group this config belongs to
@@ -114,6 +121,68 @@ type Config struct {
 
 	// OriginObjectId is the DT object ID of the object when it was downloaded from an environment
 	OriginObjectId string
+}
+
+func (c *Config) LoadTemplateBytes() ([]byte, error) {
+	prefix := []byte("")
+	suffix := []byte("")
+
+	return c.LoadPaddedTemplateBytes(prefix, suffix)
+}
+
+func (c *Config) LoadPaddedTemplateBytes(prefix []byte, suffix []byte) ([]byte, error) {
+	sanitizedPath := filepath.Clean(c.TemplatePath)
+	log.Debug("Loading template for %s", sanitizedPath)
+
+	file, err := os.OpenFile(sanitizedPath, os.O_RDONLY, 0)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		fmt.Println("Error getting file info:", err)
+		return nil, err
+	}
+	fileSize := fileInfo.Size() + int64(len(prefix)) + int64(len(suffix))
+
+	templateBytes := make([]byte, fileSize)
+	position := 0
+
+	if len(prefix) > 0 {
+		copy(templateBytes[position:], prefix)
+		position += len(prefix)
+	}
+
+	bufferSize := 1024 * 1024
+	buffer := make([]byte, bufferSize)
+
+	for {
+
+		bytesRead, err := file.Read(buffer)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println("Error reading file:", err)
+			}
+			break
+		}
+
+		copy(templateBytes[position:], buffer[:bytesRead])
+		position += bytesRead
+
+		if bytesRead < bufferSize {
+			break
+		}
+	}
+
+	if len(suffix) > 0 {
+		copy(templateBytes[position:], suffix)
+		position += len(suffix)
+	}
+
+	return templateBytes, err
 }
 
 func (c *Config) Render(properties map[string]interface{}) (string, error) {
