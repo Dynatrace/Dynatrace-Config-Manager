@@ -51,6 +51,8 @@ export default function OneTopologyReplacements() {
                             <Typography sx={{ ml: 3 }}>csv files should not contain headers</Typography>
                             <Typography sx={{ mt: 2, ml: 2 }}><b>Dashboard Owners: </b> {oneTopologyReplacementsCheck["dashboards_path"]}</Typography>
                             <Typography sx={{ ml: 3 }}>First column: ID. Second column: e-mail.</Typography>
+                            <Typography sx={{ mt: 2, ml: 2 }}><b>Entity IDs: </b> {oneTopologyReplacementsCheck["entity_ids_path"]}</Typography>
+                            <Typography sx={{ ml: 3 }}>First column: Source Entity ID. Second column: Target Entity ID.</Typography>
                         </React.Fragment>
                     )
                     : null}
