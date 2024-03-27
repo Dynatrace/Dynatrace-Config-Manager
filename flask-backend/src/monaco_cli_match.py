@@ -67,15 +67,7 @@ def get_path_match_configs_prev(config_main, config_target):
 
 
 def get_path_match_replacements(config_main, config_target):
-    return dirs.get_tenant_work_cache_sub_dir(
-        config_main, config_target, "replacement"
-    )
-
-
-def get_path_match_replacements_dashboards(config_main, config_target):
-    return dirs.prep_dir(
-        get_path_match_replacements(config_main, config_target), "dashboard"
-    )
+    return dirs.get_tenant_work_cache_sub_dir(config_main, config_target, "replacement")
 
 
 def get_path_match_configs_results(config_main, config_target):
@@ -520,9 +512,12 @@ def get_one_topology_replacements_info(run_info):
     config_target = credentials.get_api_call_credentials(run_info["tenant_key_target"])
 
     replacements_info = {
-        "dashboards_path": get_path_match_replacements_dashboards(
-            config_main, config_target
-        )
+        "dashboards_path": dirs.prep_dir(
+            get_path_match_replacements(config_main, config_target), "dashboard"
+        ),
+        "entity_ids_path": dirs.prep_dir(
+            get_path_match_replacements(config_main, config_target), "entity_ids"
+        ),
     }
 
     return replacements_info

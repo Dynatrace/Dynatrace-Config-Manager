@@ -95,7 +95,7 @@ func name_internal(v interface{}, regex *regexp.Regexp) (string, bool) {
 	return "", false
 }
 
-func extractReplaceEntities(confInterface map[string]interface{}, entityMatches entities.MatchOutputPerType) ([]interface{}, interface{}, error) {
+func extractReplaceEntities(confInterface map[string]interface{}, entityMatches entities.MatchOutputPerType, replacements *map[string]map[string]string) ([]interface{}, interface{}, error) {
 	rawJson, err := json.Marshal(confInterface)
 	if err != nil {
 		return nil, nil, err
@@ -113,7 +113,32 @@ func extractReplaceEntities(confInterface map[string]interface{}, entityMatches 
 		entityId := string(bytes)
 		matchesStrings[i] = entityId
 
-		entityMatchType, ok := entityMatches[string(bytes[0:(len(bytes)-17)])]
+		entityIdType := string(bytes[0:(len(bytes) - 17)])
+
+		entityIDsReplacements, exists := (*replacements)["entity_ids"]
+		if exists {
+			matchCSVProvided, ok := entityIDsReplacements[entityId]
+
+			if ok {
+				resultType := string([]byte(matchCSVProvided)[0:(len(bytes) - 17)])
+
+				if resultType != entityIdType {
+					log.Error("Cannot replace Entity ID to another type: Source: %s, Target: %s", entityId, matchCSVProvided)
+					continue
+				}
+
+				if matchCSVProvided != entityId {
+					jsonString = strings.ReplaceAll(jsonString, entityId, matchCSVProvided)
+					matchesStrings[i] = matchCSVProvided
+					wasModified = true
+				}
+				// It is possible to force an entity ID to NOT be replaced by one-topology
+				// So as long as we find an entityID in the csv, then we will not replace that entity ID with anything
+				continue
+			}
+		}
+
+		entityMatchType, ok := entityMatches[entityIdType]
 		if ok {
 			entityMatch, ok := entityMatchType.Matches[entityId]
 			if ok {

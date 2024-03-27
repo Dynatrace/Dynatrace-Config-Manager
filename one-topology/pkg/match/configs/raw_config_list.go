@@ -141,7 +141,7 @@ func enhanceConfigs(rawConfigsList *RawConfigsList, configType config.Type,
 			}
 
 			if entityMatches != nil {
-				entities, confInterfaceModified, err = extractReplaceEntities(confMap, entityMatches)
+				entities, confInterfaceModified, err = extractReplaceEntities(confMap, entityMatches, &replacements)
 				if err != nil {
 					log.Error("Error with extractReplaceEntities: %v on: \n%v", err, confMap)
 					mutex.Lock()
