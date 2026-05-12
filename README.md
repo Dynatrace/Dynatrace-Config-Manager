@@ -1,3 +1,7 @@
+⚠️ This repository has been archived and is no longer maintained.
+The code is available for historical reference or archival purposes.
+
+
 # Dynatrace Config Manager
 
 *Please note: this is a community developed application. It is provided without any representations, warranties, or support from Dynatrace. If you have questions about this app, please post on our forum or create an [issue](https://github.com/dcryans-dynatrace/Dynatrace-Config-Manager/issues) on Github*
